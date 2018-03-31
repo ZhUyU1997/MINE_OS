@@ -1,0 +1,1 @@
+libobj-y += F6x8.o

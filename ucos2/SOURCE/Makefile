@@ -1,0 +1,12 @@
+obj-y += os_core.o
+obj-y += os_dbg_r.o
+obj-y += os_flag.o
+obj-y += os_mbox.o
+obj-y += os_mutex.o
+obj-y += os_q.o
+obj-y += os_sem.o
+obj-y += os_mem.o
+obj-y += os_task.o
+obj-y += os_time.o
+obj-y += os_tmr.o
+obj-y += API/
