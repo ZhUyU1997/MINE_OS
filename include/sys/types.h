@@ -44,6 +44,6 @@ typedef unsigned int			ino_t;
 typedef unsigned int			mode_t;
 typedef unsigned int			nlink_t;
 
-typedef unsigned long			off_t;
+typedef long int				off_t;
 typedef long long				loff_t;
 #endif /* _TPYES_H */

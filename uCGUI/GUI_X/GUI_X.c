@@ -25,7 +25,7 @@ Purpose     : Config / System dependent externals for GUI
 *       Global data
 */
 volatile int OS_TimeMS;
-
+#define OS_TimeMS get_sys_tick()
 /*********************************************************************
 *
 *      Timing:
@@ -83,7 +83,7 @@ Note:
 
 */
 
-void GUI_X_Log     (const char *s) { GUI_USE_PARA(s); }
-void GUI_X_Warn    (const char *s) { GUI_USE_PARA(s); }
-void GUI_X_ErrorOut(const char *s) { GUI_USE_PARA(s); }
+void GUI_X_Log     (const char *s) { printf(s); }
+void GUI_X_Warn    (const char *s) { printf(s); }
+void GUI_X_ErrorOut(const char *s) { printf(s); }
 	 	 			 		    	 				 	  			   	 	 	 	 	 	  	  	      	   		 	 	 		  		  	 		 	  	  			     			       	   	 			  		    	 	     	 				  	 					 	 			   	  	  			 				 		 	 	 			     			 

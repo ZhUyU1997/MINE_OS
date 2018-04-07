@@ -49,7 +49,7 @@
 #define OS_TASK_STAT_STK_CHK_EN   1    /* Check task stacks from statistic task                          */
 
 #define OS_TICK_STEP_EN           0    /* Enable tick stepping feature for uC/OS-View                    */
-#define OS_TICKS_PER_SEC        100    /* Set the number of ticks in one second                          */
+#define OS_TICKS_PER_SEC       1000    /* Set the number of ticks in one second                          */
 
 
                                        /* ----------------------- EVENT FLAGS ------------------------   */

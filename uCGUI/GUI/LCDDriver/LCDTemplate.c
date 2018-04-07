@@ -39,7 +39,7 @@ Version-Date---Author-Explanation
 #include "LCD_Private.h"      /* private modul definitions & config */
 #include "GUI_Private.h"
 #include "GUIDebug.h"
-
+#include "framebuffer.h"
 #if (LCD_CONTROLLER == -1) \
     && (!defined(WIN32) | defined(LCD_SIMCONTROLLER))
 

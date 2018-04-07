@@ -18,8 +18,8 @@
  *         对于8BPP: color为调色板中的索引值，
  *     其颜色取决于调色板中的数值
  */
-void PutPixel(UINT32 x, UINT32 y, UINT32 color);
-
+void PutPixel(UINT32 x, UINT32 y, UINT16 color);
+UINT16 GetPixel(UINT32 x, UINT32 y);
 /* 
  * 将屏幕清成单色
  * 输入参数：
@@ -29,7 +29,7 @@ void PutPixel(UINT32 x, UINT32 y, UINT32 color);
  *         对于8BPP: color为调色板中的索引值，
  *     其颜色取决于调色板中的数值
  */
-void ClearScr(UINT32 color);
+void ClearScr(UINT16 color);
 void lcd_set_text_color(unsigned int color);
 void lcd_set_background_color(unsigned int color);
 #endif /*__FRAMEBUFFER_H__*/

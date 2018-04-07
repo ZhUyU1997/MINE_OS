@@ -23,7 +23,8 @@ CFLAGS 			:= -std=gnu99 $(WFLAGS) -O2 -fno-builtin -march=armv4t -mtune=arm920t 
 CFLAGS   		+= -I$(INCLUDEDIR) -I$(TOPDIR)/ucos2/SOURCE -iquote$(TOPDIR)/ucos2/PORT \
 				-iquote$(TOPDIR)/ucos2/API -iquote$(TOPDIR)/uCGUI/Config \
 				-iquote$(TOPDIR)/uCGUI/GUI/Core -iquote$(TOPDIR)/uCGUI/GUI/WM -iquote$(TOPDIR)/uCGUI/GUI/widget
-LDFLAGS			:= -L$(shell dirname `$(CC) $(CFLAGS) -print-libgcc-file-name`) -L$(TOPDIR)/uCGUI 
+
+LDFLAGS			:= -L$(shell dirname `$(CC) $(CFLAGS) -print-libgcc-file-name`) -L$(TOPDIR)/uCGUI
 LDFLAGS			+= -lucgui -lgcc
 LDFLAGS			+= -Tucosii.lds 
 
@@ -53,7 +54,7 @@ dis:$(TARGET).bin
 	@echo OBJDUMP $(TARGET).dis
 	@$(OBJDUMP) -D -m arm $(TARGET) > $(TARGET).dis
 
-download:$(TARGET).bin
+dnw:$(TARGET).bin
 	dnw $(TARGET).bin
 
 clean:

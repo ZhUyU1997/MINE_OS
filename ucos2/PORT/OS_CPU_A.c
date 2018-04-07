@@ -3,7 +3,6 @@ void OSStartHighRdy(){
 	OSTaskSwHook();
 	OSRunning = OS_TRUE;
 	OS_STK *SP = OSTCBHighRdy->OSTCBStkPtr;
-	printf("OSStartHighRdy");
 	__asm__ volatile (
 	    "MOV	SP,%0\n"
 	    "LDMFD	SP!, {R0, LR}\n"

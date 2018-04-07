@@ -75,7 +75,9 @@ $(alldir):
 	make -C $@ -f $(TOPDIR)/Makefile.build
 
 define DIR_RULE
+#可以发现这里用的空命令(tab)，如果没有空命令会出现问题
 $(1) : $$(patsubst %/,%,$$(dir $(1)))
+	
 endef
 
 $(foreach v, $(subdir_objs), $(eval $(call DIR_RULE, $(v))))

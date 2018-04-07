@@ -92,7 +92,19 @@ ret_initirq:
     ldr pc, =main           @ 调用main函数
 halt_loop:
     b   halt_loop
+/*
+HandleIRQ:
+	sub lr, lr, #4                  @ 计算返回地址
+    stmdb   sp!,    { r0-r12,lr }   @ 保存使用到的寄存器
 
+                                    @ 注意，此时的sp是中断模式的sp
+                                    @ 初始值是上面设置的0x33d00000
+
+    LDR		LR, =int_return			@ 设置调用IRQ_Handle函数后的返回地址  
+    LDR		PC, =IRQ_Handle			@ 调用中断分发函数，在interrupt.c中
+int_return:
+	ldmia   sp!,    { r0-r12,pc }^  @ 中断返回, ^表示将spsr的值复制到cpsr
+*/
 HandleIRQ:
 	STMFD   SP, {R0-R3}
 	MOV     R1, SP
@@ -104,7 +116,7 @@ HandleIRQ:
 	MSR     CPSR_c, #0xd3			@ Change to SVC mode
 	STMFD   SP!, {R2}				@ Push task''s PC 
 	STMFD   SP!, {R4-R12, LR}		@ Push task''s LR,R12-R4
-	LDMDA   R1!, {R4-R7}			@ Load Task''s R0-R3 from IRQ stack 
+	LDMDB   R1!, {R4-R7}			@ Load Task''s R0-R3 from IRQ stack 
 	STMFD   SP!, {R4-R7}			@ Push Task''s R0-R3 to SVC stack
 	STMFD   SP!, {R3}				@ Push task''s CPSR
 
@@ -118,8 +130,9 @@ HandleIRQ:
 int_return:
 	MSR     CPSR_c, #0xd3
 	LDMFD   SP!, {R0}               @ POP the task''s CPSR 
-    MSR		SPSR_cxsf,R0
+    MSR		SPSR_cxsf, R0
     LDMFD   SP!, {R0-R12,LR,PC}^	@ 中断返回, ^表示将spsr的值复制到cpsr
+
 
 HandleSWI:
 	b HandleSWI

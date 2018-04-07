@@ -15,7 +15,7 @@ by: tangxiaofeng xidian 503
 
 
 //Task function
-void    MainTask(void *pdata);   		//MainTask task
+void    OSMainTask(void *pdata);   		//MainTask task
 void 	Task0(void *pdata);			    // Task0 
 
 

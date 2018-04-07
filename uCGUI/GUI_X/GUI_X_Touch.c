@@ -1,6 +1,6 @@
 /*
 *********************************************************************************************************
-*                                             uC/GUI V3.98
+*                                                uC/GUI
 *                        Universal graphic software for embedded applications
 *
 *                       (c) Copyright 2002, Micrium Inc., Weston, FL
@@ -11,26 +11,27 @@
 *              only be used in accordance with a license and should not be redistributed
 *              in any way. We appreciate your understanding and fairness.
 *
-
+----------------------------------------------------------------------
+File        : GUI_TOUCH_X.C
+Purpose     : Config / System dependent externals for GUI
+---------------------------END-OF-HEADER------------------------------
 */
 
-#ifndef LCDCONF_H
-#define LCDCONF_H
+#include "GUI.h"
+#include "GUI_X.h"
 
-/*********************************************************************
-*
-*                   General configuration of LCD
-*
-**********************************************************************
-*/
+void GUI_TOUCH_X_ActivateX(void) {
+}
 
-#define LCD_XSIZE      (480)   /* X-resolution of LCD, Logical coor. */
-#define LCD_YSIZE      (272)   /* Y-resolution of LCD, Logical coor. */
+void GUI_TOUCH_X_ActivateY(void) {
+}
 
-#define LCD_BITSPERPIXEL (16)
+int  GUI_TOUCH_X_MeasureX(void) {
+  return get_touch_x();
+}
 
-#define LCD_CONTROLLER  (-1)
-#define LCD_FIXEDPALETTE (565)
-#define LCD_FIXEDPALETTE (565)
-#define LCD_SWAP_RB      (1)
-#endif
+int  GUI_TOUCH_X_MeasureY(void) {
+  return get_touch_y();
+}
+
+

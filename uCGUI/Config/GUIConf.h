@@ -22,7 +22,7 @@ Purpose     : Configures abilities, fonts etc.
 #define GUICONF_H
 
 #define GUI_OS                    (0)  /* Compile with multitasking support */
-#define GUI_SUPPORT_TOUCH         (0)  /* Support a touch screen (req. win-manager) */
+#define GUI_SUPPORT_TOUCH         (1)  /* Support a touch screen (req. win-manager) */
 #define GUI_SUPPORT_MOUSE         (0)  /* Support a mouse */
 #define GUI_SUPPORT_UNICODE       (0)  /* Support mixed ASCII/UNICODE strings */
 
@@ -34,9 +34,9 @@ Purpose     : Configures abilities, fonts etc.
 *         Configuration of available packages
 */
 
-#define GUI_WINSUPPORT            0  /* Window manager package available */
+#define GUI_WINSUPPORT            1  /* Window manager package available */
 #define GUI_SUPPORT_MEMDEV        0  /* Memory devices available */
-#define GUI_SUPPORT_AA            0  /* Anti aliasing available */
+#define GUI_SUPPORT_AA            1  /* Anti aliasing available */
 
 /*********************************************************************
 *
@@ -48,6 +48,8 @@ Purpose     : Configures abilities, fonts etc.
 #define GUIDEMO_EN                   0 /* DemoTask */
 #define APPLICATION_EN   !(GUIDEMO_EN) /* AppTask */ 
 
+
+#define GUI_DEBUG_LEVEL GUI_DEBUG_LEVEL_LOG_ALL
 #endif  /* Avoid multiple inclusion */
 
 

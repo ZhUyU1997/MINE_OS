@@ -127,6 +127,13 @@
 #define LPCSEL      (*(volatile unsigned long *)0x4d000060) //LPC3600 Control
 #define PALETTE     0x4d000400                              //Palette start address
 
+/* ADC registers */
+#define ADCCON      (*(volatile unsigned long *)0x58000000)	//ADC control
+#define ADCTSC      (*(volatile unsigned long *)0x58000004)	//ADC touch screen control
+#define ADCDLY      (*(volatile unsigned long *)0x58000008)	//ADC start or Interval Delay
+#define ADCDAT0     (*(volatile unsigned long *)0x5800000c)	//ADC conversion data 0
+#define ADCDAT1     (*(volatile unsigned long *)0x58000010)	//ADC conversion data 1
+#define ADCUPDN     (*(volatile unsigned long *)0x58000014)	//Stylus Up/Down interrupt status
 
 /* RTC registers */
 #define rRTCCON         (*(volatile unsigned char *)0x57000040)

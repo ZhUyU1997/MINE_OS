@@ -1,5 +1,3 @@
-#include "timer.h"
-
 #define PAGE_DATA_SIZE  (2048)
 #define PAGE_SPARE_SIZE (64)
 #define PAGES_PER_BLOCK (64)

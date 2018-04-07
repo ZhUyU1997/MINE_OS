@@ -34,10 +34,29 @@ enum INT_NUM{
 	INT_RTC,
 	INT_ADC
 };
+enum INT_SUB_NUM{
+	INT_RXD0,
+	INT_TXD0,
+	INT_ERR0,
+	INT_RXD1,
+	INT_TXD1,
+	INT_ERR1,
+	INT_RXD2,
+	INT_TXD2,
+	INT_ERR2,
+	INT_TC,
+	INT_ADC_S,
+	INT_CAM_C,
+	INT_CAM_P,
+	INT_WDT,
+	INT_AC97,
+};
 void EINT_Handle();
 void enable_irq(void);
 void disable_irq(void);
-void INTMS_set(unsigned int offset);
-void INTMS_clr(unsigned int offset);
+void INTMSK_set(enum INT_NUM num);
+void INTMSK_clr(enum INT_NUM num);
+void INTSUBMSK_set(enum INT_SUB_NUM num);
+void INTSUBMSK_clr(enum INT_SUB_NUM num);
 void set_irq_handler(int offset,int (*hander)(void));
 #endif

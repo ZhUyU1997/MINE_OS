@@ -1,4 +1,4 @@
 LIBNAME	:= libucgui.a
 obj-y += GUI/
-obj-y += Config/
+obj-y += GUI_X/
 libobj-y += GUI/
