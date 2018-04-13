@@ -1,7 +1,7 @@
 #ifndef __INTERRUPT_H__
 #define __INTERRUPT_H__
 enum INT_NUM{
-	EINT0=0,
+	EINT0 = 0,
 	EINT1,
 	EINT2,
 	EINT3,
@@ -50,6 +50,29 @@ enum INT_SUB_NUM{
 	INT_CAM_P,
 	INT_WDT,
 	INT_AC97,
+};
+
+enum EINT_NUM{
+	EINT4 = 4,
+	EINT5,
+	EINT6,
+	EINT7,
+	EINT8,
+	EINT9,
+	EINT10,
+	EINT11,
+	EINT12,
+	EINT13,
+	EINT14,
+	EINT15,
+	EINT16,
+	EINT17,
+	EINT18,
+	EINT19,
+	EINT20,
+	EINT21,
+	EINT22,
+	EINT23,
 };
 void EINT_Handle();
 void enable_irq(void);

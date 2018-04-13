@@ -50,13 +50,13 @@ void init_irq(void) {
 }
 
 void IRQ_Handle(void) {
-	unsigned long oft = INTOFFSET;
+	int oft = INTOFFSET;
 	//TODO:中断嵌套时，中断开关设置
 	OSIntEnter();
 	//调用中断服务程序
 	isr_handle_array[oft]();
 	//清中断
-	ClearPending(INTOFFSET);
+	ClearPending(oft);
 	OSIntExit();
 }
 
@@ -70,12 +70,12 @@ void set_irq_handler(int offset, int (*handler)(void)) {
 }
 
 //清中断
-void ClearPending(unsigned oft) {
+void ClearPending(int oft) {
 	//TODO:不通用
-	if (oft == (1 << EINT4_7)) {
+	if (oft == EINT4_7) {
 		//EINT4-7合用IRQ4，注意EINTPEND[3:0]保留未用，向这些位写入1可能导致未知结果
-		EINTPEND = 1 << 7;
-	} else if (oft == (1 << EINT8_23)) {
+		EINTPEND = 1 << EINT7;
+	} else if (oft == EINT8_23) {
 		//EINT8_23合用IRQ5
 		EINTPEND = 1 << 11;
 	}

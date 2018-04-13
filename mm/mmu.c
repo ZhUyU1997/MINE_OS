@@ -176,19 +176,37 @@ void create_page_table(void) {
 		};
 		mmu_tlb_base[virtuladdr >> 20] = sec;
 	}
-	//关闭framebuffer的cache
-	SECTION sec = {
-		.base_address = 0x33c00000 >> MMU_SECTION_SHIFT,
-		.blank0 = 0,
-		.AP = MMU_FULL_ACCESS,
-		.blank1 = 0,
-		.domain = MMU_DOMAIN,
-		.special = 1,
-		.C = 0,
-		.B = 0,
-		.type = MMU_SECTION,
-	};
-	mmu_tlb_base[0x33c00000 >> 20] = sec;
+	{
+		//关闭framebuffer的cache
+		SECTION sec = {
+			.base_address = 0x33c00000 >> MMU_SECTION_SHIFT,
+			.blank0 = 0,
+			.AP = MMU_FULL_ACCESS,
+			.blank1 = 0,
+			.domain = MMU_DOMAIN,
+			.special = 1,
+			.C = 0,
+			.B = 0,
+			.type = MMU_SECTION,
+		};
+		mmu_tlb_base[0x33c00000 >> 20] = sec;
+	}
+	{
+		//设置BANK4
+		SECTION sec = {
+			.base_address = 0x20000000 >> MMU_SECTION_SHIFT,
+			.blank0 = 0,
+			.AP = MMU_FULL_ACCESS,
+			.blank1 = 0,
+			.domain = MMU_DOMAIN,
+			.special = 1,
+			.C = 0,
+			.B = 0,
+			.type = MMU_SECTION,
+		};
+		mmu_tlb_base[0x20000000 >> 20] = sec;
+		
+	}
 }
 
 /*

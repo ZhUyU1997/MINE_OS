@@ -22,7 +22,9 @@ WFLAGS			:= -w
 CFLAGS 			:= -std=gnu99 $(WFLAGS) -O2 -fno-builtin -march=armv4t -mtune=arm920t -nostdlib -nostdinc -msoft-float -fsigned-char
 CFLAGS   		+= -I$(INCLUDEDIR) -I$(TOPDIR)/ucos2/SOURCE -iquote$(TOPDIR)/ucos2/PORT \
 				-iquote$(TOPDIR)/ucos2/API -iquote$(TOPDIR)/uCGUI/Config \
-				-iquote$(TOPDIR)/uCGUI/GUI/Core -iquote$(TOPDIR)/uCGUI/GUI/WM -iquote$(TOPDIR)/uCGUI/GUI/widget
+				-iquote$(TOPDIR)/uCGUI/GUI/Core -iquote$(TOPDIR)/uCGUI/GUI/WM -iquote$(TOPDIR)/uCGUI/GUI/widget \
+				-I$(TOPDIR)/lwip/include -iquote$(TOPDIR)/lwip/include/arch \
+				-iquote$(TOPDIR)/lwip/include/ipv4
 
 LDFLAGS			:= -L$(shell dirname `$(CC) $(CFLAGS) -print-libgcc-file-name`) -L$(TOPDIR)/uCGUI
 LDFLAGS			+= -lucgui -lgcc
@@ -36,10 +38,11 @@ TARGET := ucosii
 obj-y += init/
 obj-y += drivers/
 obj-y += src/
-obj-y += ucos2/
 obj-y += lib/
 obj-y += mm/
+obj-y += ucos2/
 obj-y += uCGUI/
+obj-y += lwip/
 
 .PHONY : all dis download clean distclean
 all:

@@ -82,6 +82,10 @@
 #define EINTMASK            (*(volatile unsigned long *)0x560000a4)
 #define EINTPEND            (*(volatile unsigned long *)0x560000a8)
 
+#define EXTINT0   (*(volatile unsigned *)0x56000088)	//External interrupt control register 0
+#define EXTINT1   (*(volatile unsigned *)0x5600008c)	//External interrupt control register 1
+#define EXTINT2   (*(volatile unsigned *)0x56000090)	//External interrupt control register 2
+
 /*clock registers*/
 #define	LOCKTIME	(*(volatile unsigned long *)0x4c000000)
 #define	MPLLCON		(*(volatile unsigned long *)0x4c000004)
