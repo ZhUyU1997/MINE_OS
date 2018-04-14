@@ -103,7 +103,7 @@ void OSMainTask(void *pdata) {
 	INT8U  err;
 	OSTaskNameSet(Task0Prio, (INT8U *)"Task0", &err);
 	printf("创建任务0完成\n");
-	
+	httpserver_init();
 	while (1){
 		//printf("OSMainTask Delay\n");
 		OSTimeDly(OS_TICKS_PER_SEC);
@@ -173,7 +173,7 @@ void EINT_DM9000_Init(void)
    GPFUP  = 0xff;//GPF0-7禁止上拉电阻
    EXTINT0 &= ~(7<<28);
    EXTINT0 |= (1<<28);//EINT7高电平
-   EINTMASK &= ~(1<<EINT7); 
+   EINTMASK &= ~(1<<EINT7);
    INTMSK_set(EINT4_7);
 }
 /*=================================================================================================
@@ -188,8 +188,8 @@ void LWIP_Module_Init(void)
    struct ip_addr ipaddr,netmask,gateway;
 
    
-   lwip_init();
-   
+   //lwip_init();
+   tcpip_init(NULL, NULL);
    IP4_ADDR(&ipaddr ,192,168, 11, 3);
    IP4_ADDR(&netmask,255,255,255, 0);
    IP4_ADDR(&gateway,192,168, 11, 1);
@@ -197,7 +197,7 @@ void LWIP_Module_Init(void)
    netif_add(&dm9000a_netif,&ipaddr,&netmask,&gateway,
              (void *)NULL,
              ethernetif_init,
-             ethernet_input);
+             tcpip_input);
    netif_set_default(&dm9000a_netif);
    netif_set_up(&dm9000a_netif);
 }

@@ -5,8 +5,9 @@
 /* 包含相关头文件 */
 #include <string.h>
 #include <assert.h>
-#define BYTE_ORDER LITTLE_ENDIAN
 
+#define BYTE_ORDER LITTLE_ENDIAN
+#define	LWIP_PROVIDE_ERRNO
 /* 提供标准错误代号 */
 #define LWIP_PROVIDE_ERRNO
 
@@ -49,5 +50,7 @@ typedef u32_t mem_ptr_t;
 #define SYS_ARCH_PROTECT(x)      OS_ENTER_CRITICAL()
 #define SYS_ARCH_UNPROTECT(x)    OS_EXIT_CRITICAL()
 
+extern unsigned int sys_now(void);
+#define LWIP_RAND() sys_now()
 
 #endif /* __ARCH_CC_H__ */

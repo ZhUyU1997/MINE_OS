@@ -4,12 +4,20 @@
 *                                          The Real-Time Kernel
 *                                             TIME MANAGEMENT
 *
-*                          (c) Copyright 1992-2006, Jean J. Labrosse, Weston, FL
+*                          (c) Copyright 1992-2007, Jean J. Labrosse, Weston, FL
 *                                           All Rights Reserved
 *
 * File    : OS_TIME.C
 * By      : Jean J. Labrosse
-* Version : V2.83
+* Version : V2.85
+*
+* LICENSING TERMS:
+* ---------------
+*   uC/OS-II is provided in source form for FREE evaluation, for educational use or for peaceful research.  
+* If you plan on using  uC/OS-II  in a commercial product you need to contact Micriµm to properly license 
+* its use in your product. We provide ALL the source code for your convenience and to help you experience 
+* uC/OS-II.   The fact that the  source is provided does  NOT  mean that you can use it without  paying a 
+* licensing fee.
 *********************************************************************************************************
 */
 
@@ -42,6 +50,9 @@ void  OSTimeDly (INT16U ticks)
 
 
 
+    if (OSIntNesting > 0) {                      /* See if trying to call from an ISR                  */
+        return;
+    }
     if (ticks > 0) {                             /* 0 means no delay!                                  */
         OS_ENTER_CRITICAL();
         y            =  OSTCBCur->OSTCBY;        /* Delay current task                                 */
@@ -68,11 +79,12 @@ void  OSTimeDly (INT16U ticks)
 *              seconds   specifies the number of seconds (max. 59)
 *              milli     specifies the number of milliseconds (max. 999)
 *
-* Returns    : OS_NO_ERR
-*              OS_TIME_INVALID_MINUTES
-*              OS_TIME_INVALID_SECONDS
-*              OS_TIME_INVALID_MS
-*              OS_TIME_ZERO_DLY
+* Returns    : OS_ERR_NONE
+*              OS_ERR_TIME_INVALID_MINUTES
+*              OS_ERR_TIME_INVALID_SECONDS
+*              OS_ERR_TIME_INVALID_MS
+*              OS_ERR_TIME_ZERO_DLY
+*              OS_ERR_TIME_DLY_ISR
 *
 * Note(s)    : The resolution on the milliseconds depends on the tick rate.  For example, you can't do
 *              a 10 mS delay if the ticker interrupts every 100 mS.  In this case, the delay would be
@@ -81,45 +93,48 @@ void  OSTimeDly (INT16U ticks)
 */
 
 #if OS_TIME_DLY_HMSM_EN > 0
-INT8U  OSTimeDlyHMSM (INT8U hours, INT8U minutes, INT8U seconds, INT16U milli)
+INT8U  OSTimeDlyHMSM (INT8U hours, INT8U minutes, INT8U seconds, INT16U ms)
 {
     INT32U ticks;
     INT16U loops;
 
 
+    if (OSIntNesting > 0) {                      /* See if trying to call from an ISR                  */
+        return (OS_ERR_TIME_DLY_ISR);
+    }
 #if OS_ARG_CHK_EN > 0
     if (hours == 0) {
         if (minutes == 0) {
             if (seconds == 0) {
-                if (milli == 0) {
-                    return (OS_TIME_ZERO_DLY);
+                if (ms == 0) {
+                    return (OS_ERR_TIME_ZERO_DLY);
                 }
             }
         }
     }
     if (minutes > 59) {
-        return (OS_TIME_INVALID_MINUTES);        /* Validate arguments to be within range              */
+        return (OS_ERR_TIME_INVALID_MINUTES);    /* Validate arguments to be within range              */
     }
     if (seconds > 59) {
-        return (OS_TIME_INVALID_SECONDS);
+        return (OS_ERR_TIME_INVALID_SECONDS);
     }
-    if (milli > 999) {
-        return (OS_TIME_INVALID_MILLI);
+    if (ms > 999) {
+        return (OS_ERR_TIME_INVALID_MS);
     }
 #endif
                                                  /* Compute the total number of clock ticks required.. */
                                                  /* .. (rounded to the nearest tick)                   */
     ticks = ((INT32U)hours * 3600L + (INT32U)minutes * 60L + (INT32U)seconds) * OS_TICKS_PER_SEC
-          + OS_TICKS_PER_SEC * ((INT32U)milli + 500L / OS_TICKS_PER_SEC) / 1000L;
-    loops = (INT16U)(ticks / 65536L);            /* Compute the integral number of 65536 tick delays   */
-    ticks = ticks % 65536L;                      /* Obtain  the fractional number of ticks             */
+          + OS_TICKS_PER_SEC * ((INT32U)ms + 500L / OS_TICKS_PER_SEC) / 1000L;
+    loops = (INT16U)(ticks >> 16);               /* Compute the integral number of 65536 tick delays   */
+    ticks = ticks & 0xFFFFL;                     /* Obtain  the fractional number of ticks             */
     OSTimeDly((INT16U)ticks);
     while (loops > 0) {
         OSTimeDly((INT16U)32768u);
         OSTimeDly((INT16U)32768u);
         loops--;
     }
-    return (OS_NO_ERR);
+    return (OS_ERR_NONE);
 }
 #endif
 /*$PAGE*/
@@ -140,11 +155,11 @@ INT8U  OSTimeDlyHMSM (INT8U hours, INT8U minutes, INT8U seconds, INT16U milli)
 *
 * Arguments  : prio                      specifies the priority of the task to resume
 *
-* Returns    : OS_NO_ERR                 Task has been resumed
-*              OS_PRIO_INVALID           if the priority you specify is higher that the maximum allowed
+* Returns    : OS_ERR_NONE               Task has been resumed
+*              OS_ERR_PRIO_INVALID       if the priority you specify is higher that the maximum allowed
 *                                        (i.e. >= OS_LOWEST_PRIO)
-*              OS_TIME_NOT_DLY           Task is not waiting for time to expire
-*              OS_TASK_NOT_EXIST         The desired task has not been created or has been assigned to a Mutex.
+*              OS_ERR_TIME_NOT_DLY       Task is not waiting for time to expire
+*              OS_ERR_TASK_NOT_EXIST     The desired task has not been created or has been assigned to a Mutex.
 *********************************************************************************************************
 */
 
@@ -159,39 +174,39 @@ INT8U  OSTimeDlyResume (INT8U prio)
 
 
     if (prio >= OS_LOWEST_PRIO) {
-        return (OS_PRIO_INVALID);
+        return (OS_ERR_PRIO_INVALID);
     }
     OS_ENTER_CRITICAL();
     ptcb = OSTCBPrioTbl[prio];                                 /* Make sure that task exist            */
     if (ptcb == (OS_TCB *)0) {
         OS_EXIT_CRITICAL();
-        return (OS_TASK_NOT_EXIST);                            /* The task does not exist              */
+        return (OS_ERR_TASK_NOT_EXIST);                        /* The task does not exist              */
     }
-    if (ptcb == (OS_TCB *)1) {
+    if (ptcb == OS_TCB_RESERVED) {
         OS_EXIT_CRITICAL();
-        return (OS_TASK_NOT_EXIST);                            /* The task does not exist              */
+        return (OS_ERR_TASK_NOT_EXIST);                        /* The task does not exist              */
     }
     if (ptcb->OSTCBDly == 0) {                                 /* See if task is delayed               */
         OS_EXIT_CRITICAL();
-        return (OS_TIME_NOT_DLY);                              /* Indicate that task was not delayed   */
+        return (OS_ERR_TIME_NOT_DLY);                          /* Indicate that task was not delayed   */
     }
 
     ptcb->OSTCBDly = 0;                                        /* Clear the time delay                 */
     if ((ptcb->OSTCBStat & OS_STAT_PEND_ANY) != OS_STAT_RDY) {
-        ptcb->OSTCBStat   &= ~OS_STAT_PEND_ANY;                /* Yes, Clear status flag               */
-        ptcb->OSTCBPendTO  = OS_TRUE;                          /* Indicate PEND timeout                */
+        ptcb->OSTCBStat     &= ~OS_STAT_PEND_ANY;              /* Yes, Clear status flag               */
+        ptcb->OSTCBStatPend  =  OS_STAT_PEND_TO;               /* Indicate PEND timeout                */
     } else {
-        ptcb->OSTCBPendTO  = OS_FALSE;
+        ptcb->OSTCBStatPend  =  OS_STAT_PEND_OK;
     }
     if ((ptcb->OSTCBStat & OS_STAT_SUSPEND) == OS_STAT_RDY) {  /* Is task suspended?                   */
         OSRdyGrp               |= ptcb->OSTCBBitY;             /* No,  Make ready                      */
         OSRdyTbl[ptcb->OSTCBY] |= ptcb->OSTCBBitX;
         OS_EXIT_CRITICAL();
-        OS_Sched();                                           /* See if this is new highest priority   */
+        OS_Sched();                                            /* See if this is new highest priority  */
     } else {
-        OS_EXIT_CRITICAL();                                   /* Task may be suspended                 */
+        OS_EXIT_CRITICAL();                                    /* Task may be suspended                */
     }
-    return (OS_NO_ERR);
+    return (OS_ERR_NONE);
 }
 #endif
 /*$PAGE*/

@@ -4,12 +4,20 @@
 *                                          The Real-Time Kernel
 *                                         EVENT FLAG  MANAGEMENT
 *
-*                          (c) Copyright 2001-2006, Jean J. Labrosse, Weston, FL
+*                          (c) Copyright 2001-2007, Jean J. Labrosse, Weston, FL
 *                                           All Rights Reserved
 *
 * File    : OS_FLAG.C
 * By      : Jean J. Labrosse
-* Version : V2.83
+* Version : V2.85
+*
+* LICENSING TERMS:
+* ---------------
+*   uC/OS-II is provided in source form for FREE evaluation, for educational use or for peaceful research.  
+* If you plan on using  uC/OS-II  in a commercial product you need to contact Micriµm to properly license 
+* its use in your product. We provide ALL the source code for your convenience and to help you experience 
+* uC/OS-II.   The fact that the  source is provided does  NOT  mean that you can use it without  paying a 
+* licensing fee.
 *********************************************************************************************************
 */
 
@@ -17,7 +25,7 @@
 #include <ucos_ii.h>
 #endif
 
-#if (OS_VERSION >= 251) && (OS_FLAG_EN > 0) && (OS_MAX_FLAGS > 0)
+#if (OS_FLAG_EN > 0) && (OS_MAX_FLAGS > 0)
 /*
 *********************************************************************************************************
 *                                            LOCAL PROTOTYPES
@@ -60,14 +68,14 @@ static  BOOLEAN  OS_FlagTaskRdy(OS_FLAG_NODE *pnode, OS_FLAGS flags_rdy);
 *
 *                                  OS_FLAG_WAIT_SET_ANY + OS_FLAG_CONSUME
 *
-*              err           is a pointer to an error code and can be:
-*                            OS_NO_ERR              No error
-*                            OS_ERR_EVENT_TYPE      You are not pointing to an event flag group
-*                            OS_FLAG_ERR_WAIT_TYPE  You didn't specify a proper 'wait_type' argument.
-*                            OS_FLAG_INVALID_PGRP   You passed a NULL pointer instead of the event flag
-*                                                   group handle.
-*                            OS_FLAG_ERR_NOT_RDY    The desired flags you are waiting for are not
-*                                                   available.
+*              perr          is a pointer to an error code and can be:
+*                            OS_ERR_NONE               No error
+*                            OS_ERR_EVENT_TYPE         You are not pointing to an event flag group
+*                            OS_ERR_FLAG_WAIT_TYPE     You didn't specify a proper 'wait_type' argument.
+*                            OS_ERR_FLAG_INVALID_PGRP  You passed a NULL pointer instead of the event flag
+*                                                      group handle.
+*                            OS_ERR_FLAG_NOT_RDY       The desired flags you are waiting for are not
+*                                                      available.
 *
 * Returns    : The flags in the event flag group that made the task ready or, 0 if a timeout or an error
 *              occurred.
@@ -81,7 +89,7 @@ static  BOOLEAN  OS_FlagTaskRdy(OS_FLAG_NODE *pnode, OS_FLAGS flags_rdy);
 */
 
 #if OS_FLAG_ACCEPT_EN > 0
-OS_FLAGS  OSFlagAccept (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U wait_type, INT8U *err)
+OS_FLAGS  OSFlagAccept (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U wait_type, INT8U *perr)
 {
     OS_FLAGS      flags_rdy;
     INT8U         result;
@@ -93,16 +101,16 @@ OS_FLAGS  OSFlagAccept (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U wait_type, INT8
 
 
 #if OS_ARG_CHK_EN > 0
-    if (err == (INT8U *)0) {                               /* Validate 'err'                           */
+    if (perr == (INT8U *)0) {                              /* Validate 'perr'                          */
         return ((OS_FLAGS)0);
     }
     if (pgrp == (OS_FLAG_GRP *)0) {                        /* Validate 'pgrp'                          */
-        *err = OS_FLAG_INVALID_PGRP;
+        *perr = OS_ERR_FLAG_INVALID_PGRP;
         return ((OS_FLAGS)0);
     }
 #endif
     if (pgrp->OSFlagType != OS_EVENT_TYPE_FLAG) {          /* Validate event block type                */
-        *err = OS_ERR_EVENT_TYPE;
+        *perr = OS_ERR_EVENT_TYPE;
         return ((OS_FLAGS)0);
     }
     result = (INT8U)(wait_type & OS_FLAG_CONSUME);
@@ -113,7 +121,7 @@ OS_FLAGS  OSFlagAccept (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U wait_type, INT8
         consume    = OS_FALSE;
     }
 /*$PAGE*/
-    *err = OS_NO_ERR;                                      /* Assume NO error until proven otherwise.  */
+    *perr = OS_ERR_NONE;                                   /* Assume NO error until proven otherwise.  */
     OS_ENTER_CRITICAL();
     switch (wait_type) {
         case OS_FLAG_WAIT_SET_ALL:                         /* See if all required flags are set        */
@@ -123,7 +131,7 @@ OS_FLAGS  OSFlagAccept (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U wait_type, INT8
                      pgrp->OSFlagFlags &= ~flags_rdy;      /* Clear ONLY the flags that we wanted      */
                  }
              } else {
-                 *err  = OS_FLAG_ERR_NOT_RDY;
+                 *perr = OS_ERR_FLAG_NOT_RDY;
              }
              OS_EXIT_CRITICAL();
              break;
@@ -135,7 +143,7 @@ OS_FLAGS  OSFlagAccept (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U wait_type, INT8
                      pgrp->OSFlagFlags &= ~flags_rdy;      /* Clear ONLY the flags that we got         */
                  }
              } else {
-                 *err  = OS_FLAG_ERR_NOT_RDY;
+                 *perr = OS_ERR_FLAG_NOT_RDY;
              }
              OS_EXIT_CRITICAL();
              break;
@@ -148,7 +156,7 @@ OS_FLAGS  OSFlagAccept (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U wait_type, INT8
                      pgrp->OSFlagFlags |= flags_rdy;       /* Set ONLY the flags that we wanted        */
                  }
              } else {
-                 *err  = OS_FLAG_ERR_NOT_RDY;
+                 *perr = OS_ERR_FLAG_NOT_RDY;
              }
              OS_EXIT_CRITICAL();
              break;
@@ -160,7 +168,7 @@ OS_FLAGS  OSFlagAccept (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U wait_type, INT8
                      pgrp->OSFlagFlags |= flags_rdy;       /* Set ONLY the flags that we got           */
                  }
              } else {
-                 *err  = OS_FLAG_ERR_NOT_RDY;
+                 *perr = OS_ERR_FLAG_NOT_RDY;
              }
              OS_EXIT_CRITICAL();
              break;
@@ -169,7 +177,7 @@ OS_FLAGS  OSFlagAccept (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U wait_type, INT8
         default:
              OS_EXIT_CRITICAL();
              flags_rdy = (OS_FLAGS)0;
-             *err      = OS_FLAG_ERR_WAIT_TYPE;
+             *perr     = OS_ERR_FLAG_WAIT_TYPE;
              break;
     }
     return (flags_rdy);
@@ -185,11 +193,11 @@ OS_FLAGS  OSFlagAccept (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U wait_type, INT8
 *
 * Arguments  : flags         Contains the initial value to store in the event flag group.
 *
-*              err           is a pointer to an error code which will be returned to your application:
-*                               OS_NO_ERR                if the call was successful.
-*                               OS_ERR_CREATE_ISR        if you attempted to create an Event Flag from an
-*                                                        ISR.
-*                               OS_FLAG_GRP_DEPLETED     if there are no more event flag groups
+*              perr          is a pointer to an error code which will be returned to your application:
+*                               OS_ERR_NONE               if the call was successful.
+*                               OS_ERR_CREATE_ISR         if you attempted to create an Event Flag from an
+*                                                         ISR.
+*                               OS_ERR_FLAG_GRP_DEPLETED  if there are no more event flag groups
 *
 * Returns    : A pointer to an event flag group or a NULL pointer if no more groups are available.
 *
@@ -197,7 +205,7 @@ OS_FLAGS  OSFlagAccept (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U wait_type, INT8
 *********************************************************************************************************
 */
 
-OS_FLAG_GRP  *OSFlagCreate (OS_FLAGS flags, INT8U *err)
+OS_FLAG_GRP  *OSFlagCreate (OS_FLAGS flags, INT8U *perr)
 {
     OS_FLAG_GRP *pgrp;
 #if OS_CRITICAL_METHOD == 3                         /* Allocate storage for CPU status register        */
@@ -207,12 +215,12 @@ OS_FLAG_GRP  *OSFlagCreate (OS_FLAGS flags, INT8U *err)
 
 
 #if OS_ARG_CHK_EN > 0
-    if (err == (INT8U *)0) {                        /* Validate 'err'                                  */
+    if (perr == (INT8U *)0) {                       /* Validate 'perr'                                 */
         return ((OS_FLAG_GRP *)0);
     }
 #endif
     if (OSIntNesting > 0) {                         /* See if called from ISR ...                      */
-        *err = OS_ERR_CREATE_ISR;                   /* ... can't CREATE from an ISR                    */
+        *perr = OS_ERR_CREATE_ISR;                  /* ... can't CREATE from an ISR                    */
         return ((OS_FLAG_GRP *)0);
     }
     OS_ENTER_CRITICAL();
@@ -228,10 +236,10 @@ OS_FLAG_GRP  *OSFlagCreate (OS_FLAGS flags, INT8U *err)
         pgrp->OSFlagName[1]  = OS_ASCII_NUL;
 #endif
         OS_EXIT_CRITICAL();
-        *err                 = OS_NO_ERR;
+        *perr                = OS_ERR_NONE;
     } else {
         OS_EXIT_CRITICAL();
-        *err                 = OS_FLAG_GRP_DEPLETED;
+        *perr                = OS_ERR_FLAG_GRP_DEPLETED;
     }
     return (pgrp);                                  /* Return pointer to event flag group              */
 }
@@ -252,16 +260,16 @@ OS_FLAG_GRP  *OSFlagCreate (OS_FLAGS flags, INT8U *err)
 *                                                    waiting.  In this case, all the tasks pending will be
 *                                                    readied.
 *
-*              err           is a pointer to an error code that can contain one of the following values:
-*                            OS_NO_ERR               The call was successful and the event flag group was
-*                                                    deleted
-*                            OS_ERR_DEL_ISR          If you attempted to delete the event flag group from
-*                                                    an ISR
-*                            OS_FLAG_INVALID_PGRP    If 'pgrp' is a NULL pointer.
-*                            OS_ERR_EVENT_TYPE       If you didn't pass a pointer to an event flag group
-*                            OS_ERR_INVALID_OPT      An invalid option was specified
-*                            OS_ERR_TASK_WAITING     One or more tasks were waiting on the event flag
-*                                                    group.
+*              perr          is a pointer to an error code that can contain one of the following values:
+*                            OS_ERR_NONE               The call was successful and the event flag group was
+*                                                      deleted
+*                            OS_ERR_DEL_ISR            If you attempted to delete the event flag group from
+*                                                      an ISR
+*                            OS_ERR_FLAG_INVALID_PGRP  If 'pgrp' is a NULL pointer.
+*                            OS_ERR_EVENT_TYPE         If you didn't pass a pointer to an event flag group
+*                            OS_ERR_INVALID_OPT        An invalid option was specified
+*                            OS_ERR_TASK_WAITING       One or more tasks were waiting on the event flag
+*                                                      group.
 *
 * Returns    : pgrp          upon error
 *              (OS_EVENT *)0 if the event flag group was successfully deleted.
@@ -274,7 +282,7 @@ OS_FLAG_GRP  *OSFlagCreate (OS_FLAGS flags, INT8U *err)
 */
 
 #if OS_FLAG_DEL_EN > 0
-OS_FLAG_GRP  *OSFlagDel (OS_FLAG_GRP *pgrp, INT8U opt, INT8U *err)
+OS_FLAG_GRP  *OSFlagDel (OS_FLAG_GRP *pgrp, INT8U opt, INT8U *perr)
 {
     BOOLEAN       tasks_waiting;
     OS_FLAG_NODE *pnode;
@@ -286,20 +294,20 @@ OS_FLAG_GRP  *OSFlagDel (OS_FLAG_GRP *pgrp, INT8U opt, INT8U *err)
 
 
 #if OS_ARG_CHK_EN > 0
-    if (err == (INT8U *)0) {                               /* Validate 'err'                           */
+    if (perr == (INT8U *)0) {                              /* Validate 'perr'                          */
         return (pgrp);
     }
     if (pgrp == (OS_FLAG_GRP *)0) {                        /* Validate 'pgrp'                          */
-        *err = OS_FLAG_INVALID_PGRP;
+        *perr = OS_ERR_FLAG_INVALID_PGRP;
         return (pgrp);
     }
 #endif
     if (OSIntNesting > 0) {                                /* See if called from ISR ...               */
-        *err = OS_ERR_DEL_ISR;                             /* ... can't DELETE from an ISR             */
+        *perr = OS_ERR_DEL_ISR;                            /* ... can't DELETE from an ISR             */
         return (pgrp);
     }
     if (pgrp->OSFlagType != OS_EVENT_TYPE_FLAG) {          /* Validate event group type                */
-        *err = OS_ERR_EVENT_TYPE;
+        *perr = OS_ERR_EVENT_TYPE;
         return (pgrp);
     }
     OS_ENTER_CRITICAL();
@@ -320,11 +328,11 @@ OS_FLAG_GRP  *OSFlagDel (OS_FLAG_GRP *pgrp, INT8U opt, INT8U *err)
                  pgrp->OSFlagFlags    = (OS_FLAGS)0;
                  OSFlagFreeList       = pgrp;
                  OS_EXIT_CRITICAL();
-                 *err                 = OS_NO_ERR;
+                 *perr                = OS_ERR_NONE;
                  pgrp_return          = (OS_FLAG_GRP *)0;  /* Event Flag Group has been deleted        */
              } else {
                  OS_EXIT_CRITICAL();
-                 *err                 = OS_ERR_TASK_WAITING;
+                 *perr                = OS_ERR_TASK_WAITING;
                  pgrp_return          = pgrp;
              }
              break;
@@ -347,13 +355,13 @@ OS_FLAG_GRP  *OSFlagDel (OS_FLAG_GRP *pgrp, INT8U opt, INT8U *err)
              if (tasks_waiting == OS_TRUE) {               /* Reschedule only if task(s) were waiting  */
                  OS_Sched();                               /* Find highest priority task ready to run  */
              }
-             *err = OS_NO_ERR;
+             *perr = OS_ERR_NONE;
              pgrp_return          = (OS_FLAG_GRP *)0;      /* Event Flag Group has been deleted        */
              break;
 
         default:
              OS_EXIT_CRITICAL();
-             *err                 = OS_ERR_INVALID_OPT;
+             *perr                = OS_ERR_INVALID_OPT;
              pgrp_return          = pgrp;
              break;
     }
@@ -372,19 +380,20 @@ OS_FLAG_GRP  *OSFlagDel (OS_FLAG_GRP *pgrp, INT8U opt, INT8U *err)
 *              pname     is a pointer to an ASCII string that will receive the name of the event flag
 *                        group.  The string must be able to hold at least OS_FLAG_NAME_SIZE characters.
 *
-*              err       is a pointer to an error code that can contain one of the following values:
+*              perr      is a pointer to an error code that can contain one of the following values:
 *
-*                        OS_NO_ERR                  if the requested task is resumed
+*                        OS_ERR_NONE                if the requested task is resumed
 *                        OS_ERR_EVENT_TYPE          if 'pevent' is not pointing to an event flag group
 *                        OS_ERR_PNAME_NULL          You passed a NULL pointer for 'pname'
-*                        OS_FLAG_INVALID_PGRP       if you passed a NULL pointer for 'pgrp'
+*                        OS_ERR_FLAG_INVALID_PGRP   if you passed a NULL pointer for 'pgrp'
+*                        OS_ERR_NAME_GET_ISR        if you called this function from an ISR
 *
 * Returns    : The length of the string or 0 if the 'pgrp' is a NULL pointer.
 *********************************************************************************************************
 */
 
 #if OS_FLAG_NAME_SIZE > 1
-INT8U  OSFlagNameGet (OS_FLAG_GRP *pgrp, INT8U *pname, INT8U *err)
+INT8U  OSFlagNameGet (OS_FLAG_GRP *pgrp, INT8U *pname, INT8U *perr)
 {
     INT8U      len;
 #if OS_CRITICAL_METHOD == 3                      /* Allocate storage for CPU status register           */
@@ -393,31 +402,32 @@ INT8U  OSFlagNameGet (OS_FLAG_GRP *pgrp, INT8U *pname, INT8U *err)
 
 
 
-    OS_ENTER_CRITICAL();
 #if OS_ARG_CHK_EN > 0
-    if (err == (INT8U *)0) {                     /* Validate 'err'                                     */
-        OS_EXIT_CRITICAL();
+    if (perr == (INT8U *)0) {                    /* Validate 'perr'                                    */
         return (0);
     }
     if (pgrp == (OS_FLAG_GRP *)0) {              /* Is 'pgrp' a NULL pointer?                          */
-        OS_EXIT_CRITICAL();                      /* Yes                                                */
-        *err = OS_FLAG_INVALID_PGRP;
+        *perr = OS_ERR_FLAG_INVALID_PGRP;
         return (0);
     }
-    if (pname == (INT8U *)0) {                    /* Is 'pname' a NULL pointer?                         */
-        OS_EXIT_CRITICAL();                      /* Yes                                                */
-        *err = OS_ERR_PNAME_NULL;
+    if (pname == (INT8U *)0) {                   /* Is 'pname' a NULL pointer?                         */
+        *perr = OS_ERR_PNAME_NULL;
         return (0);
     }
 #endif
-    if (pgrp->OSFlagType != OS_EVENT_TYPE_FLAG) {
-        OS_EXIT_CRITICAL();
-        *err = OS_ERR_EVENT_TYPE;
+    if (OSIntNesting > 0) {                      /* See if trying to call from an ISR                  */
+        *perr = OS_ERR_NAME_GET_ISR;
         return (0);
     }
-    len  = OS_StrCopy(pname, pgrp->OSFlagName);  /* Copy name from OS_FLAG_GRP                         */
+    OS_ENTER_CRITICAL();
+    if (pgrp->OSFlagType != OS_EVENT_TYPE_FLAG) {
+        OS_EXIT_CRITICAL();
+        *perr = OS_ERR_EVENT_TYPE;
+        return (0);
+    }
+    len   = OS_StrCopy(pname, pgrp->OSFlagName); /* Copy name from OS_FLAG_GRP                         */
     OS_EXIT_CRITICAL();
-    *err = OS_NO_ERR;
+    *perr = OS_ERR_NONE;
     return (len);
 }
 #endif
@@ -434,19 +444,20 @@ INT8U  OSFlagNameGet (OS_FLAG_GRP *pgrp, INT8U *pname, INT8U *err)
 *              pname     is a pointer to an ASCII string that will be used as the name of the event flag
 *                        group.  The string must be able to hold at least OS_FLAG_NAME_SIZE characters.
 *
-*              err       is a pointer to an error code that can contain one of the following values:
+*              perr      is a pointer to an error code that can contain one of the following values:
 *
-*                        OS_NO_ERR                  if the requested task is resumed
+*                        OS_ERR_NONE                if the requested task is resumed
 *                        OS_ERR_EVENT_TYPE          if 'pevent' is not pointing to an event flag group
 *                        OS_ERR_PNAME_NULL          You passed a NULL pointer for 'pname'
-*                        OS_FLAG_INVALID_PGRP       if you passed a NULL pointer for 'pgrp'
+*                        OS_ERR_FLAG_INVALID_PGRP   if you passed a NULL pointer for 'pgrp'
+*                        OS_ERR_NAME_SET_ISR        if you called this function from an ISR
 *
 * Returns    : None
 *********************************************************************************************************
 */
 
 #if OS_FLAG_NAME_SIZE > 1
-void  OSFlagNameSet (OS_FLAG_GRP *pgrp, INT8U *pname, INT8U *err)
+void  OSFlagNameSet (OS_FLAG_GRP *pgrp, INT8U *pname, INT8U *perr)
 {
     INT8U      len;
 #if OS_CRITICAL_METHOD == 3                      /* Allocate storage for CPU status register           */
@@ -455,37 +466,38 @@ void  OSFlagNameSet (OS_FLAG_GRP *pgrp, INT8U *pname, INT8U *err)
 
 
 
-    OS_ENTER_CRITICAL();
 #if OS_ARG_CHK_EN > 0
-    if (err == (INT8U *)0) {                     /* Validate 'err'                                     */
-        OS_EXIT_CRITICAL();
+    if (perr == (INT8U *)0) {                    /* Validate 'perr'                                    */
         return;
     }
     if (pgrp == (OS_FLAG_GRP *)0) {              /* Is 'pgrp' a NULL pointer?                          */
-        OS_EXIT_CRITICAL();                      /* Yes                                                */
-        *err = OS_FLAG_INVALID_PGRP;
+        *perr = OS_ERR_FLAG_INVALID_PGRP;
         return;
     }
-    if (pname == (INT8U *)0) {                    /* Is 'pname' a NULL pointer?                         */
-        OS_EXIT_CRITICAL();                      /* Yes                                                */
-        *err = OS_ERR_PNAME_NULL;
+    if (pname == (INT8U *)0) {                   /* Is 'pname' a NULL pointer?                         */
+        *perr = OS_ERR_PNAME_NULL;
         return;
     }
 #endif
+    if (OSIntNesting > 0) {                      /* See if trying to call from an ISR                  */
+        *perr = OS_ERR_NAME_SET_ISR;
+        return;
+    }
+    OS_ENTER_CRITICAL();
     if (pgrp->OSFlagType != OS_EVENT_TYPE_FLAG) {
         OS_EXIT_CRITICAL();
-        *err = OS_ERR_EVENT_TYPE;
+        *perr = OS_ERR_EVENT_TYPE;
         return;
     }
     len = OS_StrLen(pname);                      /* Can we fit the string in the storage area?         */
     if (len > (OS_FLAG_NAME_SIZE - 1)) {         /* No                                                 */
         OS_EXIT_CRITICAL();
-        *err = OS_ERR_FLAG_NAME_TOO_LONG;
+        *perr = OS_ERR_FLAG_NAME_TOO_LONG;
         return;
     }
     (void)OS_StrCopy(pgrp->OSFlagName, pname);   /* Yes, copy name from OS_FLAG_GRP                    */
     OS_EXIT_CRITICAL();
-    *err = OS_NO_ERR;
+    *perr = OS_ERR_NONE;
     return;
 }
 #endif
@@ -523,15 +535,16 @@ void  OSFlagNameSet (OS_FLAG_GRP *pgrp, INT8U *pname, INT8U *err)
 *                            desired bit combination.  If you specify 0, however, your task will wait
 *                            forever at the specified event flag group or, until a message arrives.
 *
-*              err           is a pointer to an error code and can be:
-*                            OS_NO_ERR              The desired bits have been set within the specified
-*                                                   'timeout'.
-*                            OS_ERR_PEND_ISR        If you tried to PEND from an ISR
-*                            OS_FLAG_INVALID_PGRP   If 'pgrp' is a NULL pointer.
-*                            OS_ERR_EVENT_TYPE      You are not pointing to an event flag group
-*                            OS_TIMEOUT             The bit(s) have not been set in the specified
-*                                                   'timeout'.
-*                            OS_FLAG_ERR_WAIT_TYPE  You didn't specify a proper 'wait_type' argument.
+*              perr          is a pointer to an error code and can be:
+*                            OS_ERR_NONE               The desired bits have been set within the specified
+*                                                      'timeout'.
+*                            OS_ERR_PEND_ISR           If you tried to PEND from an ISR
+*                            OS_ERR_FLAG_INVALID_PGRP  If 'pgrp' is a NULL pointer.
+*                            OS_ERR_EVENT_TYPE         You are not pointing to an event flag group
+*                            OS_ERR_TIMEOUT            The bit(s) have not been set in the specified
+*                                                      'timeout'.
+*                            OS_ERR_PEND_ABORT         The wait on the flag was aborted.
+*                            OS_ERR_FLAG_WAIT_TYPE     You didn't specify a proper 'wait_type' argument.
 *
 * Returns    : The flags in the event flag group that made the task ready or, 0 if a timeout or an error
 *              occurred.
@@ -544,11 +557,12 @@ void  OSFlagNameSet (OS_FLAG_GRP *pgrp, INT8U *pname, INT8U *err)
 *********************************************************************************************************
 */
 
-OS_FLAGS  OSFlagPend (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U wait_type, INT16U timeout, INT8U *err)
+OS_FLAGS  OSFlagPend (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U wait_type, INT16U timeout, INT8U *perr)
 {
     OS_FLAG_NODE  node;
     OS_FLAGS      flags_rdy;
     INT8U         result;
+    INT8U         pend_stat;
     BOOLEAN       consume;
 #if OS_CRITICAL_METHOD == 3                                /* Allocate storage for CPU status register */
     OS_CPU_SR     cpu_sr = 0;
@@ -557,29 +571,29 @@ OS_FLAGS  OSFlagPend (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U wait_type, INT16U
 
 
 #if OS_ARG_CHK_EN > 0
-    if (err == (INT8U *)0) {                               /* Validate 'err'                           */
+    if (perr == (INT8U *)0) {                              /* Validate 'perr'                          */
         return ((OS_FLAGS)0);
     }
     if (pgrp == (OS_FLAG_GRP *)0) {                        /* Validate 'pgrp'                          */
-        *err = OS_FLAG_INVALID_PGRP;
+        *perr = OS_ERR_FLAG_INVALID_PGRP;
         return ((OS_FLAGS)0);
     }
 #endif
     if (OSIntNesting > 0) {                                /* See if called from ISR ...               */
-        *err = OS_ERR_PEND_ISR;                            /* ... can't PEND from an ISR               */
+        *perr = OS_ERR_PEND_ISR;                           /* ... can't PEND from an ISR               */
         return ((OS_FLAGS)0);
     }
     if (OSLockNesting > 0) {                               /* See if called with scheduler locked ...  */
-        *err = OS_ERR_PEND_LOCKED;                         /* ... can't PEND when locked               */
+        *perr = OS_ERR_PEND_LOCKED;                        /* ... can't PEND when locked               */
         return ((OS_FLAGS)0);
     }
     if (pgrp->OSFlagType != OS_EVENT_TYPE_FLAG) {          /* Validate event block type                */
-        *err = OS_ERR_EVENT_TYPE;
+        *perr = OS_ERR_EVENT_TYPE;
         return ((OS_FLAGS)0);
     }
     result = (INT8U)(wait_type & OS_FLAG_CONSUME);
     if (result != (INT8U)0) {                             /* See if we need to consume the flags      */
-        wait_type &= ~OS_FLAG_CONSUME;
+        wait_type &= ~(INT8U)OS_FLAG_CONSUME;
         consume    = OS_TRUE;
     } else {
         consume    = OS_FALSE;
@@ -595,7 +609,7 @@ OS_FLAGS  OSFlagPend (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U wait_type, INT16U
                  }
                  OSTCBCur->OSTCBFlagsRdy = flags_rdy;      /* Save flags that were ready               */
                  OS_EXIT_CRITICAL();                       /* Yes, condition met, return to caller     */
-                 *err                    = OS_NO_ERR;
+                 *perr                   = OS_ERR_NONE;
                  return (flags_rdy);
              } else {                                      /* Block task until events occur or timeout */
                  OS_FlagBlock(pgrp, &node, flags, wait_type, timeout);
@@ -611,7 +625,7 @@ OS_FLAGS  OSFlagPend (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U wait_type, INT16U
                  }
                  OSTCBCur->OSTCBFlagsRdy = flags_rdy;      /* Save flags that were ready               */
                  OS_EXIT_CRITICAL();                       /* Yes, condition met, return to caller     */
-                 *err                    = OS_NO_ERR;
+                 *perr                   = OS_ERR_NONE;
                  return (flags_rdy);
              } else {                                      /* Block task until events occur or timeout */
                  OS_FlagBlock(pgrp, &node, flags, wait_type, timeout);
@@ -628,7 +642,7 @@ OS_FLAGS  OSFlagPend (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U wait_type, INT16U
                  }
                  OSTCBCur->OSTCBFlagsRdy = flags_rdy;      /* Save flags that were ready               */
                  OS_EXIT_CRITICAL();                       /* Yes, condition met, return to caller     */
-                 *err                    = OS_NO_ERR;
+                 *perr                   = OS_ERR_NONE;
                  return (flags_rdy);
              } else {                                      /* Block task until events occur or timeout */
                  OS_FlagBlock(pgrp, &node, flags, wait_type, timeout);
@@ -644,7 +658,7 @@ OS_FLAGS  OSFlagPend (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U wait_type, INT16U
                  }
                  OSTCBCur->OSTCBFlagsRdy = flags_rdy;      /* Save flags that were ready               */
                  OS_EXIT_CRITICAL();                       /* Yes, condition met, return to caller     */
-                 *err                    = OS_NO_ERR;
+                 *perr                   = OS_ERR_NONE;
                  return (flags_rdy);
              } else {                                      /* Block task until events occur or timeout */
                  OS_FlagBlock(pgrp, &node, flags, wait_type, timeout);
@@ -656,18 +670,29 @@ OS_FLAGS  OSFlagPend (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U wait_type, INT16U
         default:
              OS_EXIT_CRITICAL();
              flags_rdy = (OS_FLAGS)0;
-             *err      = OS_FLAG_ERR_WAIT_TYPE;
+             *perr      = OS_ERR_FLAG_WAIT_TYPE;
              return (flags_rdy);
     }
+/*$PAGE*/
     OS_Sched();                                            /* Find next HPT ready to run               */
     OS_ENTER_CRITICAL();
-    if (OSTCBCur->OSTCBPendTO == OS_TRUE) {                /* Have we timed-out?                       */
-        OSTCBCur->OSTCBPendTO = OS_FALSE;
+    if (OSTCBCur->OSTCBStatPend != OS_STAT_PEND_OK) {      /* Have we timed-out or aborted?            */
+        pend_stat                = OSTCBCur->OSTCBStatPend;
+        OSTCBCur->OSTCBStatPend  = OS_STAT_PEND_OK;
         OS_FlagUnlink(&node);
-        OSTCBCur->OSTCBStat   = OS_STAT_RDY;               /* Yes, make task ready-to-run              */
+        OSTCBCur->OSTCBStat      = OS_STAT_RDY;            /* Yes, make task ready-to-run              */
         OS_EXIT_CRITICAL();
-        flags_rdy             = (OS_FLAGS)0;
-        *err                  = OS_TIMEOUT;                /* Indicate that we timed-out waiting       */
+        flags_rdy                = (OS_FLAGS)0;
+        switch (pend_stat) {
+            case OS_STAT_PEND_TO:
+            default:
+                 *perr = OS_ERR_TIMEOUT;                    /* Indicate that we timed-out waiting       */
+                 break;
+
+            case OS_STAT_PEND_ABORT:
+                 *perr = OS_ERR_PEND_ABORT;                 /* Indicate that we aborted   waiting       */
+                 break;
+        }
         return (flags_rdy);
     }
     flags_rdy = OSTCBCur->OSTCBFlagsRdy;
@@ -686,12 +711,12 @@ OS_FLAGS  OSFlagPend (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U wait_type, INT16U
 #endif
             default:
                  OS_EXIT_CRITICAL();
-                 *err = OS_FLAG_ERR_WAIT_TYPE;
+                 *perr = OS_ERR_FLAG_WAIT_TYPE;
                  return ((OS_FLAGS)0);
         }
     }
     OS_EXIT_CRITICAL();
-    *err = OS_NO_ERR;                                      /* Event(s) must have occurred              */
+    *perr = OS_ERR_NONE;                                   /* Event(s) must have occurred              */
     return (flags_rdy);
 }
 /*$PAGE*/
@@ -751,11 +776,11 @@ OS_FLAGS  OSFlagPendGetFlagsRdy (void)
 *                                set     (OS_FLAG_SET) or
 *                                cleared (OS_FLAG_CLR)
 *
-*              err           is a pointer to an error code and can be:
-*                            OS_NO_ERR              The call was successfull
-*                            OS_FLAG_INVALID_PGRP   You passed a NULL pointer
-*                            OS_ERR_EVENT_TYPE      You are not pointing to an event flag group
-*                            OS_FLAG_INVALID_OPT    You specified an invalid option
+*              perr          is a pointer to an error code and can be:
+*                            OS_ERR_NONE                The call was successfull
+*                            OS_ERR_FLAG_INVALID_PGRP   You passed a NULL pointer
+*                            OS_ERR_EVENT_TYPE          You are not pointing to an event flag group
+*                            OS_ERR_FLAG_INVALID_OPT    You specified an invalid option
 *
 * Returns    : the new value of the event flags bits that are still set.
 *
@@ -767,7 +792,7 @@ OS_FLAGS  OSFlagPendGetFlagsRdy (void)
 *                 the event flag group.
 *********************************************************************************************************
 */
-OS_FLAGS  OSFlagPost (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U opt, INT8U *err)
+OS_FLAGS  OSFlagPost (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U opt, INT8U *perr)
 {
     OS_FLAG_NODE *pnode;
     BOOLEAN       sched;
@@ -781,16 +806,16 @@ OS_FLAGS  OSFlagPost (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U opt, INT8U *err)
 
 
 #if OS_ARG_CHK_EN > 0
-    if (err == (INT8U *)0) {                         /* Validate 'err'                                 */
+    if (perr == (INT8U *)0) {                        /* Validate 'perr'                                */
         return ((OS_FLAGS)0);
     }
     if (pgrp == (OS_FLAG_GRP *)0) {                  /* Validate 'pgrp'                                */
-        *err = OS_FLAG_INVALID_PGRP;
+        *perr = OS_ERR_FLAG_INVALID_PGRP;
         return ((OS_FLAGS)0);
     }
 #endif
     if (pgrp->OSFlagType != OS_EVENT_TYPE_FLAG) {    /* Make sure we are pointing to an event flag grp */
-        *err = OS_ERR_EVENT_TYPE;
+        *perr = OS_ERR_EVENT_TYPE;
         return ((OS_FLAGS)0);
     }
 /*$PAGE*/
@@ -806,7 +831,7 @@ OS_FLAGS  OSFlagPost (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U opt, INT8U *err)
 
         default:
              OS_EXIT_CRITICAL();                     /* INVALID option                                 */
-             *err = OS_FLAG_INVALID_OPT;
+             *perr = OS_ERR_FLAG_INVALID_OPT;
              return ((OS_FLAGS)0);
     }
     sched = OS_FALSE;                                /* Indicate that we don't need rescheduling       */
@@ -856,7 +881,7 @@ OS_FLAGS  OSFlagPost (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U opt, INT8U *err)
 #endif
             default:
                  OS_EXIT_CRITICAL();
-                 *err = OS_FLAG_ERR_WAIT_TYPE;
+                 *perr = OS_ERR_FLAG_WAIT_TYPE;
                  return ((OS_FLAGS)0);
         }
         pnode = (OS_FLAG_NODE *)pnode->OSFlagNodeNext; /* Point to next task waiting for event flag(s) */
@@ -868,7 +893,7 @@ OS_FLAGS  OSFlagPost (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U opt, INT8U *err)
     OS_ENTER_CRITICAL();
     flags_cur = pgrp->OSFlagFlags;
     OS_EXIT_CRITICAL();
-    *err      = OS_NO_ERR;
+    *perr     = OS_ERR_NONE;
     return (flags_cur);
 }
 /*$PAGE*/
@@ -880,10 +905,10 @@ OS_FLAGS  OSFlagPost (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U opt, INT8U *err)
 *
 * Arguments  : pgrp         is a pointer to the desired event flag group.
 *
-*              err           is a pointer to an error code returned to the called:
-*                            OS_NO_ERR              The call was successfull
-*                            OS_FLAG_INVALID_PGRP   You passed a NULL pointer
-*                            OS_ERR_EVENT_TYPE      You are not pointing to an event flag group
+*              perr          is a pointer to an error code returned to the called:
+*                            OS_ERR_NONE                The call was successfull
+*                            OS_ERR_FLAG_INVALID_PGRP   You passed a NULL pointer
+*                            OS_ERR_EVENT_TYPE          You are not pointing to an event flag group
 *
 * Returns    : The current value of the event flag group.
 *
@@ -892,7 +917,7 @@ OS_FLAGS  OSFlagPost (OS_FLAG_GRP *pgrp, OS_FLAGS flags, INT8U opt, INT8U *err)
 */
 
 #if OS_FLAG_QUERY_EN > 0
-OS_FLAGS  OSFlagQuery (OS_FLAG_GRP *pgrp, INT8U *err)
+OS_FLAGS  OSFlagQuery (OS_FLAG_GRP *pgrp, INT8U *perr)
 {
     OS_FLAGS   flags;
 #if OS_CRITICAL_METHOD == 3                       /* Allocate storage for CPU status register          */
@@ -902,22 +927,22 @@ OS_FLAGS  OSFlagQuery (OS_FLAG_GRP *pgrp, INT8U *err)
 
 
 #if OS_ARG_CHK_EN > 0
-    if (err == (INT8U *)0) {                      /* Validate 'err'                                    */
+    if (perr == (INT8U *)0) {                     /* Validate 'perr'                                   */
         return ((OS_FLAGS)0);
     }
     if (pgrp == (OS_FLAG_GRP *)0) {               /* Validate 'pgrp'                                   */
-        *err = OS_FLAG_INVALID_PGRP;
+        *perr = OS_ERR_FLAG_INVALID_PGRP;
         return ((OS_FLAGS)0);
     }
 #endif
     if (pgrp->OSFlagType != OS_EVENT_TYPE_FLAG) { /* Validate event block type                         */
-        *err = OS_ERR_EVENT_TYPE;
+        *perr = OS_ERR_EVENT_TYPE;
         return ((OS_FLAGS)0);
     }
     OS_ENTER_CRITICAL();
     flags = pgrp->OSFlagFlags;
     OS_EXIT_CRITICAL();
-    *err = OS_NO_ERR;
+    *perr = OS_ERR_NONE;
     return (flags);                               /* Return the current value of the event flags       */
 }
 #endif
@@ -967,9 +992,8 @@ static  void  OS_FlagBlock (OS_FLAG_GRP *pgrp, OS_FLAG_NODE *pnode, OS_FLAGS fla
 
 
     OSTCBCur->OSTCBStat      |= OS_STAT_FLAG;
-    OSTCBCur->OSTCBPendTO     = OS_FALSE;
+    OSTCBCur->OSTCBStatPend   = OS_STAT_PEND_OK;
     OSTCBCur->OSTCBDly        = timeout;              /* Store timeout in task's TCB                   */
-    OSTCBCur->OSTCBEventPtr   = (OS_EVENT *)0;
 #if OS_TASK_DEL_EN > 0
     OSTCBCur->OSTCBFlagNode   = pnode;                /* TCB to link to node                           */
 #endif
@@ -1080,11 +1104,11 @@ static  BOOLEAN  OS_FlagTaskRdy (OS_FLAG_NODE *pnode, OS_FLAGS flags_rdy)
     BOOLEAN   sched;
 
 
-    ptcb                = (OS_TCB *)pnode->OSFlagNodeTCB;  /* Point to TCB of waiting task             */
-    ptcb->OSTCBDly      = 0;
-    ptcb->OSTCBFlagsRdy = flags_rdy;
-    ptcb->OSTCBStat    &= ~OS_STAT_FLAG;
-    ptcb->OSTCBPendTO   = OS_FALSE;
+    ptcb                 = (OS_TCB *)pnode->OSFlagNodeTCB; /* Point to TCB of waiting task             */
+    ptcb->OSTCBDly       = 0;
+    ptcb->OSTCBFlagsRdy  = flags_rdy;
+    ptcb->OSTCBStat     &= ~(INT8U)OS_STAT_FLAG;
+    ptcb->OSTCBStatPend  = OS_STAT_PEND_OK;
     if (ptcb->OSTCBStat == OS_STAT_RDY) {                  /* Task now ready?                          */
         OSRdyGrp               |= ptcb->OSTCBBitY;         /* Put task into ready list                 */
         OSRdyTbl[ptcb->OSTCBY] |= ptcb->OSTCBBitX;

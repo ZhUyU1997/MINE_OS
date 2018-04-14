@@ -1096,8 +1096,8 @@ static char _PlayerAI_NearToBorder(U16 Board[8][8], U16 Flags, int Player, int* 
 *
 *       MainTask
 */
-void MainTask(void);
-void MainTask(void) {
+void MainTask1(void);
+void MainTask1(void) {
 	GUI_Init();
 #if (GUI_SUPPORT_MOUSE & GUI_SUPPORT_CURSOR)
 	GUI_CURSOR_Select(&GUI_CursorArrowM);

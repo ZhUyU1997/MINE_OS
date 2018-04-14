@@ -4,12 +4,20 @@
 *                                          The Real-Time Kernel
 *                                  MUTUAL EXCLUSION SEMAPHORE MANAGEMENT
 *
-*                          (c) Copyright 1992-2006, Jean J. Labrosse, Weston, FL
+*                          (c) Copyright 1992-2007, Jean J. Labrosse, Weston, FL
 *                                           All Rights Reserved
 *
 * File    : OS_MUTEX.C
 * By      : Jean J. Labrosse
-* Version : V2.83
+* Version : V2.85
+*
+* LICENSING TERMS:
+* ---------------
+*   uC/OS-II is provided in source form for FREE evaluation, for educational use or for peaceful research.  
+* If you plan on using  uC/OS-II  in a commercial product you need to contact Micriµm to properly license 
+* its use in your product. We provide ALL the source code for your convenience and to help you experience 
+* uC/OS-II.   The fact that the  source is provided does  NOT  mean that you can use it without  paying a 
+* licensing fee.
 *********************************************************************************************************
 */
 
@@ -25,10 +33,10 @@
 *********************************************************************************************************
 */
 
-#define  OS_MUTEX_KEEP_LOWER_8   0x00FFu
-#define  OS_MUTEX_KEEP_UPPER_8   0xFF00u
+#define  OS_MUTEX_KEEP_LOWER_8   (INT16U)0x00FFu
+#define  OS_MUTEX_KEEP_UPPER_8   (INT16U)0xFF00u
 
-#define  OS_MUTEX_AVAILABLE      0x00FFu
+#define  OS_MUTEX_AVAILABLE      (INT16U)0x00FFu
 
 /*
 *********************************************************************************************************
@@ -49,10 +57,10 @@ static  void  OSMutex_RdyAtPrio(OS_TCB *ptcb, INT8U prio);
 *
 * Arguments  : pevent     is a pointer to the event control block
 *
-*              err        is a pointer to an error code which will be returned to your application:
-*                            OS_NO_ERR          if the call was successful.
-*                            OS_ERR_EVENT_TYPE  if 'pevent' is not a pointer to a mutex
-*                            OS_ERR_PEVENT_NULL 'pevent' is a NULL pointer
+*              perr       is a pointer to an error code which will be returned to your application:
+*                            OS_ERR_NONE         if the call was successful.
+*                            OS_ERR_EVENT_TYPE   if 'pevent' is not a pointer to a mutex
+*                            OS_ERR_PEVENT_NULL  'pevent' is a NULL pointer
 *                            OS_ERR_PEND_ISR     if you called this function from an ISR
 *                            OS_ERR_PIP_LOWER    If the priority of the task that owns the Mutex is
 *                                                HIGHER (i.e. a lower number) than the PIP.  This error
@@ -62,10 +70,10 @@ static  void  OSMutex_RdyAtPrio(OS_TCB *ptcb, INT8U prio);
 *                                                detected when the Mutex is created because we don't know
 *                                                what tasks will be using the Mutex.
 *
-* Returns    : == 1       if the resource is available, the mutual exclusion semaphore is acquired
-*              == 0       a) if the resource is not available
-*                         b) you didn't pass a pointer to a mutual exclusion semaphore
-*                         c) you called this function from an ISR
+* Returns    : == OS_TRUE    if the resource is available, the mutual exclusion semaphore is acquired
+*              == OS_FALSE   a) if the resource is not available
+*                            b) you didn't pass a pointer to a mutual exclusion semaphore
+*                            c) you called this function from an ISR
 *
 * Warning(s) : This function CANNOT be called from an ISR because mutual exclusion semaphores are
 *              intended to be used by tasks only.
@@ -73,7 +81,7 @@ static  void  OSMutex_RdyAtPrio(OS_TCB *ptcb, INT8U prio);
 */
 
 #if OS_MUTEX_ACCEPT_EN > 0
-INT8U  OSMutexAccept (OS_EVENT *pevent, INT8U *err)
+BOOLEAN  OSMutexAccept (OS_EVENT *pevent, INT8U *perr)
 {
     INT8U      pip;                                    /* Priority Inheritance Priority (PIP)          */
 #if OS_CRITICAL_METHOD == 3                            /* Allocate storage for CPU status register     */
@@ -83,21 +91,21 @@ INT8U  OSMutexAccept (OS_EVENT *pevent, INT8U *err)
 
 
 #if OS_ARG_CHK_EN > 0
-    if (err == (INT8U *)0) {                           /* Validate 'err'                               */
-        return (0);
+    if (perr == (INT8U *)0) {                          /* Validate 'perr'                              */
+        return (OS_FALSE);
     }
     if (pevent == (OS_EVENT *)0) {                     /* Validate 'pevent'                            */
-        *err = OS_ERR_PEVENT_NULL;
-        return (0);
+        *perr = OS_ERR_PEVENT_NULL;
+        return (OS_FALSE);
     }
 #endif
     if (pevent->OSEventType != OS_EVENT_TYPE_MUTEX) {  /* Validate event block type                    */
-        *err = OS_ERR_EVENT_TYPE;
-        return (0);
+        *perr = OS_ERR_EVENT_TYPE;
+        return (OS_FALSE);
     }
     if (OSIntNesting > 0) {                            /* Make sure it's not called from an ISR        */
-        *err = OS_ERR_PEND_ISR;
-        return (0);
+        *perr = OS_ERR_PEND_ISR;
+        return (OS_FALSE);
     }
     OS_ENTER_CRITICAL();                               /* Get value (0 or 1) of Mutex                  */
     pip = (INT8U)(pevent->OSEventCnt >> 8);            /* Get PIP from mutex                           */
@@ -107,16 +115,16 @@ INT8U  OSMutexAccept (OS_EVENT *pevent, INT8U *err)
         pevent->OSEventPtr  = (void *)OSTCBCur;        /*      Link TCB of task owning Mutex           */
         if (OSTCBCur->OSTCBPrio <= pip) {              /*      PIP 'must' have a SMALLER prio ...      */
             OS_EXIT_CRITICAL();                        /*      ... than current task!                  */
-            *err  = OS_ERR_PIP_LOWER;
+            *perr = OS_ERR_PIP_LOWER;
         } else {
             OS_EXIT_CRITICAL();
-            *err  = OS_NO_ERR;
+            *perr = OS_ERR_NONE;
         }
-        return (1);
+        return (OS_TRUE);
     }
     OS_EXIT_CRITICAL();
-    *err = OS_NO_ERR;
-    return (0);
+    *perr = OS_ERR_NONE;
+    return (OS_FALSE);
 }
 #endif
 
@@ -134,13 +142,13 @@ INT8U  OSMutexAccept (OS_EVENT *pevent, INT8U *err)
 *                            a priority that is LOWER in value than ANY of the tasks competing for the
 *                            mutex.
 *
-*              err           is a pointer to an error code which will be returned to your application:
-*                               OS_NO_ERR           if the call was successful.
+*              perr          is a pointer to an error code which will be returned to your application:
+*                               OS_ERR_NONE         if the call was successful.
 *                               OS_ERR_CREATE_ISR   if you attempted to create a MUTEX from an ISR
-*                               OS_PRIO_EXIST       if a task at the priority inheritance priority
+*                               OS_ERR_PRIO_EXIST   if a task at the priority inheritance priority
 *                                                   already exist.
 *                               OS_ERR_PEVENT_NULL  No more event control blocks available.
-*                               OS_PRIO_INVALID     if the priority you specify is higher that the
+*                               OS_ERR_PRIO_INVALID if the priority you specify is higher that the
 *                                                   maximum allowed (i.e. > OS_LOWEST_PRIO)
 *
 * Returns    : != (void *)0  is a pointer to the event control clock (OS_EVENT) associated with the
@@ -155,7 +163,7 @@ INT8U  OSMutexAccept (OS_EVENT *pevent, INT8U *err)
 *********************************************************************************************************
 */
 
-OS_EVENT  *OSMutexCreate (INT8U prio, INT8U *err)
+OS_EVENT  *OSMutexCreate (INT8U prio, INT8U *perr)
 {
     OS_EVENT  *pevent;
 #if OS_CRITICAL_METHOD == 3                                /* Allocate storage for CPU status register */
@@ -165,30 +173,30 @@ OS_EVENT  *OSMutexCreate (INT8U prio, INT8U *err)
 
 
 #if OS_ARG_CHK_EN > 0
-    if (err == (INT8U *)0) {                               /* Validate 'err'                           */
+    if (perr == (INT8U *)0) {                              /* Validate 'perr'                          */
         return ((OS_EVENT *)0);
     }
     if (prio >= OS_LOWEST_PRIO) {                          /* Validate PIP                             */
-        *err = OS_PRIO_INVALID;
+        *perr = OS_ERR_PRIO_INVALID;
         return ((OS_EVENT *)0);
     }
 #endif
     if (OSIntNesting > 0) {                                /* See if called from ISR ...               */
-        *err = OS_ERR_CREATE_ISR;                          /* ... can't CREATE mutex from an ISR       */
+        *perr = OS_ERR_CREATE_ISR;                         /* ... can't CREATE mutex from an ISR       */
         return ((OS_EVENT *)0);
     }
     OS_ENTER_CRITICAL();
     if (OSTCBPrioTbl[prio] != (OS_TCB *)0) {               /* Mutex priority must not already exist    */
         OS_EXIT_CRITICAL();                                /* Task already exist at priority ...       */
-        *err = OS_PRIO_EXIST;                              /* ... inheritance priority                 */
+        *perr = OS_ERR_PRIO_EXIST;                         /* ... inheritance priority                 */
         return ((OS_EVENT *)0);
     }
-    OSTCBPrioTbl[prio] = (OS_TCB *)1;                      /* Reserve the table entry                  */
+    OSTCBPrioTbl[prio] = OS_TCB_RESERVED;                  /* Reserve the table entry                  */
     pevent             = OSEventFreeList;                  /* Get next free event control block        */
     if (pevent == (OS_EVENT *)0) {                         /* See if an ECB was available              */
         OSTCBPrioTbl[prio] = (OS_TCB *)0;                  /* No, Release the table entry              */
         OS_EXIT_CRITICAL();
-        *err               = OS_ERR_PEVENT_NULL;           /* No more event control blocks             */
+        *perr              = OS_ERR_PEVENT_NULL;           /* No more event control blocks             */
         return (pevent);
     }
     OSEventFreeList        = (OS_EVENT *)OSEventFreeList->OSEventPtr;   /* Adjust the free list        */
@@ -201,7 +209,7 @@ OS_EVENT  *OSMutexCreate (INT8U prio, INT8U *err)
     pevent->OSEventName[1] = OS_ASCII_NUL;
 #endif
     OS_EventWaitListInit(pevent);
-    *err                   = OS_NO_ERR;
+    *perr                  = OS_ERR_NONE;
     return (pevent);
 }
 
@@ -219,8 +227,8 @@ OS_EVENT  *OSMutexCreate (INT8U prio, INT8U *err)
 *                            opt == OS_DEL_ALWAYS    Deletes the mutex even if tasks are waiting.
 *                                                    In this case, all the tasks pending will be readied.
 *
-*              err           is a pointer to an error code that can contain one of the following values:
-*                            OS_NO_ERR               The call was successful and the mutex was deleted
+*              perr          is a pointer to an error code that can contain one of the following values:
+*                            OS_ERR_NONE             The call was successful and the mutex was deleted
 *                            OS_ERR_DEL_ISR          If you attempted to delete the MUTEX from an ISR
 *                            OS_ERR_INVALID_OPT      An invalid option was specified
 *                            OS_ERR_TASK_WAITING     One or more tasks were waiting on the mutex
@@ -247,7 +255,7 @@ OS_EVENT  *OSMutexCreate (INT8U prio, INT8U *err)
 */
 
 #if OS_MUTEX_DEL_EN
-OS_EVENT  *OSMutexDel (OS_EVENT *pevent, INT8U opt, INT8U *err)
+OS_EVENT  *OSMutexDel (OS_EVENT *pevent, INT8U opt, INT8U *perr)
 {
     BOOLEAN    tasks_waiting;
     OS_EVENT  *pevent_return;
@@ -261,20 +269,20 @@ OS_EVENT  *OSMutexDel (OS_EVENT *pevent, INT8U opt, INT8U *err)
 
 
 #if OS_ARG_CHK_EN > 0
-    if (err == (INT8U *)0) {                               /* Validate 'err'                           */
-        return ((OS_EVENT *)0);
+    if (perr == (INT8U *)0) {                              /* Validate 'perr'                          */
+        return (pevent);
     }
     if (pevent == (OS_EVENT *)0) {                         /* Validate 'pevent'                        */
-        *err = OS_ERR_PEVENT_NULL;
-        return ((OS_EVENT *)0);
+        *perr = OS_ERR_PEVENT_NULL;
+        return (pevent);
     }
 #endif
     if (pevent->OSEventType != OS_EVENT_TYPE_MUTEX) {      /* Validate event block type                */
-        *err = OS_ERR_EVENT_TYPE;
+        *perr = OS_ERR_EVENT_TYPE;
         return (pevent);
     }
     if (OSIntNesting > 0) {                                /* See if called from ISR ...               */
-        *err = OS_ERR_DEL_ISR;                             /* ... can't DELETE from an ISR             */
+        *perr = OS_ERR_DEL_ISR;                             /* ... can't DELETE from an ISR             */
         return (pevent);
     }
     OS_ENTER_CRITICAL();
@@ -297,11 +305,11 @@ OS_EVENT  *OSMutexDel (OS_EVENT *pevent, INT8U opt, INT8U *err)
                  pevent->OSEventCnt  = 0;
                  OSEventFreeList     = pevent;
                  OS_EXIT_CRITICAL();
-                 *err                = OS_NO_ERR;
+                 *perr               = OS_ERR_NONE;
                  pevent_return       = (OS_EVENT *)0;      /* Mutex has been deleted                   */
              } else {
                  OS_EXIT_CRITICAL();
-                 *err                = OS_ERR_TASK_WAITING;
+                 *perr               = OS_ERR_TASK_WAITING;
                  pevent_return       = pevent;
              }
              break;
@@ -316,7 +324,7 @@ OS_EVENT  *OSMutexDel (OS_EVENT *pevent, INT8U opt, INT8U *err)
                  }
              }
              while (pevent->OSEventGrp != 0) {             /* Ready ALL tasks waiting for mutex        */
-                 (void)OS_EventTaskRdy(pevent, (void *)0, OS_STAT_MUTEX);
+                 (void)OS_EventTaskRdy(pevent, (void *)0, OS_STAT_MUTEX, OS_STAT_PEND_OK);
              }
 #if OS_EVENT_NAME_SIZE > 1
              pevent->OSEventName[0] = '?';                 /* Unknown name                             */
@@ -332,13 +340,13 @@ OS_EVENT  *OSMutexDel (OS_EVENT *pevent, INT8U opt, INT8U *err)
              if (tasks_waiting == OS_TRUE) {               /* Reschedule only if task(s) were waiting  */
                  OS_Sched();                               /* Find highest priority task ready to run  */
              }
-             *err          = OS_NO_ERR;
+             *perr         = OS_ERR_NONE;
              pevent_return = (OS_EVENT *)0;                /* Mutex has been deleted                   */
              break;
 
         default:
              OS_EXIT_CRITICAL();
-             *err          = OS_ERR_INVALID_OPT;
+             *perr         = OS_ERR_INVALID_OPT;
              pevent_return = pevent;
              break;
     }
@@ -361,10 +369,11 @@ OS_EVENT  *OSMutexDel (OS_EVENT *pevent, INT8U opt, INT8U *err)
 *                            If you specify 0, however, your task will wait forever at the specified
 *                            mutex or, until the resource becomes available.
 *
-*              err           is a pointer to where an error message will be deposited.  Possible error
+*              perr          is a pointer to where an error message will be deposited.  Possible error
 *                            messages are:
-*                               OS_NO_ERR          The call was successful and your task owns the mutex
-*                               OS_TIMEOUT         The mutex was not available within the specified time.
+*                               OS_ERR_NONE        The call was successful and your task owns the mutex
+*                               OS_ERR_TIMEOUT     The mutex was not available within the specified 'timeout'.
+*                               OS_ERR_PEND_ABORT  The wait on the mutex was aborted.
 *                               OS_ERR_EVENT_TYPE  If you didn't pass a pointer to a mutex
 *                               OS_ERR_PEVENT_NULL 'pevent' is a NULL pointer
 *                               OS_ERR_PEND_ISR    If you called this function from an ISR and the result
@@ -376,6 +385,7 @@ OS_EVENT  *OSMutexDel (OS_EVENT *pevent, INT8U opt, INT8U *err)
 *                                                  Unfortunately, this is something that could not be
 *                                                  detected when the Mutex is created because we don't know
 *                                                  what tasks will be using the Mutex.
+*                               OS_ERR_PEND_LOCKED If you called this function when the scheduler is locked
 *
 * Returns    : none
 *
@@ -384,7 +394,7 @@ OS_EVENT  *OSMutexDel (OS_EVENT *pevent, INT8U opt, INT8U *err)
 *              2) You MUST NOT change the priority of the task that owns the mutex
 *********************************************************************************************************
 */
-void  OSMutexPend (OS_EVENT *pevent, INT16U timeout, INT8U *err)
+void  OSMutexPend (OS_EVENT *pevent, INT16U timeout, INT8U *perr)
 {
     INT8U      pip;                                        /* Priority Inheritance Priority (PIP)      */
     INT8U      mprio;                                      /* Mutex owner priority                     */
@@ -392,6 +402,7 @@ void  OSMutexPend (OS_EVENT *pevent, INT16U timeout, INT8U *err)
     OS_TCB    *ptcb;
     OS_EVENT  *pevent2;
     INT8U      y;
+    INT8U      pend_stat;
 #if OS_CRITICAL_METHOD == 3                                /* Allocate storage for CPU status register */
     OS_CPU_SR  cpu_sr = 0;
 #endif
@@ -399,24 +410,24 @@ void  OSMutexPend (OS_EVENT *pevent, INT16U timeout, INT8U *err)
 
 
 #if OS_ARG_CHK_EN > 0
-    if (err == (INT8U *)0) {                               /* Validate 'err'                           */
+    if (perr == (INT8U *)0) {                              /* Validate 'perr'                          */
         return;
     }
     if (pevent == (OS_EVENT *)0) {                         /* Validate 'pevent'                        */
-        *err = OS_ERR_PEVENT_NULL;
+        *perr = OS_ERR_PEVENT_NULL;
         return;
     }
 #endif
     if (pevent->OSEventType != OS_EVENT_TYPE_MUTEX) {      /* Validate event block type                */
-        *err = OS_ERR_EVENT_TYPE;
+        *perr = OS_ERR_EVENT_TYPE;
         return;
     }
     if (OSIntNesting > 0) {                                /* See if called from ISR ...               */
-        *err = OS_ERR_PEND_ISR;                            /* ... can't PEND from an ISR               */
+        *perr = OS_ERR_PEND_ISR;                           /* ... can't PEND from an ISR               */
         return;
     }
     if (OSLockNesting > 0) {                               /* See if called with scheduler locked ...  */
-        *err = OS_ERR_PEND_LOCKED;                         /* ... can't PEND when locked               */
+        *perr = OS_ERR_PEND_LOCKED;                        /* ... can't PEND when locked               */
         return;
     }
     OS_ENTER_CRITICAL();                                
@@ -428,10 +439,10 @@ void  OSMutexPend (OS_EVENT *pevent, INT16U timeout, INT8U *err)
         pevent->OSEventPtr  = (void *)OSTCBCur;            /*      Point to owning task's OS_TCB       */
         if (OSTCBCur->OSTCBPrio <= pip) {                  /*      PIP 'must' have a SMALLER prio ...  */
             OS_EXIT_CRITICAL();                            /*      ... than current task!              */
-            *err  = OS_ERR_PIP_LOWER;
+            *perr = OS_ERR_PIP_LOWER;
         } else {
             OS_EXIT_CRITICAL();
-            *err  = OS_NO_ERR;
+            *perr = OS_ERR_NONE;
         }
         return;
     }
@@ -472,7 +483,7 @@ void  OSMutexPend (OS_EVENT *pevent, INT16U timeout, INT8U *err)
                 OSRdyTbl[ptcb->OSTCBY] |= ptcb->OSTCBBitX;
             } else {
                 pevent2 = ptcb->OSTCBEventPtr;
-                if (pevent2 != (OS_EVENT *)0) {            /* Remove from event wait list              */
+                if (pevent2 != (OS_EVENT *)0) {            /* Add to event wait list                   */
                     pevent2->OSEventGrp               |= ptcb->OSTCBBitY;
                     pevent2->OSEventTbl[ptcb->OSTCBY] |= ptcb->OSTCBBitX;
                 }
@@ -480,22 +491,32 @@ void  OSMutexPend (OS_EVENT *pevent, INT16U timeout, INT8U *err)
             OSTCBPrioTbl[pip] = ptcb;
         }
     }
-    OSTCBCur->OSTCBStat   |= OS_STAT_MUTEX;           /* Mutex not available, pend current task        */
-    OSTCBCur->OSTCBPendTO  = OS_FALSE;
-    OSTCBCur->OSTCBDly     = timeout;                 /* Store timeout in current task's TCB           */
+    OSTCBCur->OSTCBStat     |= OS_STAT_MUTEX;         /* Mutex not available, pend current task        */
+    OSTCBCur->OSTCBStatPend  = OS_STAT_PEND_OK;
+    OSTCBCur->OSTCBDly       = timeout;               /* Store timeout in current task's TCB           */
     OS_EventTaskWait(pevent);                         /* Suspend task until event or timeout occurs    */
     OS_EXIT_CRITICAL();
     OS_Sched();                                       /* Find next highest priority task ready         */
     OS_ENTER_CRITICAL();
-    if (OSTCBCur->OSTCBPendTO == OS_TRUE) {           /* See if we timed out during the pend           */
-        OS_EventTO(pevent);
+    if (OSTCBCur->OSTCBStatPend != OS_STAT_PEND_OK) { /* See if we timed out during the pend           */
+        pend_stat = OSTCBCur->OSTCBStatPend;
+        OS_EventTOAbort(pevent);
         OS_EXIT_CRITICAL();
-        *err = OS_TIMEOUT;                            /* Indicate that we didn't get mutex within TO   */
+        switch (pend_stat) {
+            case OS_STAT_PEND_TO:
+            default:
+                 *perr = OS_ERR_TIMEOUT;              /* Indicate that we didn't get mutex within TO   */
+                 break;
+
+            case OS_STAT_PEND_ABORT:
+                 *perr = OS_ERR_PEND_ABORT;           /* Indicate that we aborted getting mutex        */
+                 break;
+        }
         return;
     }
     OSTCBCur->OSTCBEventPtr = (OS_EVENT *)0;
     OS_EXIT_CRITICAL();
-    *err = OS_NO_ERR;
+    *perr = OS_ERR_NONE;
 }
 /*$PAGE*/
 /*
@@ -507,7 +528,7 @@ void  OSMutexPend (OS_EVENT *pevent, INT16U timeout, INT8U *err)
 * Arguments  : pevent              is a pointer to the event control block associated with the desired
 *                                  mutex.
 *
-* Returns    : OS_NO_ERR               The call was successful and the mutex was signaled.
+* Returns    : OS_ERR_NONE             The call was successful and the mutex was signaled.
 *              OS_ERR_EVENT_TYPE       If you didn't pass a pointer to a mutex
 *              OS_ERR_PEVENT_NULL      'pevent' is a NULL pointer
 *              OS_ERR_POST_ISR         Attempted to post from an ISR (not valid for MUTEXes)
@@ -553,10 +574,10 @@ INT8U  OSMutexPost (OS_EVENT *pevent)
     if (OSTCBCur->OSTCBPrio == pip) {                 /* Did we have to raise current task's priority? */
         OSMutex_RdyAtPrio(OSTCBCur, prio);            /* Restore the task's original priority          */
     }
-    OSTCBPrioTbl[pip] = (OS_TCB *)1;                  /* Reserve table entry                           */
+    OSTCBPrioTbl[pip] = OS_TCB_RESERVED;              /* Reserve table entry                           */
     if (pevent->OSEventGrp != 0) {                    /* Any task waiting for the mutex?               */
                                                       /* Yes, Make HPT waiting for mutex ready         */
-        prio                = OS_EventTaskRdy(pevent, (void *)0, OS_STAT_MUTEX);
+        prio                = OS_EventTaskRdy(pevent, (void *)0, OS_STAT_MUTEX, OS_STAT_PEND_OK);
         pevent->OSEventCnt &= OS_MUTEX_KEEP_UPPER_8;  /*      Save priority of mutex's new owner       */
         pevent->OSEventCnt |= prio;
         pevent->OSEventPtr  = OSTCBPrioTbl[prio];     /*      Link to new mutex owner's OS_TCB         */
@@ -567,13 +588,13 @@ INT8U  OSMutexPost (OS_EVENT *pevent)
         } else {
             OS_EXIT_CRITICAL();
             OS_Sched();                               /*      Find highest priority task ready to run  */
-            return (OS_NO_ERR);
+            return (OS_ERR_NONE);
         }
     }
     pevent->OSEventCnt |= OS_MUTEX_AVAILABLE;         /* No,  Mutex is now available                   */
     pevent->OSEventPtr  = (void *)0;
     OS_EXIT_CRITICAL();
-    return (OS_NO_ERR);
+    return (OS_ERR_NONE);
 }
 /*$PAGE*/
 /*
@@ -586,7 +607,7 @@ INT8U  OSMutexPost (OS_EVENT *pevent)
 *
 *              p_mutex_data    is a pointer to a structure that will contain information about the mutex
 *
-* Returns    : OS_NO_ERR            The call was successful and the message was sent
+* Returns    : OS_ERR_NONE          The call was successful and the message was sent
 *              OS_ERR_QUERY_ISR     If you called this function from an ISR
 *              OS_ERR_PEVENT_NULL   If 'pevent'       is a NULL pointer
 *              OS_ERR_PDATA_NULL    If 'p_mutex_data' is a NULL pointer
@@ -629,9 +650,9 @@ INT8U  OSMutexQuery (OS_EVENT *pevent, OS_MUTEX_DATA *p_mutex_data)
     p_mutex_data->OSMutexPIP  = (INT8U)(pevent->OSEventCnt >> 8);
     p_mutex_data->OSOwnerPrio = (INT8U)(pevent->OSEventCnt & OS_MUTEX_KEEP_LOWER_8);
     if (p_mutex_data->OSOwnerPrio == 0xFF) {
-        p_mutex_data->OSValue = 1;
+        p_mutex_data->OSValue = OS_TRUE;
     } else {
-        p_mutex_data->OSValue = 0;
+        p_mutex_data->OSValue = OS_FALSE;
     }
     p_mutex_data->OSEventGrp  = pevent->OSEventGrp;        /* Copy wait list                           */
     psrc                      = &pevent->OSEventTbl[0];
@@ -640,7 +661,7 @@ INT8U  OSMutexQuery (OS_EVENT *pevent, OS_MUTEX_DATA *p_mutex_data)
         *pdest++ = *psrc++;
     }
     OS_EXIT_CRITICAL();
-    return (OS_NO_ERR);
+    return (OS_ERR_NONE);
 }
 #endif                                                     /* OS_MUTEX_QUERY_EN                        */
 
@@ -671,13 +692,13 @@ static  void  OSMutex_RdyAtPrio (OS_TCB *ptcb, INT8U prio)
     }
     ptcb->OSTCBPrio         = prio;
 #if OS_LOWEST_PRIO <= 63
-    ptcb->OSTCBY            = (INT8U)((prio >> 3) & 0x07);
-    ptcb->OSTCBX            = (INT8U) (prio & 0x07);
+    ptcb->OSTCBY            = (INT8U)((prio >> (INT8U)3) & (INT8U)0x07);
+    ptcb->OSTCBX            = (INT8U) (prio & (INT8U)0x07);
     ptcb->OSTCBBitY         = (INT8U)(1 << ptcb->OSTCBY);
     ptcb->OSTCBBitX         = (INT8U)(1 << ptcb->OSTCBX);
 #else
-    ptcb->OSTCBY            = (INT8U)((prio >> 4) & 0x0F);
-    ptcb->OSTCBX            = (INT8U) (prio & 0x0F);
+    ptcb->OSTCBY            = (INT8U)((prio >> (INT8U)4) & (INT8U)0x0F);
+    ptcb->OSTCBX            = (INT8U) (prio & (INT8U)0x0F);
     ptcb->OSTCBBitY         = (INT16U)(1 << ptcb->OSTCBY);
     ptcb->OSTCBBitX         = (INT16U)(1 << ptcb->OSTCBX);
 #endif

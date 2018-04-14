@@ -209,8 +209,16 @@ void OSTCBInitHook (OS_TCB *ptcb)
 * Note(s)    : 1) Interrupts may or may not be ENABLED during this call.
 *********************************************************************************************************
 */
+
+volatile unsigned int system_tick_num = 0;
+unsigned int sys_now(void)
+{
+    return system_tick_num;
+}
+
 void OSTimeTickHook (void)
 {
+	system_tick_num += (1000/OS_TICKS_PER_SEC);
 }
 
 

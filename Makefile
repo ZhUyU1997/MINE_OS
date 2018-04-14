@@ -21,7 +21,7 @@ INCLUDEDIR 		:= $(TOPDIR)/include
 WFLAGS			:= -w
 CFLAGS 			:= -std=gnu99 $(WFLAGS) -O2 -fno-builtin -march=armv4t -mtune=arm920t -nostdlib -nostdinc -msoft-float -fsigned-char
 CFLAGS   		+= -I$(INCLUDEDIR) -I$(TOPDIR)/ucos2/SOURCE -iquote$(TOPDIR)/ucos2/PORT \
-				-iquote$(TOPDIR)/ucos2/API -iquote$(TOPDIR)/uCGUI/Config \
+				-iquote$(TOPDIR)/uCGUI/Config \
 				-iquote$(TOPDIR)/uCGUI/GUI/Core -iquote$(TOPDIR)/uCGUI/GUI/WM -iquote$(TOPDIR)/uCGUI/GUI/widget \
 				-I$(TOPDIR)/lwip/include -iquote$(TOPDIR)/lwip/include/arch \
 				-iquote$(TOPDIR)/lwip/include/ipv4
