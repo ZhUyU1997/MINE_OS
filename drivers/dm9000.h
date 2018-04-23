@@ -33,10 +33,11 @@ typedef struct dm_rxpkt {
 #define RXPKT_Q_SIZE 100  //max 10 entries means at least 8 memblks(for context of pkt) need to create
 
 extern char     dm9000a_eth_addr[6];
-extern OS_EVENT *rxpkt_q;  //ECB for Queue 
-extern void     *rxpkt_q_tbl[RXPKT_Q_SIZE];
+//extern OS_EVENT *rxpkt_q;  //ECB for Queue 
+//extern void     *rxpkt_q_tbl[RXPKT_Q_SIZE];
 
 extern OS_MEM   *rxpkt_q_mem;
 extern char     rxpkt_pool[ RXPKT_Q_SIZE * sizeof(DM_RXPKT) ];
 
+void dm9000_input(void  *q_msg);
 #endif

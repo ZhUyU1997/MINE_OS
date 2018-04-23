@@ -1,121 +1,69 @@
 #include <sys/types.h>
 #include <assert.h>
 #include "command.h"
-
-#include "GUI.H"
-#include "math.h"
-#include "GUI_Protected.h"
-#include "WM.h"
-#include "Dialog.h"
-#include "LISTBOX.h"
-#include "EDIT.h"
-#include "SLIDER.h"
-#include "FRAMEWIN.h"
+#include "ff.h"
 
 #define CMD_MAX_CMD_NUM 50
 #define CMD_MAXARGS 10
 extern cmd_table *ct_list[];
-CMD_DEFINE(drawline, "drawline", "drawline") {
-	if (argc != 5)
+
+DIR  dirobj;               // current work dir fof cd
+void FileAttr(BYTE attr,char *p)
+{
+    if( (attr&0x10)==0x10 ){
+        sprintf(p,"%5s","dir :");
+    }else{
+        sprintf(p,"%5s","file:");
+    }
+	
+}
+CMD_DEFINE(ls, "ls", "ls") {
+	char p_cmd[16], p_arg[32];
+	char *p_path, *pfname;
+	FRESULT read_res, dir_res;
+	DIR  tempdir;
+	FILINFO tempfinfo;
+	char fdesp[8];
+	FRESULT res1 = f_opendir(&dirobj,"/");
+	
+	if(res1==FR_OK)
+	if (argc == 1) {
+		p_path = "/";
+	} else if(argc == 2){
+		p_path = argv[1];
+	}else{
 		return 1;
-	int x0 = simple_strtoul(argv[1], NULL, 10);
-	int y0 = simple_strtoul(argv[2], NULL, 10);
-	int x1 = simple_strtoul(argv[3], NULL, 10);
-	int y1 = simple_strtoul(argv[4], NULL, 10);
-	GUI_DrawLine(x0, y0, x1, y1); //ÈùûÊäóÈîØÈΩøÂáΩÊï∞ÊòæÁ§∫Ê≠£Â∏∏
-	return 0;
-}
-CMD_DEFINE(setcolor, "setcolor", "setcolor") {
-	if (argc != 2)
+	}
+	dir_res = f_opendir(&tempdir, p_path);
+	if (dir_res != FR_OK) {
+		printf("f_opendir failed,path:%s does not exist\n\r", p_path);
 		return 1;
-	GUI_SetColor(simple_strtoul(argv[1], NULL, 16));
+	}
+	for (;;) {
+		read_res = f_readdir(&tempdir, &tempfinfo);
+		if ((read_res != FR_OK) || (tempfinfo.fname[0] == 0)) {
+			break;
+		} else if (tempfinfo.fname[0] == '.') {
+			continue;
+		} else {
+			pfname = tempfinfo.fname;
+			FileAttr((tempfinfo.fattrib), fdesp);
+			printf("%s   %-15s  %8dbyte\n\r", fdesp, pfname, tempfinfo.fsize);
+		}
+	}
 	return 0;
 }
-CMD_DEFINE(drawstr, "drawstr", "drawstr") {
-	if (argc != 2)
-		return 1;
-	GUI_DispString(argv[1]);
-	return 0;
-}
-CMD_DEFINE(drawcc, "drawcc", "drawcc") {
-	for (int i = 10; i < 50; i++)
-		GUI_DrawCircle(120, 60, i);
-	return 0;
-}
-CMD_DEFINE(drawfc, "drawfc", "drawfc") {
-	if (argc != 4)
-		return 1;
-	int x0 = simple_strtoul(argv[1], NULL, 10);
-	int y0 = simple_strtoul(argv[2], NULL, 10);
-	int r = simple_strtoul(argv[3], NULL, 10);
-	GUI_FillCircle(x0, y0, r);
-	return 0;
-}
-CMD_DEFINE(drawe, "drawe", "drawe") {
-	if (argc != 5)
-		return 1;
-	int x0 = simple_strtoul(argv[1], NULL, 10);
-	int y0 = simple_strtoul(argv[2], NULL, 10);
-	int rx = simple_strtoul(argv[3], NULL, 10);
-	int ry = simple_strtoul(argv[4], NULL, 10);
-	GUI_DrawEllipse(x0, y0, rx, ry);
-	return 0;
-}
-CMD_DEFINE(drawfe, "drawe", "drawe") {
-	if (argc != 5)
-		return 1;
-	int x0 = simple_strtoul(argv[1], NULL, 10);
-	int y0 = simple_strtoul(argv[2], NULL, 10);
-	int rx = simple_strtoul(argv[3], NULL, 10);
-	int ry = simple_strtoul(argv[4], NULL, 10);
-	GUI_FillEllipse(x0, y0, rx, ry);
-	return 0;
-}
-CMD_DEFINE(maintask, "maintask", "maintask") {
-	MainTask();
-	return 0;
-}
-CMD_DEFINE(initts, "initts", "initts") {
-	init_Ts();
-	return 0;
-}
-CMD_DEFINE(closets, "closets", "closets") {
-	close_Ts();
-	return 0;
-}
-CMD_DEFINE(enable_irq, "enable_irq", "enable_irq") {
-	enable_irq();
-	return 0;
-}
-CMD_DEFINE(disable_irq, "disable_irq", "disable_irq") {
-	disable_irq();
-	return 0;
-}
+
 CMD_DEFINE(help, "help", "help") {
-	printf("cmd name:%s\n", ct->name);
-	for (int i = 0; i < argc; i++) {
-		printf("argv[%d]:%s\n", i, argv[i]);
-	}
 	for (int i = 0; ct_list[i] != NULL; i++) {
-		printf("%s:\t-%s\n", ct_list[i]->name, ct_list[i]->usage);
+		printf("%-20s:\t-%s\n", ct_list[i]->name, ct_list[i]->usage);
 	}
 	return 0;
 }
-#define CMD_P(x) & ct_##x
+#define CMD_ENTRY(x) & ct_##x
 cmd_table *ct_list[] = {
-	CMD_P(help),
-	CMD_P(drawline),
-	CMD_P(setcolor),
-	CMD_P(drawstr),
-	CMD_P(drawcc),
-	CMD_P(drawfc),
-	CMD_P(drawe),
-	CMD_P(drawfe),
-	CMD_P(maintask),
-	CMD_P(initts),
-	CMD_P(closets),
-	CMD_P(enable_irq),
-	CMD_P(disable_irq),
+	CMD_ENTRY(help),
+	CMD_ENTRY(ls),
 	NULL
 };
 cmd_table *search_cmd(char *name) {
@@ -126,7 +74,7 @@ cmd_table *search_cmd(char *name) {
 	}
 	return NULL;
 }
-int run_command (char *cmd, int flag) {
+int run_command(char *cmd, int flag) {
 	char *str = cmd;
 	char *argv[CMD_MAXARGS + 1] = {0};	/* NULL terminated	*/
 	int argc = 0;
@@ -161,7 +109,7 @@ static int get_str(char *buf, int len) {
 	int i;
 	for (i = 0; i < len - 1; i++) {
 		char c = getc();
-		//xshell ÂõûËΩ¶‰∫ßÁîü\r\n
+		//xshell ªÿ≥µ≤˙…˙\r\n
 		if (c == '\r') {
 			getc();
 
@@ -173,10 +121,10 @@ static int get_str(char *buf, int len) {
 				break;
 			}
 		} else if (c == '\b') {
-			if (i > 0) { //ÂâçÈù¢ÊúâÂ≠óÁ¨¶
+			if (i > 0) { //«∞√Ê”–◊÷∑˚
 				putc(c);
 				i = i - 2;
-			} else { //ÂâçÈù¢Ê≤°ÊúâÂ≠óÁ¨¶
+			} else { //«∞√Ê√ª”–◊÷∑˚
 				i = i - 1;
 			}
 		} else {
@@ -192,6 +140,6 @@ int cmd_loop() {
 		printf("\nOS>");
 		if (get_str(buf, 100) == -1)
 			continue;
-		run_command (buf, 1);
+		run_command(buf, 1);
 	}
 }

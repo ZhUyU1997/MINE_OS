@@ -49,7 +49,7 @@ Purpose     : Configures abilities, fonts etc.
 #define APPLICATION_EN   !(GUIDEMO_EN) /* AppTask */ 
 
 
-#define GUI_DEBUG_LEVEL GUI_DEBUG_LEVEL_LOG_ALL
+//#define GUI_DEBUG_LEVEL GUI_DEBUG_LEVEL_LOG_ALL
 #endif  /* Avoid multiple inclusion */
 
 

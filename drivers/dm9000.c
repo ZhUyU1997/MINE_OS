@@ -279,8 +279,8 @@ GLOBAL VARIABLES DEFINE
 char dm9000a_eth_addr[6] = {0x00,0x0c,0x29,0x4d,0xe4,0xf4};
 void *NetRxPackets[10];
 //ECB for Queue
-OS_EVENT *rxpkt_q; 
-void     *rxpkt_q_tbl[RXPKT_Q_SIZE];
+//OS_EVENT *rxpkt_q; 
+//void     *rxpkt_q_tbl[RXPKT_Q_SIZE];
 
 OS_MEM   *rxpkt_q_mem;
 char     rxpkt_pool[ RXPKT_Q_SIZE * sizeof(DM_RXPKT) ];
@@ -617,6 +617,7 @@ U8 DM9000A_Rx(void) {
 
 	for (;;) { /* There is _at least_ 1 package in the fifo, read them all */
 
+		//TODO:用于内存不足导致读取失败时，恢复读取之前的状态
 		//DM9000A_ReadReg(DM9000A_MRRH);
 		//DM9000A_ReadReg(DM9000A_MRRL);
 
@@ -662,9 +663,10 @@ U8 DM9000A_Rx(void) {
 			//printf("pack received\n");
 			//NetReceive(NetRxPackets[0],RxLen);//+++++passing packet to upper layer
 			rx_memblk->length = RxLen;
-			err = OSQPost(rxpkt_q, (void *)rx_memblk);
+			dm9000_input(rx_memblk);
+			OSMemPut(rxpkt_q_mem, rx_memblk);
+			//err = OSQPost(rxpkt_q, (void *)rx_memblk);
 		}
-
 	}
 
 	return 0;
@@ -768,10 +770,10 @@ void DM9000A_Init(void) {
 		DM9000A_DEBUG(DM9000A_DEBUG_COM, "ERROR:dm9000a mem init failed\n");
 	}
 
-	rxpkt_q = OSQCreate( (void *)rxpkt_q_tbl , RXPKT_Q_SIZE);
-	if ( !rxpkt_q ) {
-		DM9000A_DEBUG(DM9000A_DEBUG_COM, "ERROR:dm9000a queue init failed\n");
-	}
+	//rxpkt_q = OSQCreate( (void *)rxpkt_q_tbl , RXPKT_Q_SIZE);
+	//if ( !rxpkt_q ) {
+	//	DM9000A_DEBUG(DM9000A_DEBUG_COM, "ERROR:dm9000a queue init failed\n");
+	//}
 
 }
 

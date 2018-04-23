@@ -18,10 +18,6 @@ void disable_watch_dog(void)
     WTCON = 0;  // 关闭WATCHDOG很简单，往这个寄存器写0即可
 }
 
-#define FCLK        200000000
-#define HCLK        100000000
-#define PCLK        50000000
-#define S3C2410_MPLL_200MHZ     ((0x5c<<12)|(0x04<<4)|(0x00))
 #define S3C2440_MPLL_200MHZ     ((0x5c<<12)|(0x01<<4)|(0x02))
 #define S3C2440_MPLL_400MHZ     ((0x5c<<12)|(0x01<<4)|(0x01))
 #define S3C2440_UPLL_48MHZ      ((0x38<<12)|(0x02<<4)|(0x02))
@@ -29,28 +25,29 @@ void disable_watch_dog(void)
 /*
  * 对于MPLLCON寄存器，[19:12]为MDIV，[9:4]为PDIV，[1:0]为SDIV
  * 有如下计算公式：
- *  S3C2410: MPLL(FCLK) = (m * Fin)/(p * 2^s)
- *  S3C2410: MPLL(FCLK) = (2 * m * Fin)/(p * 2^s)
- *  其中: m = MDIV + 8, p = PDIV + 2, s = SDIV
+ * S3C2440: UPLL(UCLK) = (m * Fin)/(p * 2^s)
+ * S3C2440: MPLL(FCLK) = (2 * m * Fin)/(p * 2^s)
+ * 其中: m = MDIV + 8, p = PDIV + 2, s = SDIV
  * 对于本开发板，Fin = 12MHz
  * 设置CLKDIVN，令分频比为：FCLK:HCLK:PCLK=1:4:8，
  * FCLK=400MHz,HCLK=100MHz,PCLK=50MHz
  */
 void clock_init(void)
 {
-    // LOCKTIME = 0x00ffffff;   // 使用默认值即可
-    //CLKDIVN  = 0x03;            // FCLK:HCLK:PCLK=1:2:4, HDIVN=1,PDIVN=1
-	CLKDIVN  = 0x05;            // FCLK:HCLK:PCLK=1:4:8
-    /* 如果HDIVN非0，CPU的总线模式应该从“fast bus mode”变为“asynchronous bus mode” */
+    //LOCKTIME = 0x00ffffff;	// 使用默认值即可
+    //CLKDIVN  = 0x03;			// FCLK:HCLK:PCLK=1:2:4, HDIVN=1,PDIVN=1
+	CLKDIVN  = 0x05;			// FCLK:HCLK:PCLK=1:4:8
+
+    //如果HDIVN非0，CPU的总线模式应该从“fast bus mode”变为“asynchronous bus mode”
 	__asm__ volatile (
 		"mrc    p15, 0, r1, c1, c0, 0\n"        /* 读出控制寄存器 */ 
 		"orr    r1, r1, #0xc0000000\n"          /* 设置为“asynchronous bus mode” */
 		"mcr    p15, 0, r1, c1, c0, 0\n"        /* 写入控制寄存器 */
 		:::"r1"
     );
-	/*
-	当你同时设置 MPLL 和 UPLL 的值时，你必须首先设置 UPLL 值再设置 MPLL 值。（大约需要 7 个 NOP 的间隔）
-	*/
+
+	//当你同时设置 MPLL 和 UPLL 的值时，你必须首先设置 UPLL 值再设置 MPLL 值。（大约需要 7 个 NOP 的间隔）
+
 	//UPLLCON = S3C2440_UPLL_48MHZ;
 	
 	MPLLCON = S3C2440_MPLL_400MHZ;  /* 现在，FCLK=400MHz,HCLK=100MHz,PCLK=50MHz */    

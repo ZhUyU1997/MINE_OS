@@ -57,7 +57,7 @@ OS_STK  LWIP_STK_AREA[LWIP_MAX_TASKS][LWIP_STK_SIZE];
 void sys_init()
 {
   //currently do nothing
-  printf("[Sys_arch] init ok");
+  printf("[Sys_arch] init ok\n");
 }
 
 err_t sys_sem_new(sys_sem_t *sem, u8_t count)
@@ -452,6 +452,10 @@ sys_thread_t sys_thread_new(const char *name, lwip_thread_fn thread, void *arg, 
   return prio;
 }
 
+unsigned int sys_now(void)
+{
+    return OSTimeGet()*(1000/OS_TICKS_PER_SEC);
+}
 #endif
 
 

@@ -24,7 +24,9 @@ CFLAGS   		+= -I$(INCLUDEDIR) -I$(TOPDIR)/ucos2/SOURCE -iquote$(TOPDIR)/ucos2/PO
 				-iquote$(TOPDIR)/uCGUI/Config \
 				-iquote$(TOPDIR)/uCGUI/GUI/Core -iquote$(TOPDIR)/uCGUI/GUI/WM -iquote$(TOPDIR)/uCGUI/GUI/widget \
 				-I$(TOPDIR)/lwip/include -iquote$(TOPDIR)/lwip/include/arch \
-				-iquote$(TOPDIR)/lwip/include/ipv4
+				-iquote$(TOPDIR)/lwip/include/ipv4 \
+				-I$(TOPDIR)/drivers \
+				-I$(TOPDIR)/fs/Fatfs_f8a
 
 LDFLAGS			:= -L$(shell dirname `$(CC) $(CFLAGS) -print-libgcc-file-name`) -L$(TOPDIR)/uCGUI
 LDFLAGS			+= -lucgui -lgcc
@@ -43,6 +45,7 @@ obj-y += mm/
 obj-y += ucos2/
 obj-y += uCGUI/
 obj-y += lwip/
+obj-y += fs/
 
 .PHONY : all dis download clean distclean
 all:

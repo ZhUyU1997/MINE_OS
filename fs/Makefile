@@ -1,0 +1,1 @@
+obj-y += Fatfs_f8a/

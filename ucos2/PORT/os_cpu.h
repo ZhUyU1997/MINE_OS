@@ -36,13 +36,14 @@ typedef double         FP64;                    /* 双精度浮点数（64位长度）     
 typedef INT32U         OS_STK;                  /* 堆栈是32位宽度                           */
 
 /* 以下是兼容UC/OS V1.XX的数据类型，在uC/OS-II没有使用  */
+/*
 #define BYTE           INT8S
 #define UBYTE          INT8U
 #define WORD           INT16S
 #define UWORD          INT16U
 #define LONG           INT32S
 #define ULONG          INT32U
-
+*/
                               
 typedef INT32U   		OS_CPU_SR;                /* Define size of CPU status register (PSR = 32 bits) */
 
