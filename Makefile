@@ -46,6 +46,7 @@ obj-y += ucos2/
 obj-y += uCGUI/
 obj-y += lwip/
 obj-y += fs/
+obj-y += sound/
 
 .PHONY : all dis download clean distclean
 all:

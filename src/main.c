@@ -53,19 +53,21 @@ extern void  ethernetif_input(struct netif *netif, void *ptr);
 
 
 FATFS fatworkarea;         // Work area (file system object) for logical drives 
-FIL filobj,fsrc1;          // current file objects 
-DIR  dirobj;               // current work dir fof cd 
-BYTE contextbuf[4096];     // file context buffer for cat
 
-
+void show_bss_info(){
+	extern char __bss_start, __bss_end;
+    unsigned int size = &__bss_end - &__bss_start;
+	printf("BSS大小为：%uKB, %uMB\n", size/1024, size/1024/1024);
+}
 int main() {
+	irq_init();
 	uart0_init();
-	init_irq();
-
+	//uart0_interrupt_init();
 	printf("\n\n************************************************\n");
+	show_bss_info();
 	printf("初始化MMU...\n");
 	mmu_init();
-
+	enable_irq();
 	printf("初始化TIMER...\n");
 	timer_init();
 
@@ -80,6 +82,7 @@ int main() {
 	SDI_init();
 	printf("初始化fatfs...\n");
 	f_mount(0,&fatworkarea);
+	cmd_loop();
 	/*TEST_SD();*/
 	printf("初始化uC/OS...\n");
 	OSInit ();
@@ -129,6 +132,7 @@ void OSMainTask(void *pdata) {
 		//printf("OSMainTask Delay\n");
 		OSTimeDly(OS_TICKS_PER_SEC);
 	}
+	//InfoNES_Main();
 	init_Ts();
 	MainTask1();
 	while (1);

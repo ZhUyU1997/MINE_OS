@@ -1,8 +1,12 @@
+#include <global_config.h>
+#include <assert.h>
 #define MMU_FULL_ACCESS     (3)			/* 访问权限 */
-#define MMU_DOMAIN          (0)			/* 属于哪个域 */
+#define MMU_DOMAIN(x)       (x)			/* 属于哪个域 */
 #define MMU_SPECIAL         (1)			/* 必须是1 */
-#define MMU_CACHEABLE       (1)			/* cacheable */
-#define MMU_BUFFERABLE      (1)			/* bufferable */
+#define MMU_CACHE_ENABLE    (1)			/* cache enable */
+#define MMU_BUFFER_ENABLE   (1)			/* buffer enable */
+#define MMU_CACHE_DISABLE   (0)			/* cache disable */
+#define MMU_BUFFER_DISABLE  (0)			/* buffer disable */
 
 #define MMU_COARSE_PAGE     (1)         /* 表示这是粗页描述符 */
 #define MMU_SECTION         (2)         /* 表示这是段描述符 */
@@ -25,16 +29,6 @@
 #define MMU_SMALL_PAGE_SIZE	(1<<MMU_SMALL_PAGE_SHIFT)
 #define MMU_TINY_PAGE_SIZE 	(1<<MMU_TINY_PAGE_SHIFT)
 
-
-#define MUM_TLB_BASE_ADDR	0x30000000
-
-#define PHYSICAL_MEM_ADDR	0x30000000
-#define VIRTUAL_MEM_ADDR	0x30000000
-#define MEM_MAP_SIZE		0x4000000
-
-#define PHYSICAL_IO_ADDR	0x48000000
-#define VIRTUAL_IO_ADDR		0x48000000
-#define IO_MAP_SIZE			0x18000000
 
 typedef struct COARSE_PAGE {
 	unsigned int type: 2;
@@ -98,122 +92,82 @@ typedef struct TINY_PAGE {
 	unsigned int base_address: 22;
 } TINY_PAGE;
 
+void __set_SECTION(unsigned long virtuladdr, unsigned long physicaladdr, unsigned int AP, unsigned int domain, unsigned int C, unsigned int B){
+	volatile SECTION *mmu_tlb_base = (volatile SECTION *)MUM_TLB_BASE_ADDR;
+	SECTION sec = {
+		.base_address = physicaladdr >> MMU_SECTION_SHIFT,
+		.blank0 = 0,
+		.AP = AP,
+		.blank1 = 0,
+		.domain = domain,
+		.special = 1,
+		.C = C,
+		.B = B,
+		.type = MMU_SECTION,
+	};
+	mmu_tlb_base[virtuladdr >> 20] = sec;
+}
+void set_SECTION(unsigned long virtuladdr, unsigned long physicaladdr, unsigned long count, unsigned int AP, unsigned int domain, unsigned int C, unsigned int B){
+	unsigned long vaddr = virtuladdr, paddr = physicaladdr;
+	assert((vaddr&0xfffff)==0);
+	assert((paddr&0xfffff)==0);
+	assert(count>0);
+	for (int i = 0; i < count; i++) {
+		assert(vaddr>=virtuladdr);
+		assert(paddr>=physicaladdr);
+		__set_SECTION(vaddr, paddr, AP, domain, C, B);
+		vaddr += MMU_SECTION_SIZE;
+		paddr += MMU_SECTION_SIZE;
+	}
+}
+struct mem_map{
+	unsigned long virtuladdr;
+	unsigned long physicaladdr;
+	unsigned long size;
+	unsigned int AP;
+	unsigned int domain;
+	unsigned int C;
+	unsigned int B;
+};
 /*
  * 设置页表
  */
 void create_page_table(void) {
 	unsigned long virtuladdr, physicaladdr;
-	volatile SECTION *mmu_tlb_base = (volatile SECTION *)MUM_TLB_BASE_ADDR;
-
 	/*
 	 * Steppingstone的起始物理地址为0，第一部分程序的起始运行地址也是0，
 	 * 为了在开启MMU后仍能运行第一部分的程序，
 	 * 将0～1M的虚拟地址映射到同样的物理地址
 	 */
 	printf("正在创建Steppingstone页表项\n");
-	{
-		virtuladdr = 0;
-		physicaladdr = 0;
-		SECTION sec = {
-			.base_address = physicaladdr >> MMU_SECTION_SHIFT,
-			.blank0 = 0,
-			.AP = MMU_FULL_ACCESS,
-			.blank1 = 0,
-			.domain = MMU_DOMAIN,
-			.special = 1,
-			.C = MMU_CACHEABLE,
-			.B = MMU_BUFFERABLE,
-			.type = MMU_SECTION,
-		};
-		
-		mmu_tlb_base[virtuladdr >> 20] = sec;
-	}
-
+	set_SECTION(0, 0, 1, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
 
 	/*
 	 * 0x48000000是特殊寄存器的起始物理地址，
 	 * 将虚拟地址0x48000000～0x5FFFFFFF映射到物理地址0x48000000～0x5FFFFFFF上，
 	 */
 	printf("正在创建特殊寄存器页表项\n");
-	for (virtuladdr = VIRTUAL_IO_ADDR, physicaladdr = PHYSICAL_IO_ADDR;
-			virtuladdr < VIRTUAL_IO_ADDR + IO_MAP_SIZE;
-			virtuladdr += MMU_SECTION_SIZE, physicaladdr += MMU_SECTION_SIZE) {
-
-		SECTION sec = {
-			.base_address = physicaladdr >> MMU_SECTION_SHIFT,
-			.blank0 = 0,
-			.AP = MMU_FULL_ACCESS,
-			.blank1 = 0,
-			.domain = MMU_DOMAIN,
-			.special = 1,
-			.C = 0,//关闭cache
-			.B = 0,//关闭buff
-			.type = MMU_SECTION,
-		};
-		mmu_tlb_base[virtuladdr >> 20] = sec;
-	}
-
+	set_SECTION(VIRTUAL_IO_ADDR, VIRTUAL_IO_ADDR, IO_MAP_SIZE >> MMU_SECTION_SHIFT, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_DISABLE, MMU_BUFFER_DISABLE);
 	/*
 	 * SDRAM的物理地址范围是0x30000000～0x33FFFFFF，
 	 * 将虚拟地址0x30000000～0x33FFFFFF映射到物理地址0x30000000～0x33FFFFFF上，
 	 * 总共64M，涉及64个段描述符
 	 */
 	printf("正在创建SDRAM页表项\n");
-	for (virtuladdr = VIRTUAL_MEM_ADDR, physicaladdr = PHYSICAL_MEM_ADDR;
-			virtuladdr < VIRTUAL_MEM_ADDR + MEM_MAP_SIZE;
-			virtuladdr += MMU_SECTION_SIZE, physicaladdr += MMU_SECTION_SIZE) {
-	
-		SECTION sec = {
-			.base_address = physicaladdr >> MMU_SECTION_SHIFT,
-			.blank0 = 0,
-			.AP = MMU_FULL_ACCESS,
-			.blank1 = 0,
-			.domain = MMU_DOMAIN,
-			.special = 1,
-			.C = MMU_CACHEABLE,
-			.B = MMU_BUFFERABLE,
-			.type = MMU_SECTION,
-		};
-		mmu_tlb_base[virtuladdr >> 20] = sec;
-	}
-	{
-		//关闭framebuffer的cache
-		SECTION sec = {
-			.base_address = 0x33c00000 >> MMU_SECTION_SHIFT,
-			.blank0 = 0,
-			.AP = MMU_FULL_ACCESS,
-			.blank1 = 0,
-			.domain = MMU_DOMAIN,
-			.special = 1,
-			.C = 0,
-			.B = 0,
-			.type = MMU_SECTION,
-		};
-		mmu_tlb_base[0x33c00000 >> 20] = sec;
-	}
-	{
-		//设置BANK4
-		SECTION sec = {
-			.base_address = 0x20000000 >> MMU_SECTION_SHIFT,
-			.blank0 = 0,
-			.AP = MMU_FULL_ACCESS,
-			.blank1 = 0,
-			.domain = MMU_DOMAIN,
-			.special = 1,
-			.C = 0,
-			.B = 0,
-			.type = MMU_SECTION,
-		};
-		mmu_tlb_base[0x20000000 >> 20] = sec;
-		
-	}
+	set_SECTION(VIRTUAL_MEM_ADDR, PHYSICAL_MEM_ADDR, MEM_MAP_SIZE >> MMU_SECTION_SHIFT, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
+	//关闭framebuffer的cache
+	//set_SECTION(0x33c00000, 0x33c00000, 1, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_DISABLE, MMU_BUFFER_DISABLE);
+	//设置BANK4
+	//TODO:不完全
+	set_SECTION(0x20000000, 0x20000000, 1, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_DISABLE, MMU_BUFFER_DISABLE);
+	set_SECTION(0xfff00000, 0x33f00000, 1, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
 }
 
 /*
  * 启动MMU
  */
 void mmu_init(void) {
-	unsigned long ttb = 0x30000000;
+	unsigned long ttb = (unsigned long)MUM_TLB_BASE_ADDR;;
 	//创建页表
 	printf("正在创建页表\n");
 	create_page_table();
@@ -230,8 +184,8 @@ void mmu_init(void) {
 
 	    "mvn    r0, #0\n"
 	    "mcr    p15, 0, r0, c3, c0, 0\n"    /* 域访问控制寄存器设为0xFFFFFFFF，
-											 * 不进行权限检查
-											 */
+			* 不进行权限检查
+			*/
 	    /*
 	     * 对于控制寄存器，先读出其值，在这基础上修改感兴趣的位，
 	     * 然后再写入
@@ -255,13 +209,14 @@ void mmu_init(void) {
 	     * 先清除不需要的位，往下若需要则重新设置它们
 	     */
 	    /* .RVI ..RS B... .CAM */
-	    "bic    r0, r0, #0x3000\n"          /* ..11 .... .... .... 清除V、I位 */
+	    "bic    r0, r0, #0x1000\n"          /* ...1 .... .... .... 清除I位 */
 	    "bic    r0, r0, #0x0300\n"          /* .... ..11 .... .... 清除R、S位 */
 	    "bic    r0, r0, #0x0087\n"          /* .... .... 1... .111 清除B/C/A/M */
 
 	    /*
 	     * 设置需要的位
 	     */
+		"orr    r0, r0, #0x2000\n"          /* ..1. .... .... .... 高地址中断向量表 */
 	    "orr    r0, r0, #0x0002\n"          /* .... .... .... ..1. 开启对齐检查 */
 	    "orr    r0, r0, #0x0004\n"          /* .... .... .... .1.. 开启DCaches */
 	    "orr    r0, r0, #0x1000\n"          /* ...1 .... .... .... 开启ICaches */

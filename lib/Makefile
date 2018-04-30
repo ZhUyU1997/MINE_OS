@@ -22,3 +22,5 @@ obj-y += errno.o
 obj-y += xdscale.o
 obj-y += xdunscal.o
 obj-y += xdnorm.o
+obj-y += exp.o
+obj-y += xexp.o

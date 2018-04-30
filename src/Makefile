@@ -4,3 +4,4 @@ obj-y += except.o
 obj-y += interrupt.o
 obj-y += command.o
 obj-y += app/
+obj-y += InfoNES/

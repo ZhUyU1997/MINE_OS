@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <assert.h>
 #include <sys/types.h>
 #include <s3c24xx.h>
 #include "sdi.h"
@@ -678,17 +679,16 @@ U8 SDI_init(void) {
 	if (i == 500) {
 		printf("Initialize fail\nNo Card assertion\n");
 		return 0;
-
 	} else {
-		printf("SD is ready\n");
+		//printf("SD is ready\n");
 	}
 
 	if (CMD2(SDCard.cCardCID)) {
-		printf("CID\n");
-		printf("MID = %d\n", SDCard.cCardCID[0]);
-		printf("OLD = %d\n", (SDCard.cCardCID[1] * 0X100) + SDCard.cCardCID[2]);
-		printf("生产厂家:%s\n", (SDCard.cCardCID + 3));
-		printf("生产日期:20%d,%d\n", ((SDCard.cCardCID[13] & 0x0f) << 4) + ((SDCard.cCardCID[14] & 0xf0) >> 4), (SDCard.cCardCID[14] & 0x0f));
+		//printf("CID\n");
+		//printf("MID = %d\n", SDCard.cCardCID[0]);
+		//printf("OLD = %d\n", (SDCard.cCardCID[1] * 0X100) + SDCard.cCardCID[2]);
+		//printf("生产厂家:%s\n", (SDCard.cCardCID + 3));
+		//printf("生产日期:20%d,%d\n", ((SDCard.cCardCID[13] & 0x0f) << 4) + ((SDCard.cCardCID[14] & 0xf0) >> 4), (SDCard.cCardCID[14] & 0x0f));
 	} else {
 		printf("Read Card CID is fail!\n");
 		return 0;
@@ -699,7 +699,7 @@ U8 SDI_init(void) {
 		if (CMD3(1, &SDCard.iCardRCA)) {
 			SDCard.iCardRCA = 1;
 			rSDIPRE = (PCLK / MMCCLK) - 1;
-			printf("MMC Frequency is %dHz\n", (PCLK / (rSDIPRE + 1)));
+			//printf("MMC Frequency is %dHz\n", (PCLK / (rSDIPRE + 1)));
 		} else {
 			printf("Read MMC RCA is fail!\n");
 			return 0;
@@ -707,8 +707,8 @@ U8 SDI_init(void) {
 	} else {
 		if (CMD3(0, &SDCard.iCardRCA)) {
 			rSDIPRE = PCLK / (SDCLK) - 1;	// Normal clock=25MHz
-			printf("SD Card RCA = 0x%x\n", SDCard.iCardRCA);
-			printf("SD Frequency is %dHz\n", (PCLK / (rSDIPRE + 1)));
+			//printf("SD Card RCA = 0x%x\n", SDCard.iCardRCA);
+			//printf("SD Frequency is %dHz\n", (PCLK / (rSDIPRE + 1)));
 		} else {
 			printf("Read SD RCA is fail!\n");
 			return 0;
@@ -720,11 +720,11 @@ U8 SDI_init(void) {
 		SDCard.lCardSize = (((SDCard.lCardCSD[1] & 0x0000003f) << 16) + ((SDCard.lCardCSD[2] & 0xffff0000) >> 16) + 1) * 512;
 		SDCard.lSectorSize = ((SDCard.lCardCSD[2] >> 6) & 0x0000007f) + 1;
 
-		printf("Read Card CSD OK!\n");
-		printf("0x%08x\n", SDCard.lCardCSD[0]);
-		printf("0x%08x\n", SDCard.lCardCSD[1]);
-		printf("0x%08x\n", SDCard.lCardCSD[2]);
-		printf("0x%08x\n", SDCard.lCardCSD[3]);
+		//printf("Read Card CSD OK!\n");
+		//printf("0x%08x\n", SDCard.lCardCSD[0]);
+		//printf("0x%08x\n", SDCard.lCardCSD[1]);
+		//printf("0x%08x\n", SDCard.lCardCSD[2]);
+		//printf("0x%08x\n", SDCard.lCardCSD[3]);
 		printf("卡容量为:%dGB,%dMB\n", SDCard.lCardSize / 1024 / 1024, SDCard.lCardSize / 1024);
 	} else {
 		printf("Read Card CSD Fail!\n");
@@ -733,7 +733,7 @@ U8 SDI_init(void) {
 
 
 	if (Card_sel_desel(1, SDCard.iCardRCA)) {
-		printf("Card sel desel OK!\n");
+		//printf("Card sel desel OK!\n");
 	} else {
 		printf("Card sel desel fail!\n");
 		return 0;
@@ -741,14 +741,14 @@ U8 SDI_init(void) {
 
 	//cmd13
 	//iTemp = CMD13(SDCard.iCardRCA);
-	if (iTemp) {
-		printf("Card Status is 0x%x\n", iTemp);
-	}
+	//if (iTemp) {
+	//	printf("Card Status is 0x%x\n", iTemp);
+	//}
 
 	if (Set_bus_Width(SDCard.cCardType, 1, SDCard.iCardRCA)) {
-		printf("Bus Width is 4bit\n");
+		//printf("Bus Width is 4bit\n");
 	} else {
-		printf("Bus Width is 1bit\n");
+		//printf("Bus Width is 1bit\n");
 		return 0;
 	}
 
@@ -756,8 +756,8 @@ U8 SDI_init(void) {
 		LBA_OFFSET   = ((MBR[457] << 24) + (MBR[456] << 16) + (MBR[455] << 8) + MBR[454]);
 		TOTAL_SECTOR = ((MBR[461] << 24) + (MBR[460] << 16) + (MBR[459] << 8) + MBR[458]);
 		TOTAL_SIZE   = (TOTAL_SECTOR / 2 / 1024);
-		printf("MBR Boot OK!LBA_OFFSET=%4d,SD_TOTAL_SIZE=%4dMB\n\r", LBA_OFFSET, TOTAL_SIZE);
-		printf("SDI Init OK\n\r");
+		//printf("MBR Boot OK!LBA_OFFSET=%4d,SD_TOTAL_SIZE=%4dMB\n\r", LBA_OFFSET, TOTAL_SIZE);
+		//printf("SDI Init OK\n\r");
 		return 1;
 	} else {
 		printf("SDI Read MBR error!!Cannot boot for SD card!!\r\n");
@@ -769,24 +769,28 @@ U8 SDI_init(void) {
 
 
 U8 Read_Block(U32 Addr, U32 count, U32* RxBuffer) {
+	assert((count)&&(RxBuffer));
 	if (count == 0) {
 		return 0;
 	} else if (count < 4096) {
-		printf("read: addr:%X size:%d\n", Addr, count);
+		//printf("read: addr:%X size:%d\n", Addr, count);
 		return Read_Mult_Block(Addr, count, RxBuffer);
 	} else {
 		//TODO
+		assert(0);
 		return 0;
 	}
 }
 U8 Write_Block(U32 Addr, U32 count, U32* TxBuffer) {
+	assert((count)&&(TxBuffer));
 	if (count == 0) {
 		return 0;
 	} else if (count < 4096) {
-		printf("write: addr:%X size:%d\n", Addr, count);
+		//printf("write: addr:%X size:%d\n", Addr, count);
 		return Write_Mult_Block(Addr, count, TxBuffer);
 	} else {
 		//TODO
+		assert(0);
 		return 0;
 	}
 }

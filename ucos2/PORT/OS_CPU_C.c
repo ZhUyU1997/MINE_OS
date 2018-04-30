@@ -68,7 +68,7 @@ OS_STK *OSTaskStkInit (void (*task)(void *pd), void *p_arg, OS_STK *ptos, INT16U
     *(--stk) = (INT32U)0;         	/* R2                                                      */
     *(--stk) = (INT32U)0;         	/* R1                                                      */
     *(--stk) = (INT32U)p_arg;		/* R0 : argument                                           */
-    *(--stk) = (INT32U)0x00000013L; /* CPSR  (SVC mode, Enable both IRQ and FIQ interrupts)    */
+    *(--stk) = (INT32U)0x00000053L; /* CPSR  (SVC mode, Enable IRQ interrupts)                 */
  									         
     return (stk);
 }

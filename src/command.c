@@ -53,6 +53,23 @@ CMD_DEFINE(ls, "ls", "ls") {
 	}
 	return 0;
 }
+CMD_DEFINE(wav, "wav", "wav") {
+	if(argc!=2)
+		return 1;
+	read_wav_file(argv[1]);
+	return 0;
+}
+
+CMD_DEFINE(nes, "nes", "nes") {
+	if(argc!=2)
+		return 1;
+	if(InfoNES_Load(argv[1])){
+		printf("\033[31m”Œœ∑º”‘ÿ ß∞‹\033[0m\n");
+		return 1;
+	}
+	InfoNES_Main();
+	return 0;
+}
 
 CMD_DEFINE(help, "help", "help") {
 	for (int i = 0; ct_list[i] != NULL; i++) {
@@ -64,6 +81,8 @@ CMD_DEFINE(help, "help", "help") {
 cmd_table *ct_list[] = {
 	CMD_ENTRY(help),
 	CMD_ENTRY(ls),
+	CMD_ENTRY(wav),
+	CMD_ENTRY(nes),
 	NULL
 };
 cmd_table *search_cmd(char *name) {

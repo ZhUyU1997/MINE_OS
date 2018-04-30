@@ -74,7 +74,6 @@ enum EINT_NUM{
 	EINT22,
 	EINT23,
 };
-void EINT_Handle();
 void enable_irq(void);
 void disable_irq(void);
 void INTMSK_set(enum INT_NUM num);

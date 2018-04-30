@@ -61,18 +61,18 @@
 
 static int adc_x = 0, adc_y = 0;
 int get_touch_x() {
-	//printf("x:%d\n", adc_x);
 	return adc_x;
 }
 int get_touch_y() {
-	//printf("y:%d\n", adc_y);
 	return adc_y;
 }
 static void set_touch_x(int x) {
 	adc_x = x;
+	//printf("x:%d\n", x);
 }
 static void set_touch_y(int y) {
 	adc_y = y;
+	//printf("y:%d\n", y);
 }
 
 /*
@@ -82,7 +82,7 @@ static void set_touch_y(int y) {
  */
 static void Isr_Tc(void) {
 	if (ADCDAT0 & 0x8000) {
-		//printf("Stylus Up!!\n\r");
+		//printf("Stylus Up\n");
 		close_timer();
 
 		set_touch_y(-1);
@@ -94,7 +94,7 @@ static void Isr_Tc(void) {
 		wait_down_int();    /* 进入"等待中断模式"，等待触摸屏被按下 */
 
 	} else {
-		//printf("Stylus Down: ");
+		//printf("Stylus Down\n");
 
 		mode_auto_xy();     /* 进入自动(连续) X/Y轴坐标转换模式 */
 
@@ -108,6 +108,7 @@ static void Isr_Tc(void) {
 }
 static void timer_handle() {
 	//TODO:有时adc失败
+	//printf("timer_handle\n");
 	mode_auto_xy();
 	ADCCON |= ADC_START;
 }

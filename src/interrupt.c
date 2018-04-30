@@ -1,3 +1,4 @@
+#include <global_config.h>
 #include <interrupt.h>
 #include "s3c24xx.h"
 #include "ucos_ii.h"
@@ -36,21 +37,28 @@ void INTSUBMSK_clr(enum INT_SUB_NUM num) {
 	INTSUBMSK |= (1 << num);
 }
 
-void Dummy_isr(void) {
+void dummy_isr(void) {
 	printf("IRQ HANDLE,ERROR!\n");
 	while (1);
 }
 
-void init_irq(void) {
+void irq_init(void) {
 	for (int i = 0; i < sizeof(isr_handle_array) / sizeof(isr_handle_array[0]); i++) {
-		isr_handle_array[i] = Dummy_isr;
+		isr_handle_array[i] = dummy_isr;
 	}
+	SRCPND = 0;
+	INTPND = 0;
+	SUBSRCPND = 0;
+	INTSUBMSK = 0xffff;
 	INTMOD = 0x0;	      //所有中断都设为IRQ模式
 	INTMSK = BIT_ALLMSK;  //先屏蔽所有中断
+	memcpy(0x33ff0000, 0x30100000, 4096);
+	//memset(0x30100000, 0, 4096);
+	//memset(0, 0, 4096);
 }
 
 void IRQ_Handle(void) {
-	int oft = INTOFFSET;
+	unsigned int oft = INTOFFSET;
 	//TODO:中断嵌套时，中断开关设置
 	OSIntEnter();
 	//调用中断服务程序
@@ -66,11 +74,11 @@ void set_irq_handler(int offset, int (*handler)(void)) {
 	if (handler != 0)
 		isr_handle_array[offset] = handler;
 	else
-		isr_handle_array[offset] = Dummy_isr;
+		isr_handle_array[offset] = dummy_isr;
 }
 
 //清中断
-void ClearPending(int oft) {
+void ClearPending(unsigned int oft) {
 	//TODO:不通用
 	if (oft == EINT4_7) {
 		//EINT4-7合用IRQ4，注意EINTPEND[3:0]保留未用，向这些位写入1可能导致未知结果
@@ -81,10 +89,17 @@ void ClearPending(int oft) {
 	}
 	if (oft == INT_ADC) {
 		if (SUBSRCPND & (1 << INT_ADC_S))
-			SUBSRCPND |= 1 << INT_ADC_S;
+			SUBSRCPND = 1 << INT_ADC_S;
 		if (SUBSRCPND & (1 << INT_TC))
-			SUBSRCPND |= 1 << INT_TC;
+			SUBSRCPND = 1 << INT_TC;
 	}
+	if (oft == INT_UART0) {
+		if (SUBSRCPND & (1 << INT_RXD0))
+			SUBSRCPND = 1 << INT_RXD0;
+		if (SUBSRCPND & (1 << INT_TXD0))
+			SUBSRCPND = 1 << INT_TXD0;
+	}
+
 	SRCPND = 1 << oft;
 	INTPND = 1 << oft;
 }

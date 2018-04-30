@@ -3,13 +3,18 @@
 
 
 void timer_init() {
-	TCFG0 |= (24);		//定时器 0，1 的预分频值
+	TCFG0 =0;
+	TCFG1 =0;
+	TCON  =0;
+	TCFG0 |= (124);		//定时器 0，1 的预分频值 //TODO:设置太小，会出现问题，依赖连接器如何链接
 	TCFG0 |= (24 << 8);	//定时器 2，3 和 4 的预分频值
 }
 void tick_irq_hander();
 void init_tick(int time, void (*handle)()) {
 	//TCON:定时器控制寄存器
-	TCON &= (~(7 << 20));		//清空20~21位
+	INTMSK_clr(INT_TIMER4);
+	TCON &= ~(1 << 20);		//启动
+	TCON &= (~(7 << 20));	//清空20~21位
 	TCON |= (1 << 22);		//定时器4间隙模式/自动重载
 	TCON |= (1 << 21);		//定时器4手动更新TCNTB4
 
@@ -46,12 +51,14 @@ void set_timer(int time, void (*handle)()) {
 	INTMSK_clr(INT_TIMER1);
 	TCON &= ~(1 << 8); //关闭
 	//TCON:定时器控制寄存器
+	TCFG1 &= ~(15<<4);
+	TCFG1 |= 1<<4;
 	TCON &= (~(15 << 8));	//清空8~11位
-	TCON |= (0 << 11);		//定时器1单稳态
+	TCON &= ~(1 << 11);		//定时器1单稳态
 	TCON |= (1 << 9);		//定时器1手动更新TCNTB1和TCMPB1
 
 	//TCONB1:定时器1计数缓冲寄存器
-	TCNTB1 = 1000 * time;
+	TCNTB1 = 100*time;
 
 	TCON |= (1 << 8);		//启动
 	TCON &= ~(1 << 9);		//定时器1取消手动更新
@@ -80,7 +87,7 @@ void udelay(int delay_time) {
 
 	//TCON:定时器控制寄存器
 	TCON &= (~(15 << 12));	//清空8~11位
-	TCON |= (0 << 15);		//定时器2单稳态
+	TCON &= ~(1 << 15);		//定时器2单稳态
 	TCON |= (1 << 13);		//定时器2手动更新TCNTB2和TCMPB2
 
 	//TCONB1:定时器2计数缓冲寄存器
