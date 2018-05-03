@@ -150,7 +150,7 @@ void InfoNES_PadState(DWORD *pdwPad1, DWORD *pdwPad2, DWORD *pdwSystem) {
 	int index;
 	*pdwPad1 = 0;
 	*pdwPad2 = 0;
-
+	
 	for (int i = 0; i < 9; i++) {
 		if (count[i] != 0) {
 			if (i == 8) {
@@ -162,8 +162,6 @@ void InfoNES_PadState(DWORD *pdwPad1, DWORD *pdwPad2, DWORD *pdwSystem) {
 			}
 		}
 	}
-
-
 	switch (c) {
 		case '\0':
 			return 0;
@@ -209,6 +207,8 @@ void InfoNES_PadState(DWORD *pdwPad1, DWORD *pdwPad2, DWORD *pdwSystem) {
 			break;
 	}
 	count[index] = 20;
+	if(index == 0)
+		count[index] = 40;
 }
 
 /* memcpy */
@@ -237,11 +237,11 @@ void InfoNES_SoundInit(void) {
 	sound_init();
 }
 
-short sound_buf[1024];
+short sound_buf[1024*2];
 /* Sound Open */
 int InfoNES_SoundOpen(int samples_per_sync, int sample_rate) {
 	printf("samples_per_sync = %d, sample_rate = %d\n", samples_per_sync, sample_rate);
-	assert(2 * samples_per_sync <= sizeof(sound_buf));
+	assert(2 * samples_per_sync <= (sizeof(sound_buf)/2));
 	open_sound();
 	dma_init();
 	return 1;
@@ -255,17 +255,13 @@ void InfoNES_SoundClose(void) {
 
 /* Sound Output 5 Waves - 2 Pulse, 1 Triangle, 1 Noise, 1 DPCM */
 void InfoNES_SoundOutput(int samples, BYTE *wave1, BYTE *wave2, BYTE *wave3, BYTE *wave4, BYTE *wave5) {
-	assert(2 * samples <= sizeof(sound_buf));
+	assert(2 * samples <= (sizeof(sound_buf)/2));
 	for (int i = 0; i < samples; i++) {
-		sound_buf[2 * i] = 0;
+		sound_buf[2 * i] = ( wave1[i] + wave2[i]  + wave4[i] + wave5[i] ) *10;
 		sound_buf[2 * i + 1] = sound_buf[2 * i];
-		//short data = ( wave1[i] + wave2[i]  + wave4[i] + wave5[i] ) / 5;
-		//send_iis_data(data);
-		//send_iis_data(data);
 	}
-	//putc('@');
 	while (!dma_can_run());
-	dma_set(sound_buf, samples * 4);
+	dma_set(sound_buf, samples*2*2);
 	dma_start();
 
 }
