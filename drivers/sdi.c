@@ -493,7 +493,7 @@ U8 SDI_CheckDATend(void) {
 在主调函数中定义一个数组作为接收缓冲区，如 U32 Rx_buffer[BufferSize];
 然后开始调用 Read_Mult_Block(addr,BufferSize,Rx_buffer);
 **********************************************************************************/
-U8 Read_Mult_Block(U32 Addr, U32 count, U32* RxBuffer) {
+U8 Read_Mult_Block(U32 Addr, U32 count, U8* RxBuffer) {
 	U32 i = 0;
 	U32 status = 0;
 	rSDIFSTA = rSDIFSTA | (1 << 16); // FIFO reset
@@ -515,8 +515,12 @@ U8 Read_Mult_Block(U32 Addr, U32 count, U32* RxBuffer) {
 			status = rSDIFSTA;
 			if ((status & 0x1000) == 0x1000) {
 				//如果接收 FIFO 中有数据
-				*RxBuffer = rSDIDAT;
-				RxBuffer++;
+				U32 temp = rSDIDAT;
+				RxBuffer[0] = ((U8 *)&temp)[0];
+				RxBuffer[1] = ((U8 *)&temp)[1];
+				RxBuffer[2] = ((U8 *)&temp)[2];
+				RxBuffer[3] = ((U8 *)&temp)[3];
+				RxBuffer += 4;
 				j++;
 			}
 		}
@@ -556,7 +560,7 @@ U8 Read_Mult_Block(U32 Addr, U32 count, U32* RxBuffer) {
 在主调函数中定义一个数组作为发送缓冲区，如 U32 Tx_buffer[BlockSize];
 然后开始调用 Write_Mult_Block(addr,DatSize,Tx_buffer);
 **********************************************************************************/
-U8 Write_Mult_Block(U32 Addr, U32 count, U32* TxBuffer) {
+U8 Write_Mult_Block(U32 Addr, U32 count, U8* TxBuffer) {
 	U16 i = 0;
 	U32 status = 0;
 	rSDIFSTA = rSDIFSTA | (1 << 16);	// FIFO reset
@@ -572,8 +576,13 @@ U8 Write_Mult_Block(U32 Addr, U32 count, U32* TxBuffer) {
 			status = rSDIFSTA;
 			if ((status & 0x2000)) {
 				//如果发送 FIFO 可用，即 FIFO 未满
-				rSDIDAT = *TxBuffer;
-				TxBuffer++;
+				U32 temp;
+				((U8 *)&temp)[0] = TxBuffer[0];
+				((U8 *)&temp)[1] = TxBuffer[1];
+				((U8 *)&temp)[2] = TxBuffer[2];
+				((U8 *)&temp)[3] = TxBuffer[3];
+				rSDIDAT = temp;
+				TxBuffer += 4;
 				j++;
 			}
 		}
@@ -650,6 +659,7 @@ U8 SDI_init(void) {
 	rSDIBSIZE = 0x200;		// 512byte(128word)
 	rSDIDTIMER = 0x7fffff;
 
+	delay_u(200000);	//当板子重新上电时需要更多的延时
 	for (i = 0; i < 0x1000; i++);  	// Wait 74SDCLK for card
 
 	CMD0();
@@ -768,12 +778,12 @@ U8 SDI_init(void) {
 
 
 
-U8 Read_Block(U32 Addr, U32 count, U32* RxBuffer) {
+U8 Read_Block(U32 Addr, U32 count, U8* RxBuffer) {
 	assert((count)&&(RxBuffer));
 	if (count == 0) {
 		return 0;
 	} else if (count < 4096) {
-		//printf("read: addr:%X size:%d\n", Addr, count);
+		//printf("read: addr:%X size:%d buffer:%X\n", Addr, count, RxBuffer);
 		return Read_Mult_Block(Addr, count, RxBuffer);
 	} else {
 		//TODO
@@ -781,12 +791,12 @@ U8 Read_Block(U32 Addr, U32 count, U32* RxBuffer) {
 		return 0;
 	}
 }
-U8 Write_Block(U32 Addr, U32 count, U32* TxBuffer) {
+U8 Write_Block(U32 Addr, U32 count, U8* TxBuffer) {
 	assert((count)&&(TxBuffer));
 	if (count == 0) {
 		return 0;
 	} else if (count < 4096) {
-		//printf("write: addr:%X size:%d\n", Addr, count);
+		//printf("write: addr:%X size:%d buffer:%X\n", Addr, count, TxBuffer);
 		return Write_Mult_Block(Addr, count, TxBuffer);
 	} else {
 		//TODO

@@ -8,14 +8,13 @@
 extern cmd_table *ct_list[];
 
 DIR  dirobj;               // current work dir fof cd
-void FileAttr(BYTE attr,char *p)
-{
-    if( (attr&0x10)==0x10 ){
-        sprintf(p,"%5s","dir :");
-    }else{
-        sprintf(p,"%5s","file:");
-    }
-	
+void FileAttr(BYTE attr, char *p) {
+	if ((attr & 0x10) == 0x10) {
+		sprintf(p, "%5s", "dir :");
+	} else {
+		sprintf(p, "%5s", "file:");
+	}
+
 }
 CMD_DEFINE(ls, "ls", "ls") {
 	char p_cmd[16], p_arg[32];
@@ -24,16 +23,16 @@ CMD_DEFINE(ls, "ls", "ls") {
 	DIR  tempdir;
 	FILINFO tempfinfo;
 	char fdesp[8];
-	FRESULT res1 = f_opendir(&dirobj,"/");
-	
-	if(res1==FR_OK)
-	if (argc == 1) {
-		p_path = "/";
-	} else if(argc == 2){
-		p_path = argv[1];
-	}else{
-		return 1;
-	}
+	FRESULT res1 = f_opendir(&dirobj, "/");
+
+	if (res1 == FR_OK)
+		if (argc == 1) {
+			p_path = "/";
+		} else if (argc == 2) {
+			p_path = argv[1];
+		} else {
+			return 1;
+		}
 	dir_res = f_opendir(&tempdir, p_path);
 	if (dir_res != FR_OK) {
 		printf("f_opendir failed,path:%s does not exist\n\r", p_path);
@@ -53,17 +52,25 @@ CMD_DEFINE(ls, "ls", "ls") {
 	}
 	return 0;
 }
+
 CMD_DEFINE(wav, "wav", "wav") {
-	if(argc!=2)
+	if (argc != 2)
 		return 1;
 	read_wav_file(argv[1]);
 	return 0;
 }
 
-CMD_DEFINE(nes, "nes", "nes") {
-	if(argc!=2)
+CMD_DEFINE(mp3, "mp3", "mp3") {
+	if (argc != 2)
 		return 1;
-	if(InfoNES_Load(argv[1])){
+	AudioDecode(argv[1]);
+	return 0;
+}
+
+CMD_DEFINE(nes, "nes", "nes") {
+	if (argc != 2)
+		return 1;
+	if (InfoNES_Load(argv[1])) {
 		printf("\033[31m”Œœ∑º”‘ÿ ß∞‹\033[0m\n");
 		return 1;
 	}
@@ -82,6 +89,7 @@ cmd_table *ct_list[] = {
 	CMD_ENTRY(help),
 	CMD_ENTRY(ls),
 	CMD_ENTRY(wav),
+	CMD_ENTRY(mp3),
 	CMD_ENTRY(nes),
 	NULL
 };

@@ -26,8 +26,8 @@ CFLAGS   		+= -I$(INCLUDEDIR) -I$(TOPDIR)/ucos2/SOURCE -iquote$(TOPDIR)/ucos2/PO
 				-I$(TOPDIR)/lwip/include -iquote$(TOPDIR)/lwip/include/arch \
 				-iquote$(TOPDIR)/lwip/include/ipv4 \
 				-I$(TOPDIR)/drivers \
-				-I$(TOPDIR)/fs/Fatfs_f8a
-
+				-I$(TOPDIR)/fs/Fatfs_f8a \
+				-iquote$(TOPDIR)/src/helix/pub
 LDFLAGS			:= -L$(shell dirname `$(CC) $(CFLAGS) -print-libgcc-file-name`) -L$(TOPDIR)/uCGUI
 LDFLAGS			+= -lucgui -lgcc
 LDFLAGS			+= -Tucosii.lds 

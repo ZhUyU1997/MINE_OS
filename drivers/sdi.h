@@ -106,10 +106,10 @@ U8 CMD38(void);
 U8 Card_sel_desel(U8 cSelDesel, U16 iCardRCA);
 U8 Set_bus_Width(U8 cCardType, U8 cBusWidth, U16 iRCA);
 U8 SDI_init(void);
-U8 Read_Mult_Block(U32 Addr, U32 DatSize, U32* RxBuffer);
-U8 Write_Mult_Block(U32 Addr, U32 DatSize, U32* TxBuffer);
+U8 Read_Mult_Block(U32 Addr, U32 DatSize, U8* RxBuffer);
+U8 Write_Mult_Block(U32 Addr, U32 DatSize, U8* TxBuffer);
 U8 Erase_Block(U32 StartAddr, U32 EndAddr);
-U8 Read_Block(U32 Addr, U32 count, U32* RxBuffer);
-U8 Write_Block(U32 Addr, U32 count, U32* TxBuffer);
+U8 Read_Block(U32 Addr, U32 count, U8* RxBuffer);
+U8 Write_Block(U32 Addr, U32 count, U8* TxBuffer);
 #endif
 

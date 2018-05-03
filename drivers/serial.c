@@ -76,7 +76,6 @@ void serial_putc(unsigned char c) {
 		__serial_putc(' ');
 		__serial_putc('\b');
 	}
-
 }
 
 unsigned char serial_getc(void) {
