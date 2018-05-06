@@ -21,7 +21,7 @@
 #define CMD_RANDOMWRITE	0x85			//随意写命令
 
 static void nand_reset(void);
-static void delay_u(int time) {
+static void udelay(int time) {
 	for (volatile int i = 0; i < 36; i++)
 		for (volatile int i = 0; i < time; i++);
 }
@@ -256,7 +256,7 @@ int nand_write(unsigned char *buf, unsigned int addr , unsigned int len) {
 	}
 
 	nand_cmd(CMD_WRITE2);		//页写命令周期2
-	delay_u(1000);				//延时一段时间，以等待写操作完成
+	udelay(1000);				//延时一段时间，以等待写操作完成
 	nand_cmd(CMD_STATUS);		//读状态命令
 
 	//判断状态值的第6位是否为1，即是否在忙，该语句的作用与NF_DETECT_RB();相同
@@ -308,7 +308,7 @@ int nand_write_with_oob(unsigned int page, unsigned char *buf, unsigned int buf_
 	}
 
 	nand_cmd(CMD_WRITE2);		//页写命令周期2
-	delay_u(1000);				//延时一段时间，以等待写操作完成
+	udelay(1000);				//延时一段时间，以等待写操作完成
 	nand_cmd(CMD_STATUS);		//读状态命令
 
 	//判断状态值的第6位是否为1，即是否在忙，该语句的作用与NF_DETECT_RB();相同
@@ -352,7 +352,7 @@ int nand_write_page(unsigned int page, unsigned char *buf, unsigned int buf_len,
 	}
 
 	nand_cmd(CMD_WRITE2);		//页写命令周期2
-	delay_u(1000);				//延时一段时间，以等待写操作完成
+	udelay(1000);				//延时一段时间，以等待写操作完成
 	nand_cmd(CMD_STATUS);		//读状态命令
 
 	//判断状态值的第6位是否为1，即是否在忙，该语句的作用与NF_DETECT_RB();相同
@@ -381,7 +381,7 @@ int nand_erase_block(unsigned int block_number) {
 	//写入3个地址周期，从A18开始写起
 	nand_page(block_number << 6);
 	nand_cmd(CMD_ERASE2);			//擦除命令周期2
-	delay_u(10000);					//延时一段时间
+	udelay(10000);					//延时一段时间
 	nand_cmd(CMD_STATUS);			//读状态命令
 
 	//判断状态值的第6位是否为1，即是否在忙，该语句的作用与NF_DETECT_RB();相同

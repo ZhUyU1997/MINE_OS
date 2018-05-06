@@ -24,7 +24,7 @@ U8 cTxBuffer[SDCARD_BUFF_SIZE * 2];
 U8 cRxBuffer[SDCARD_BUFF_SIZE * 2];
 
 
-static void delay_u(int time) {
+static void udelay(int time) {
 	for (volatile int i = 0; i < 36; i++)
 		for (volatile int i = 0; i < time; i++);
 }
@@ -468,7 +468,7 @@ U8 SDI_CheckDATend(void) {
 		finish = rSDIDSTA;
 	}//one of the DatFin and DatTout occur
 	if ((finish & 0x2) || (finish & 0x1)) {
-		delay_u(200);
+		udelay(200);
 	}
 	if ((finish & 0xfc) != 0x10) {
 		printf("receive data(or receive busy) time out!!\n\r");
@@ -659,7 +659,7 @@ U8 SDI_init(void) {
 	rSDIBSIZE = 0x200;		// 512byte(128word)
 	rSDIDTIMER = 0x7fffff;
 
-	delay_u(200000);	//当板子重新上电时需要更多的延时
+	udelay(500000);	//当板子重新上电时需要更多的延时
 	for (i = 0; i < 0x1000; i++);  	// Wait 74SDCLK for card
 
 	CMD0();
@@ -683,7 +683,7 @@ U8 SDI_init(void) {
 	for (i = 0; i < 500; i++) {
 		if (ACMD41(SDCard.iCardRCA))
 			break;
-		delay_u(2000);
+		udelay(2000);
 	}
 
 	if (i == 500) {

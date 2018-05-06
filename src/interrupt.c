@@ -46,15 +46,16 @@ void irq_init(void) {
 	for (int i = 0; i < sizeof(isr_handle_array) / sizeof(isr_handle_array[0]); i++) {
 		isr_handle_array[i] = dummy_isr;
 	}
-	SRCPND = 0;
-	INTPND = 0;
-	SUBSRCPND = 0;
-	INTSUBMSK = 0xffff;
+
 	INTMOD = 0x0;	      //所有中断都设为IRQ模式
 	INTMSK = BIT_ALLMSK;  //先屏蔽所有中断
+	SRCPND = 0xffffffff;
+	INTPND = 0xffffffff;
+	SUBSRCPND = 0xffffffff;
+	INTSUBMSK = 0xffff;
+	EINTMASK = 0xffff<<4;
+	EINTPEND = 0xffff<<4;
 	memcpy(0x33ff0000, 0x30100000, 4096);
-	//memset(0x30100000, 0, 4096);
-	//memset(0, 0, 4096);
 }
 
 void IRQ_Handle(void) {
@@ -83,7 +84,8 @@ void ClearPending(unsigned int oft) {
 	if (oft == EINT4_7) {
 		//EINT4-7合用IRQ4，注意EINTPEND[3:0]保留未用，向这些位写入1可能导致未知结果
 		EINTPEND = 1 << EINT7;
-	} else if (oft == EINT8_23) {
+	}
+	if (oft == EINT8_23) {
 		//EINT8_23合用IRQ5
 		EINTPEND = 1 << 11;
 	}

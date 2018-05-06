@@ -31,13 +31,17 @@ static const unsigned short DEMO256pal[] = {
  * 初始化用于LCD的引脚
  */
 void Lcd_Port_Init(void) {
-	GPCUP   = 0xffffffff;   // 禁止内部上拉
-	GPCCON  = 0xaaaaaaaa;   // GPIO管脚用于VD[7:0],LCDVF[2:0],VM,VFRAME,VLINE,VCLK,LEND
-	GPDUP   = 0xffffffff;   // 禁止内部上拉
-	GPDCON  = 0xaaaaaaaa;   // GPIO管脚用于VD[23:8]
-	GPBCON &= ~(GPB0_MSK);  // Power enable pin
-	GPBCON |= GPB0_out;
-	GPBDAT &= ~(1 << 0);			// Power off
+	//GPC5为USB使能引脚，需要过滤掉
+	GPCUP   &= 0x1<<5;
+	GPCUP   |= ~(0x1<<5);   // 禁止内部上拉
+	GPCCON	&= 0x3<<10;
+	GPCCON  |= 0xaaaaa2aa;	// GPIO管脚用于VD[7:0],LCDVF[2:0],VM,VFRAME,VLINE,VCLK,LEND
+	
+	GPDUP   = 0xffffffff;	// 禁止内部上拉
+	GPDCON  = 0xaaaaaaaa;	// GPIO管脚用于VD[23:8]
+	GPBCON  &= ~(GPB0_MSK);	// Power enable pin
+	GPBCON  |= GPB0_out;
+	GPBDAT  &= ~(1 << 0);	// Power off
 }
 
 /*
@@ -215,7 +219,7 @@ void ChangePalette(UINT32 color) {
 	palette = (UINT32 *)PALETTE;
 	LCDCON1 &= ~0x01;	// stop lcd controller
 	for (i = 0; i < 256; i++) {
-//        while (((LCDCON5>>15) & 0x3) == 2);     // 等待直到VSTATUS不为”有效”
+		//while (((LCDCON5>>15) & 0x3) == 2);     // 等待直到VSTATUS不为”有效”
 		*palette++ = color;
 	}
 	LCDCON1 |= 0x01;	// re-enable lcd controller
@@ -230,11 +234,11 @@ void ChangePalette(UINT32 color) {
  *               1 - LCD_PWREN输出无效
  */
 void Lcd_PowerEnable(int invpwren, int pwren) {
-	GPGCON = (GPGCON & (~(3 << 8))) | (3 << 8); // GPG4用作LCD_PWREN
-	GPGUP  = (GPGUP & (~(1 << 4))) | (1 << 4); // 禁止内部上拉
+	GPGCON = (GPGCON & (~(3 << 8))) | (3 << 8);	// GPG4用作LCD_PWREN
+	GPGUP  = (GPGUP & (~(1 << 4))) | (1 << 4);	// 禁止内部上拉
 
-	LCDCON5 = (LCDCON5 & (~(1 << 5))) | (invpwren << 5); // 设置LCD_PWREN的极性: 正常/反转
-	LCDCON5 = (LCDCON5 & (~(1 << 3))) | (pwren << 3); // 设置是否输出LCD_PWREN
+	LCDCON5 = (LCDCON5 & (~(1 << 5))) | (invpwren << 5);	// 设置LCD_PWREN的极性: 正常/反转
+	LCDCON5 = (LCDCON5 & (~(1 << 3))) | (pwren << 3);		// 设置是否输出LCD_PWREN
 }
 
 /*
@@ -246,10 +250,10 @@ void Lcd_PowerEnable(int invpwren, int pwren) {
  */
 void Lcd_EnvidOnOff(int onoff) {
 	if (onoff == 1) {
-		LCDCON1 |= 1;         // ENVID ON
-		GPBDAT |= (1 << 0);			// Power on
+		LCDCON1 |= 1;			// ENVID ON
+		GPBDAT |= (1 << 0);		// Power on
 	} else {
-		LCDCON1 &= 0x3fffe;  // ENVID Off
+		LCDCON1 &= 0x3fffe;		// ENVID Off
 		GPBDAT &= ~(1 << 0);	 // Power off
 	}
 }

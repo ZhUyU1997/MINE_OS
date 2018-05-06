@@ -61,6 +61,7 @@ void show_bss_info(){
 }
 int main() {
 	irq_init();
+	Port_Init();
 	uart0_init();
 	//uart0_interrupt_init();
 	printf("\n\n************************************************\n");

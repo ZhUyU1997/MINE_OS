@@ -70,8 +70,8 @@
 #define UFCON0              (*(volatile unsigned long *)0x50000008)
 #define UMCON0              (*(volatile unsigned long *)0x5000000c)
 #define UTRSTAT0            (*(volatile unsigned long *)0x50000010)
-#define UTXH0               (*(volatile unsigned char *)0x50000020)
-#define URXH0               (*(volatile unsigned char *)0x50000024)
+//#define UTXH0               (*(volatile unsigned char *)0x50000020)
+//#define URXH0               (*(volatile unsigned char *)0x50000024)
 #define UBRDIV0             (*(volatile unsigned long *)0x50000028)
 
 
@@ -89,29 +89,42 @@
 #define EINTMASK            (*(volatile unsigned long *)0x560000a4)
 #define EINTPEND            (*(volatile unsigned long *)0x560000a8)
 
-#define EXTINT0   (*(volatile unsigned *)0x56000088)	//External interrupt control register 0
-#define EXTINT1   (*(volatile unsigned *)0x5600008c)	//External interrupt control register 1
-#define EXTINT2   (*(volatile unsigned *)0x56000090)	//External interrupt control register 2
+#define EXTINT0				(*(volatile unsigned *)0x56000088)	//External interrupt control register 0
+#define EXTINT1 			(*(volatile unsigned *)0x5600008c)	//External interrupt control register 1
+#define EXTINT2				(*(volatile unsigned *)0x56000090)	//External interrupt control register 2
 
 /*clock registers*/
-#define	LOCKTIME	(*(volatile unsigned long *)0x4c000000)
-#define	MPLLCON		(*(volatile unsigned long *)0x4c000004)
-#define	UPLLCON		(*(volatile unsigned long *)0x4c000008)
-#define	CLKCON		(*(volatile unsigned long *)0x4c00000c)
-#define	CLKSLOW		(*(volatile unsigned long *)0x4c000010)
-#define	CLKDIVN		(*(volatile unsigned long *)0x4c000014)
+#define	LOCKTIME			(*(volatile unsigned long *)0x4c000000)
+#define	MPLLCON				(*(volatile unsigned long *)0x4c000004)
+#define	UPLLCON				(*(volatile unsigned long *)0x4c000008)
+#define	CLKCON				(*(volatile unsigned long *)0x4c00000c)
+#define	CLKSLOW				(*(volatile unsigned long *)0x4c000010)
+#define	CLKDIVN				(*(volatile unsigned long *)0x4c000014)
 
 
 /*PWM & Timer registers*/
 #define	TCFG0		(*(volatile unsigned long *)0x51000000)
 #define	TCFG1		(*(volatile unsigned long *)0x51000004)
 #define	TCON		(*(volatile unsigned long *)0x51000008)
-#define	TCNTB0		(*(volatile unsigned long *)0x5100000c)
-#define	TCMPB0		(*(volatile unsigned long *)0x51000010)
-#define	TCNTO0		(*(volatile unsigned long *)0x51000014)
+#define	TCNTB0		(*(volatile unsigned short *)0x5100000c)
+#define	TCMPB0		(*(volatile unsigned short *)0x51000010)
+#define	TCNTO0		(*(volatile unsigned short *)0x51000014)
+
+#define	TCNTB1		(*(volatile unsigned short *)0x51000018)
+#define	TCMPB1		(*(volatile unsigned short *)0x5100001c)
+#define	TCNTO1		(*(volatile unsigned short *)0x51000020)
+
+#define	TCNTB2		(*(volatile unsigned short *)0x51000024)
+#define	TCMPB2		(*(volatile unsigned short *)0x51000028)
+#define	TCNTO2		(*(volatile unsigned short *)0x5100002c)
+
+#define	TCNTB3		(*(volatile unsigned short *)0x51000030)
+#define	TCMPB3		(*(volatile unsigned short *)0x51000034)
+#define	TCNTO3		(*(volatile unsigned short *)0x51000038)
+
 #define	TCNTB4		(*(volatile unsigned short *)0x5100003C)
 #define	TCNTO4		(*(volatile unsigned short *)0x51000040)
-#define	TCNTB1		(*(volatile unsigned short *)0x51000018)
+
 /* I2C registers */
 #define IICCON  	(*(volatile unsigned char *)0x54000000) // IIC control
 #define IICSTAT 	(*(volatile unsigned char *)0x54000004) // IIC status
@@ -233,20 +246,10 @@
 #define BIT_SUB_TXD0	(0x1<<1)
 #define BIT_SUB_RXD0	(0x1<<0)
 
-#define GSTATUS1    (*(volatile unsigned long *)0x560000B0)
+#define GSTATUS1		(*(volatile unsigned long *)0x560000B0)
 
 
-////
-////下面内容来自mini2440 bsp 2440addr.h
-////
-
-//=============================================================================
-// File Name : 2440addr.h
-// Function  : S3C2440 Define Address Register
-// History
-//   0.0 : Programming start (February 15,2002) -> SOP
-// Revision	: 03.11.2003 ver 0.0	Attatched for 2440
-//=============================================================================
+/* 下面内容来自mini2440 bsp 2440addr.h */
 
 // Memory control 
 #define rBWSCON    (*(volatile unsigned *)0x48000000)	//Bus width & wait status
@@ -347,8 +350,8 @@
 #define rLCDINTPND  (*(volatile unsigned *)0x4d000054)	//LCD Interrupt pending
 #define rLCDSRCPND  (*(volatile unsigned *)0x4d000058)	//LCD Interrupt source
 #define rLCDINTMSK  (*(volatile unsigned *)0x4d00005c)	//LCD Interrupt mask
-#define rTCONSEL     (*(volatile unsigned *)0x4d000060)	//LPC3600 Control --- edited by junon
-#define PALETTE     0x4d000400						//Palette start address
+#define rTCONSEL    (*(volatile unsigned *)0x4d000060)	//LPC3600 Control --- edited by junon
+#define PALETTE     (0x4d000400)						//Palette start address
 
 
 //Nand Flash
@@ -357,12 +360,12 @@
 #define rNFCMD		(*(volatile unsigned *)0x4E000008)      //NAND Flash command
 #define rNFADDR		(*(volatile unsigned *)0x4E00000C)      //NAND Flash address
 #define rNFDATA		(*(volatile unsigned *)0x4E000010)      //NAND Flash data
-#define rNFDATA8	(*(volatile unsigned char *)0x4E000010)     //NAND Flash data
-#define NFDATA		(0x4E000010)      //NAND Flash data address
+#define rNFDATA8	(*(volatile unsigned char *)0x4E000010) //NAND Flash data
+#define NFDATA		(0x4E000010)      						//NAND Flash data address
 #define rNFMECCD0	(*(volatile unsigned *)0x4E000014)      //NAND Flash ECC for Main Area
 #define rNFMECCD1	(*(volatile unsigned *)0x4E000018)
 #define rNFSECCD	(*(volatile unsigned *)0x4E00001C)		//NAND Flash ECC for Spare Area
-#define rNFSTAT		(*(volatile unsigned char *)0x4E000020)		//NAND Flash operation status
+#define rNFSTAT		(*(volatile unsigned char *)0x4E000020)	//NAND Flash operation status
 #define rNFESTAT0	(*(volatile unsigned *)0x4E000024)
 #define rNFESTAT1	(*(volatile unsigned *)0x4E000028)
 #define rNFMECC0	(*(volatile unsigned *)0x4E00002C)
@@ -389,12 +392,12 @@
 #define	rBYBURST			(*(volatile unsigned *)0x4F000034)
 #define	rBCBBURST			(*(volatile unsigned *)0x4F000038)
 #define	rBCRBURST			(*(volatile unsigned *)0x4F00003C)
-#define	rADISTWIDTH		(*(volatile unsigned *)0x4F000040)
-#define	rBDISTWIDTH		(*(volatile unsigned *)0x4F000044)
+#define	rADISTWIDTH			(*(volatile unsigned *)0x4F000040)
+#define	rBDISTWIDTH			(*(volatile unsigned *)0x4F000044)
 #define	rYRATIO				(*(volatile unsigned *)0x4F00004C)        
 #define	rCRATIO				(*(volatile unsigned *)0x4F000050)        
-#define	rYORIGINAL		(*(volatile unsigned *)0x4F000054)
-#define	rCORIGINAL		(*(volatile unsigned *)0x4F00005C)
+#define	rYORIGINAL			(*(volatile unsigned *)0x4F000054)
+#define	rCORIGINAL			(*(volatile unsigned *)0x4F00005C)
 #define	rSTACB1				(*(volatile unsigned *)0x4F000074)        
 #define	rSTACB2				(*(volatile unsigned *)0x4F000078)        
 #define	rSTACB3				(*(volatile unsigned *)0x4F00007C)        
@@ -428,8 +431,8 @@
 #define	rRDSTBCR			(*(volatile unsigned *)0x4F000040)
 #define	rRDSTBCB1			(*(volatile unsigned *)0x4F000044)
 #define	rRDSTBCR1			(*(volatile unsigned *)0x4F000048)
-#define	rRDADISTWIDTH	(*(volatile unsigned *)0x4F00004C)
-#define	rRDBDISTWIDTH	(*(volatile unsigned *)0x4F000050)
+#define	rRDADISTWIDTH		(*(volatile unsigned *)0x4F00004C)
+#define	rRDBDISTWIDTH		(*(volatile unsigned *)0x4F000050)
 
 
 // UART
@@ -477,20 +480,20 @@
 #define WrUTXH2(ch) (*(volatile unsigned char *)0x50008023)=(unsigned char)(ch)
 #define RdURXH2()   (*(volatile unsigned char *)0x50008027)
 
-#define UTXH0       (0x50000020+3)  //Byte_access address by DMA
-#define URXH0       (0x50000024+3)
-#define UTXH1       (0x50004020+3)
-#define URXH1       (0x50004024+3)
-#define UTXH2       (0x50008020+3)
-#define URXH2       (0x50008024+3)
+#define UTXH0       (*(volatile unsigned long *)(0x50000020+3))  //Byte_access address by DMA
+#define URXH0       (*(volatile unsigned long *)(0x50000024+3))
+#define UTXH1       (*(volatile unsigned long *)(0x50004020+3))
+#define URXH1       (*(volatile unsigned long *)(0x50004024+3))
+#define UTXH2       (*(volatile unsigned long *)(0x50008020+3))
+#define URXH2       (*(volatile unsigned long *)(0x50008024+3))
 
 #else //Little Endian
-#define rUTXH0 (*(volatile unsigned char *)0x50000020)	//UART 0 Transmission Hold
-#define rURXH0 (*(volatile unsigned char *)0x50000024)	//UART 0 Receive buffer
-#define rUTXH1 (*(volatile unsigned char *)0x50004020)	//UART 1 Transmission Hold
-#define rURXH1 (*(volatile unsigned char *)0x50004024)	//UART 1 Receive buffer
-#define rUTXH2 (*(volatile unsigned char *)0x50008020)	//UART 2 Transmission Hold
-#define rURXH2 (*(volatile unsigned char *)0x50008024)	//UART 2 Receive buffer
+#define rUTXH0		(*(volatile unsigned char *)0x50000020)	//UART 0 Transmission Hold
+#define rURXH0		(*(volatile unsigned char *)0x50000024)	//UART 0 Receive buffer
+#define rUTXH1		(*(volatile unsigned char *)0x50004020)	//UART 1 Transmission Hold
+#define rURXH1		(*(volatile unsigned char *)0x50004024)	//UART 1 Receive buffer
+#define rUTXH2		(*(volatile unsigned char *)0x50008020)	//UART 2 Transmission Hold
+#define rURXH2		(*(volatile unsigned char *)0x50008024)	//UART 2 Receive buffer
 
 #define WrUTXH0(ch) (*(volatile unsigned char *)0x50000020)=(unsigned char)(ch)
 #define RdURXH0()   (*(volatile unsigned char *)0x50000024)
@@ -498,6 +501,13 @@
 #define RdURXH1()   (*(volatile unsigned char *)0x50004024)
 #define WrUTXH2(ch) (*(volatile unsigned char *)0x50008020)=(unsigned char)(ch)
 #define RdURXH2()   (*(volatile unsigned char *)0x50008024)
+
+#define UTXH0       (*(volatile unsigned long *)(0x50000020))  //Byte_access address by DMA
+#define URXH0       (*(volatile unsigned long *)(0x50000024))
+#define UTXH1       (*(volatile unsigned long *)(0x50004020))
+#define URXH1       (*(volatile unsigned long *)(0x50004024))
+#define UTXH2       (*(volatile unsigned long *)(0x50008020))
+#define URXH2       (*(volatile unsigned long *)(0x50008024))
 
 #endif
 
@@ -521,6 +531,30 @@
 #define rTCNTB4 (*(volatile unsigned *)0x5100003c)	//Timer count buffer 4
 #define rTCNTO4 (*(volatile unsigned *)0x51000040)	//Timer count observation 4
 
+// USB HOST
+#define rHcRevision			(*(volatile unsigned *)0x49000000)
+#define rHcControl			(*(volatile unsigned *)0x49000004)
+#define rHcCommonStatus     (*(volatile unsigned *)0x49000008)
+#define rHcInterruptStatus  (*(volatile unsigned *)0x4900000C)
+#define rHcInterruptEnable  (*(volatile unsigned *)0x49000010)
+#define rHcInterruptDisable (*(volatile unsigned *)0x49000014)
+#define rHcHCCA				(*(volatile unsigned *)0x49000018)
+#define rHcPeriodCuttendED  (*(volatile unsigned *)0x4900001C)
+#define rHcControlHeadED    (*(volatile unsigned *)0x49000020)
+#define rHcControlCurrentED (*(volatile unsigned *)0x49000024)
+#define rHcBulkHeadED       (*(volatile unsigned *)0x49000028)
+#define rHcBuldCurrentED    (*(volatile unsigned *)0x4900002C)
+#define rHcDoneHead			(*(volatile unsigned *)0x49000030)
+#define rHcRmInterval       (*(volatile unsigned *)0x49000034)
+#define rHcFmRemaining      (*(volatile unsigned *)0x49000038)
+#define rHcFmNumber			(*(volatile unsigned *)0x4900003C)
+#define rHcPeriodicStart    (*(volatile unsigned *)0x49000040)
+#define rHcLSThreshold      (*(volatile unsigned *)0x49000044)
+#define rHcRhDescriptorA    (*(volatile unsigned *)0x49000048)
+#define rHcRhDescriptorB    (*(volatile unsigned *)0x4900004C)
+#define rHcRhStatus			(*(volatile unsigned *)0x49000050)
+#define rHcRhPortStatus1    (*(volatile unsigned *)0x49000054)
+#define rHcRhPortStatus2    (*(volatile unsigned *)0x49000058)
 
 // USB DEVICE
 #ifdef __BIG_ENDIAN
@@ -549,27 +583,27 @@
 #define rEP1_DMA_CON       (*(volatile unsigned char *)0x52000203)	//EP1 DMA interface control
 #define rEP1_DMA_UNIT      (*(volatile unsigned char *)0x52000207)	//EP1 DMA Tx unit counter
 #define rEP1_DMA_FIFO      (*(volatile unsigned char *)0x5200020b)	//EP1 DMA Tx FIFO counter
-#define rEP1_DMA_TTC_L     (*(volatile unsigned char *)0x5200020f)	//EP1 DMA total Tx counter
-#define rEP1_DMA_TTC_M     (*(volatile unsigned char *)0x52000213)
-#define rEP1_DMA_TTC_H     (*(volatile unsigned char *)0x52000217)
+#define rEP1_DMA_TX_LO     (*(volatile unsigned char *)0x5200020f)	//EP1 DMA total Tx counter
+#define rEP1_DMA_TX_MD     (*(volatile unsigned char *)0x52000213)
+#define rEP1_DMA_TX_HI     (*(volatile unsigned char *)0x52000217)
 #define rEP2_DMA_CON       (*(volatile unsigned char *)0x5200021b)	//EP2 DMA interface control
 #define rEP2_DMA_UNIT      (*(volatile unsigned char *)0x5200021f)	//EP2 DMA Tx unit counter
 #define rEP2_DMA_FIFO      (*(volatile unsigned char *)0x52000223)	//EP2 DMA Tx FIFO counter
-#define rEP2_DMA_TTC_L     (*(volatile unsigned char *)0x52000227)	//EP2 DMA total Tx counter
-#define rEP2_DMA_TTC_M     (*(volatile unsigned char *)0x5200022b)
-#define rEP2_DMA_TTC_H     (*(volatile unsigned char *)0x5200022f)
+#define rEP2_DMA_TX_LO     (*(volatile unsigned char *)0x52000227)	//EP2 DMA total Tx counter
+#define rEP2_DMA_TX_MD     (*(volatile unsigned char *)0x5200022b)
+#define rEP2_DMA_TX_HI     (*(volatile unsigned char *)0x5200022f)
 #define rEP3_DMA_CON       (*(volatile unsigned char *)0x52000243)	//EP3 DMA interface control
 #define rEP3_DMA_UNIT      (*(volatile unsigned char *)0x52000247)	//EP3 DMA Tx unit counter
 #define rEP3_DMA_FIFO      (*(volatile unsigned char *)0x5200024b)	//EP3 DMA Tx FIFO counter
-#define rEP3_DMA_TTC_L     (*(volatile unsigned char *)0x5200024f)	//EP3 DMA total Tx counter
-#define rEP3_DMA_TTC_M     (*(volatile unsigned char *)0x52000253)
-#define rEP3_DMA_TTC_H     (*(volatile unsigned char *)0x52000257) 
+#define rEP3_DMA_TX_LO     (*(volatile unsigned char *)0x5200024f)	//EP3 DMA total Tx counter
+#define rEP3_DMA_TX_MD     (*(volatile unsigned char *)0x52000253)
+#define rEP3_DMA_TX_HI     (*(volatile unsigned char *)0x52000257) 
 #define rEP4_DMA_CON       (*(volatile unsigned char *)0x5200025b)	//EP4 DMA interface control
 #define rEP4_DMA_UNIT      (*(volatile unsigned char *)0x5200025f)	//EP4 DMA Tx unit counter
 #define rEP4_DMA_FIFO      (*(volatile unsigned char *)0x52000263)	//EP4 DMA Tx FIFO counter
-#define rEP4_DMA_TTC_L     (*(volatile unsigned char *)0x52000267)	//EP4 DMA total Tx counter
-#define rEP4_DMA_TTC_M     (*(volatile unsigned char *)0x5200026b)
-#define rEP4_DMA_TTC_H     (*(volatile unsigned char *)0x5200026f)
+#define rEP4_DMA_TX_LO     (*(volatile unsigned char *)0x52000267)	//EP4 DMA total Tx counter
+#define rEP4_DMA_TX_MD     (*(volatile unsigned char *)0x5200026b)
+#define rEP4_DMA_TX_HI     (*(volatile unsigned char *)0x5200026f)
 
 #else  // Little Endian
 #define rFUNC_ADDR_REG     (*(volatile unsigned char *)0x52000140)	//Function address
@@ -597,27 +631,27 @@
 #define rEP1_DMA_CON       (*(volatile unsigned char *)0x52000200)	//EP1 DMA interface control
 #define rEP1_DMA_UNIT      (*(volatile unsigned char *)0x52000204)	//EP1 DMA Tx unit counter
 #define rEP1_DMA_FIFO      (*(volatile unsigned char *)0x52000208)	//EP1 DMA Tx FIFO counter
-#define rEP1_DMA_TTC_L     (*(volatile unsigned char *)0x5200020c)	//EP1 DMA total Tx counter
-#define rEP1_DMA_TTC_M     (*(volatile unsigned char *)0x52000210)
-#define rEP1_DMA_TTC_H     (*(volatile unsigned char *)0x52000214)
+#define rEP1_DMA_TX_LO     (*(volatile unsigned char *)0x5200020c)	//EP1 DMA total Tx counter
+#define rEP1_DMA_TX_MD     (*(volatile unsigned char *)0x52000210)
+#define rEP1_DMA_TX_HI     (*(volatile unsigned char *)0x52000214)
 #define rEP2_DMA_CON       (*(volatile unsigned char *)0x52000218)	//EP2 DMA interface control
 #define rEP2_DMA_UNIT      (*(volatile unsigned char *)0x5200021c)	//EP2 DMA Tx unit counter
 #define rEP2_DMA_FIFO      (*(volatile unsigned char *)0x52000220)	//EP2 DMA Tx FIFO counter
-#define rEP2_DMA_TTC_L     (*(volatile unsigned char *)0x52000224)	//EP2 DMA total Tx counter
-#define rEP2_DMA_TTC_M     (*(volatile unsigned char *)0x52000228)
-#define rEP2_DMA_TTC_H     (*(volatile unsigned char *)0x5200022c)
+#define rEP2_DMA_TX_LO     (*(volatile unsigned char *)0x52000224)	//EP2 DMA total Tx counter
+#define rEP2_DMA_TX_MD     (*(volatile unsigned char *)0x52000228)
+#define rEP2_DMA_TX_HI     (*(volatile unsigned char *)0x5200022c)
 #define rEP3_DMA_CON       (*(volatile unsigned char *)0x52000240)	//EP3 DMA interface control
 #define rEP3_DMA_UNIT      (*(volatile unsigned char *)0x52000244)	//EP3 DMA Tx unit counter
 #define rEP3_DMA_FIFO      (*(volatile unsigned char *)0x52000248)	//EP3 DMA Tx FIFO counter
-#define rEP3_DMA_TTC_L     (*(volatile unsigned char *)0x5200024c)	//EP3 DMA total Tx counter
-#define rEP3_DMA_TTC_M     (*(volatile unsigned char *)0x52000250)
-#define rEP3_DMA_TTC_H     (*(volatile unsigned char *)0x52000254)
+#define rEP3_DMA_TX_LO     (*(volatile unsigned char *)0x5200024c)	//EP3 DMA total Tx counter
+#define rEP3_DMA_TX_MD     (*(volatile unsigned char *)0x52000250)
+#define rEP3_DMA_TX_HI     (*(volatile unsigned char *)0x52000254)
 #define rEP4_DMA_CON       (*(volatile unsigned char *)0x52000258)	//EP4 DMA interface control
 #define rEP4_DMA_UNIT      (*(volatile unsigned char *)0x5200025c)	//EP4 DMA Tx unit counter
 #define rEP4_DMA_FIFO      (*(volatile unsigned char *)0x52000260)	//EP4 DMA Tx FIFO counter
-#define rEP4_DMA_TTC_L     (*(volatile unsigned char *)0x52000264)	//EP4 DMA total Tx counter
-#define rEP4_DMA_TTC_M     (*(volatile unsigned char *)0x52000268)
-#define rEP4_DMA_TTC_H     (*(volatile unsigned char *)0x5200026c)
+#define rEP4_DMA_TX_LO     (*(volatile unsigned char *)0x52000264)	//EP4 DMA total Tx counter
+#define rEP4_DMA_TX_MD     (*(volatile unsigned char *)0x52000268)
+#define rEP4_DMA_TX_HI     (*(volatile unsigned char *)0x5200026c)
 #endif   // __BIG_ENDIAN
 
 
@@ -700,6 +734,7 @@
 #define rGSTATUS3  (*(volatile unsigned *)0x560000b8)	//Saved data0(32-bit) before entering POWER_OFF mode 
 #define rGSTATUS4  (*(volatile unsigned *)0x560000bc)	//Saved data0(32-bit) before entering POWER_OFF mode 
 
+#define isS3C2410  ((rGSTATUS1 & 0xffff0000) == 0x32410000)
 // Added for 2440
 #define rFLTOUT		(*(volatile unsigned *)0x560000c0)	// Filter output(Read only)
 #define rDSC0			(*(volatile unsigned *)0x560000c4)	// Strength control register 0
@@ -792,13 +827,11 @@
 
 #ifdef __BIG_ENDIAN
 #define rSDIDAT    (*(volatile unsigned *)0x5a000040)	//SDI data
-#define SDIDAT     0x5a000040//0x5a00003f
 #else  // Little Endian
 #define rSDIDAT    (*(volatile unsigned *)0x5a000040)	//SDI data
-#define SDIDAT     0x5a000040//0x5a00003c
 #endif   //SD Interface
 
-
+#define _ISR_STARTADDRESS   ((unsigned)isr_handle_array)
 // Exception vector
 #define pISR_RESET		(*(unsigned *)(_ISR_STARTADDRESS+0x0))
 #define pISR_UNDEF		(*(unsigned *)(_ISR_STARTADDRESS+0x4))

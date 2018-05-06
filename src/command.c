@@ -77,7 +77,58 @@ CMD_DEFINE(nes, "nes", "nes") {
 	InfoNES_Main();
 	return 0;
 }
+CMD_DEFINE(usbdebug, "usbdebug", "usbdebug") {
+	DbgPrintf("show");
+	return 0;
+}
+CMD_DEFINE(delay_u, "delay_u", "delay_u") {
+	if (argc < 2)
+		return 1;
+	if(argc == 2) {
+		delay_u(simple_strtoul(argv[1], NULL, 10));
+	}else if(argc == 3) {
+		for(int i = 0; i < simple_strtoul(argv[1], NULL, 10); i++){
+			delay_u(simple_strtoul(argv[2], NULL, 10));
+		}
+	}else{
+		return 1;
+	}
+	return 0;
+}
+CMD_DEFINE(usbslave,
+		   "usbslave - get file from host(PC)",
+		   "[loadAddress] [wait] \n"
+		   "\"wait\" is 0 or 1, 0 means for return immediately, not waits for the finish of transferring") {
+	//TODO:最好将文件下载到文件系统中
+	extern int download_run;
+	extern volatile U32 dwUSBBufBase;
+	extern volatile U32 dwUSBBufSize;
 
+	int wait = 1;
+#define BUF_SIZE (1024*1024)
+	/* download_run为1时表示将文件保存在USB Host发送工具dnw指定的位置
+	 * download_run为0时表示将文件保存在参数argv[2]指定的位置
+	 * 要下载程序到内存，然后直接运行时，要设置download_run=1，这也是这个参数名字的来由
+	 */
+	//由于0x3000000存放了页表，必须download_run = 0确保下载地址正确，即不采用上位机设置的地址
+	download_run = 0;//默认由下位机决定地址和大小
+	if (argc == 2) {
+		//dwUSBBufBase = kmalloc(BUF_SIZE);
+		dwUSBBufBase = 0x30a00000;
+		if (!dwUSBBufBase) {
+			printf("malloc memory error!\n");
+			return 1;
+		}
+		wait = (int)simple_strtoul(argv[1], NULL, 16);
+		dwUSBBufSize = BUF_SIZE;
+	} else {
+		return 1;
+	}
+	usb_init_slave();
+	int size = usb_receive(dwUSBBufBase, dwUSBBufSize, wait);
+	assert(size > 0 && size <= BUF_SIZE);
+	return 0;
+}
 CMD_DEFINE(help, "help", "help") {
 	for (int i = 0; ct_list[i] != NULL; i++) {
 		printf("%-20s:\t-%s\n", ct_list[i]->name, ct_list[i]->usage);
@@ -91,6 +142,9 @@ cmd_table *ct_list[] = {
 	CMD_ENTRY(wav),
 	CMD_ENTRY(mp3),
 	CMD_ENTRY(nes),
+	CMD_ENTRY(usbslave),
+	CMD_ENTRY(delay_u),
+	CMD_ENTRY(usbdebug),
 	NULL
 };
 cmd_table *search_cmd(char *name) {

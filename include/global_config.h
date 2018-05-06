@@ -1,5 +1,9 @@
 #ifndef __GLOBAL_CONFIG_H__
 #define __GLOBAL_CONFIG_H__
+
+#define CONFIG_S3C2440
+#define CONFIG_S3C2410
+
 #define BOOT_FORM_STEPPINGSTONE	0
 #define BOOT_FORM_SDRAM			1
 #define BOOT_MODE				BOOT_FORM_SDRAM

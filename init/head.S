@@ -60,10 +60,10 @@ Reset:
 
     msr cpsr_c, #0xdf       @ 进入系统模式
     ldr sp, =0x33e00000     @ 设置系统模式栈指针
-	
+
 	msr cpsr_c, #0xd7       @ 进入数据访问终止模式
     ldr sp, =0x33e80000     @ 设置数据访问终止模式栈指针
-	
+
 	msr cpsr_c, #0xdb       @ 进入未定义指令中止模式
     ldr sp, =0x33e80000     @ 设置未定义指令中止模式栈指针
 
