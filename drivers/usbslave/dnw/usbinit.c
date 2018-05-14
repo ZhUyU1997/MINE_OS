@@ -26,8 +26,6 @@ S3C24X0_CLOCK_POWER * clk_powerregs;
 S3C24X0_GPIO * gpioregs;
 
 void USB_ISR_Init(void);
-
-//void WaitDownload(void);
 U32 usb_receive(char *buf, size_t len, U32 wait);
 /*
 extern void Timer_InitEx(void);
@@ -37,7 +35,7 @@ extern unsigned int Timer_StopEx(void);
 //TODO:计时功能待实现
 #define Timer_InitEx()
 #define Timer_StartEx()
-#define Timer_StopEx() 60
+#define Timer_StopEx() (60)
 
 /*
  * Reads and returns a character from the serial port
@@ -72,7 +70,7 @@ char awaitkey(unsigned long delay, int* error_p) {
 	//TODO:可能会造成死循环
 	return getc();
 }
-#define CTRL(x)   (x & 0x1f)
+#define CTRL(x)   ((x) & 0x1f)
 #define INTR      CTRL('C')
 
 void Clk0_Enable(int clock_sel);
@@ -82,7 +80,7 @@ void Clk1_Disable(void);
 
 volatile U32 downloadAddress;
 
-void (*restart)(void) = (void (*)(void))0x0;
+void (*restart)(void) = 0;
 void (*run)(void);
 
 
@@ -96,16 +94,12 @@ volatile int isUsbdSetConfiguration;
 
 int download_run = 0;
 volatile U32 tempDownloadAddress;
-int menuUsed = 0;
-
 volatile U32 dwUSBBufReadPtr;
 volatile U32 dwUSBBufWritePtr;
 volatile U32 dwWillDMACnt;
 volatile U32 bDMAPending;
 volatile U32 dwUSBBufBase;
 volatile U32 dwUSBBufSize;
-
-int consoleNum;
 
 
 //***************************[ PORTS ]****************************************************

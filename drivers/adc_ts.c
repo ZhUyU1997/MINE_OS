@@ -153,7 +153,6 @@ void AdcTsIntHandle(void) {
  * 初始化触摸屏
  */
 void init_Ts(void) {
-	set_irq_handler(INT_ADC, AdcTsIntHandle); // 设置ADC中断服务程序
 	// 使能预分频功能，设置A/D转换器的时钟 = PCLK/(49+1)
 	ADCCON = PRESCALE_EN | PRSCVL(49);
 
@@ -161,14 +160,14 @@ void init_Ts(void) {
 	 * 即按下触摸屏后，再过13.56ms才采样
 	 */
 	ADCDLY = 50000;
+	set_subint(INT_TC);// 开启INT_TC中断，即触摸屏被按下或松开时产生中断
+	set_subint(INT_ADC_S);// 开启INT_ADC中断，即A/D转换结束时产生中断
+	request_irq(INT_ADC, AdcTsIntHandle); // 设置ADC中断服务程序
 	wait_down_int();    /* 进入"等待中断模式"，等待触摸屏被按下 */
-	INTMSK_set(INT_ADC);// 开启ADC总中断
-	INTSUBMSK_set(INT_TC);// 开启INT_TC中断，即触摸屏被按下或松开时产生中断
-	INTSUBMSK_set(INT_ADC_S);// 开启INT_ADC中断，即A/D转换结束时产生中断
 }
 void close_Ts(void) {
-	INTSUBMSK_clr(INT_TC);
-	INTSUBMSK_clr(INT_ADC_S);
-	INTMSK_clr(INT_ADC);
+	clr_subint(INT_TC);
+	clr_subint(INT_ADC_S);
+	free_irq(INT_ADC);
 }
 

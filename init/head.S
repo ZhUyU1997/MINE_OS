@@ -97,7 +97,7 @@ HandleIRQ:
                                     @ 初始值是上面设置的0x33d00000
 
     LDR		LR, =int_return			@ 设置调用IRQ_Handle函数后的返回地址  
-    LDR		PC, =IRQ_Handle			@ 调用中断分发函数，在interrupt.c中
+    LDR		PC, =do_irq				@ 调用中断分发函数，在interrupt.c中
 int_return:
 	MSR     CPSR_c, #0xd3
 	LDMFD   SP!, {R0}               @ POP the task''s CPSR 

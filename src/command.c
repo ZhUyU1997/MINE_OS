@@ -78,7 +78,41 @@ CMD_DEFINE(nes, "nes", "nes") {
 	return 0;
 }
 CMD_DEFINE(usbdebug, "usbdebug", "usbdebug") {
-	DbgPrintf("show");
+	//DbgPrintf("show");
+	return 0;
+}
+CMD_DEFINE(usbmouse, "usbmouse", "usbmouse") {
+	while (1) {
+		U8 Buf[4]={0,0,0,0};
+		switch(getc()){
+			case 'a':
+				Buf[1] = -1;	//这里一次往左移动一个单位。
+				break;
+			case 'd':
+				Buf[1] = 1;		//这里一次往右移动一个单位。
+				break;
+			case 'w':
+				Buf[2] = -1;	//这里一次往上移动一个单位。
+				break;
+			case 's':
+				Buf[2] = 1;		//这里一次往下移动一个单位。
+				break;
+			case 'j':
+				Buf[0] |= 0x01;	//D0为鼠标左键
+				break;
+			case 'k':
+				Buf[0] |= 0x02;	//D1为鼠标右键
+				break;
+			case 'q':
+			case 'Q':
+				return 0;
+				break;
+			default:
+				break;
+		}
+		send_ep1_data(Buf, sizeof(Buf));
+	}
+	
 	return 0;
 }
 CMD_DEFINE(delay_u, "delay_u", "delay_u") {
@@ -99,6 +133,7 @@ CMD_DEFINE(usbslave,
 		   "usbslave - get file from host(PC)",
 		   "[loadAddress] [wait] \n"
 		   "\"wait\" is 0 or 1, 0 means for return immediately, not waits for the finish of transferring") {
+#if 0
 	//TODO:最好将文件下载到文件系统中
 	extern int download_run;
 	extern volatile U32 dwUSBBufBase;
@@ -127,6 +162,7 @@ CMD_DEFINE(usbslave,
 	usb_init_slave();
 	int size = usb_receive(dwUSBBufBase, dwUSBBufSize, wait);
 	assert(size > 0 && size <= BUF_SIZE);
+#endif
 	return 0;
 }
 CMD_DEFINE(help, "help", "help") {
@@ -145,6 +181,7 @@ cmd_table *ct_list[] = {
 	CMD_ENTRY(usbslave),
 	CMD_ENTRY(delay_u),
 	CMD_ENTRY(usbdebug),
+	CMD_ENTRY(usbmouse),
 	NULL
 };
 cmd_table *search_cmd(char *name) {

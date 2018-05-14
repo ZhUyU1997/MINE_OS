@@ -35,24 +35,16 @@ static void RdPktEp3_CheckSum(U8 *buf, int num);
 // - out_csr3 is valid.
 // ===================================================================
 
-#define CLR_EP3_OUT_PKT_READY() usbdevregs->OUT_CSR1_REG= ( out_csr3 &(~ EPO_WR_BITS)\
-		&(~EPO_OUT_PKT_READY) )
-#define SET_EP3_SEND_STALL()	usbdevregs->OUT_CSR1_REG= ( out_csr3 & (~EPO_WR_BITS)\
-		| EPO_SEND_STALL) )
-#define CLR_EP3_SENT_STALL()	usbdevregs->OUT_CSR1_REG= ( out_csr3 & (~EPO_WR_BITS)\
-		&(~EPO_SENT_STALL) )
-#define FLUSH_EP3_FIFO() 	usbdevregs->OUT_CSR1_REG= ( out_csr3 & (~EPO_WR_BITS)\
-		|EPO_FIFO_FLUSH) )
+#define CLR_EP3_OUT_PKT_READY() usbdevregs->OUT_CSR1_REG = ( out_csr3 & (~EPO_WR_BITS) &(~EPO_OUT_PKT_READY) )
+#define SET_EP3_SEND_STALL()	usbdevregs->OUT_CSR1_REG = ( out_csr3 & (~EPO_WR_BITS) | EPO_SEND_STALL)
+#define CLR_EP3_SENT_STALL()	usbdevregs->OUT_CSR1_REG = ( out_csr3 & (~EPO_WR_BITS) &(~EPO_SENT_STALL) )
+#define FLUSH_EP3_FIFO()		usbdevregs->OUT_CSR1_REG = ( out_csr3 & (~EPO_WR_BITS) |EPO_FIFO_FLUSH) 
 
-// ***************************
-// *** VERY IMPORTANT NOTE ***
-// ***************************
+/* VERY IMPORTANT NOTE */
 // Prepare for the packit size constraint!!!
-
 // EP3 = OUT end point.
 
-U8 ep3Buf[EP3_PKT_SIZE];
-static U8 tempBuf[64 + 1];
+static U8 ep3Buf[EP3_PKT_SIZE];
 
 void Ep3Handler(void) {
 	U8 out_csr3;
@@ -75,20 +67,11 @@ void Ep3Handler(void) {
 			if (download_run == 0) {
 				downloadAddress = tempDownloadAddress;
 			} else {
-				downloadAddress =
-					*((U8 *)(downPt + 0)) +
-					(*((U8 *)(downPt + 1)) << 8) +
-					(*((U8 *)(downPt + 2)) << 16) +
-					(*((U8 *)(downPt + 3)) << 24);
-
+				downloadAddress = ((U32 *)downPt)[0];
 				dwUSBBufReadPtr = downloadAddress;
 				dwUSBBufWritePtr = downloadAddress;
 			}
-			downloadFileSize =
-				*((U8 *)(downPt + 4)) +
-				(*((U8 *)(downPt + 5)) << 8) +
-				(*((U8 *)(downPt + 6)) << 16) +
-				(*((U8 *)(downPt + 7)) << 24);
+			downloadFileSize = ((U32 *)downPt)[1];
 			checkSum = 0;
 			downPt = (U8 *)downloadAddress;
 
@@ -98,7 +81,7 @@ void Ep3Handler(void) {
 #if USBDMA
 			//CLR_EP3_OUT_PKT_READY() is not executed.
 			//So, USBD may generate NAK until DMA2 is configured for USB_EP3;
-			INTSUBMSK_set(INT_USBD); //for debug
+			INTSUBMSK_clr(INT_USBD); //for debug
 			return;
 #endif
 		} else {
@@ -156,37 +139,27 @@ void IsrDma2(void) {
 	usbdevregs->INDEX_REG = 3;
 	out_csr3 = usbdevregs->OUT_CSR1_REG;
 
-	ClearPending(INT_DMA2);
-
-	/* thisway.diy, 2006.06.22
-	 * When the first DMA interrupt happened, it has received max (0x80000 + EP3_PKT_SIZE) bytes data from PC
-	 */
+	//When the first DMA interrupt happened, it has received max (0x80000 + EP3_PKT_SIZE) bytes data from PC
 	if (!totalDmaCount)
 		totalDmaCount = dwWillDMACnt + EP3_PKT_SIZE;
 	else
 		totalDmaCount += dwWillDMACnt;
-
-//    dwUSBBufWritePtr = ((dwUSBBufWritePtr + dwWillDMACnt - USB_BUF_BASE) % USB_BUF_SIZE) + USB_BUF_BASE; /* thisway.diy, 2006.06.21 */
 	dwUSBBufWritePtr = ((dwUSBBufWritePtr + dwWillDMACnt - dwUSBBufBase) % dwUSBBufSize) + dwUSBBufBase;
 
-	if (totalDmaCount >= downloadFileSize) { // is last?
+	if (totalDmaCount >= downloadFileSize) {//传输完毕
 		totalDmaCount = downloadFileSize;
-
 		ConfigEp3IntMode();
-
 		if (out_csr3 & EPO_OUT_PKT_READY) {
 			CLR_EP3_OUT_PKT_READY();
 		}
 		INTMSK_clr(INT_DMA2);
 		INTMSK_set(INT_USBD);
-	} else {
+	} else {//传输未完成
 		if ((totalDmaCount + 0x80000) < downloadFileSize) {
 			dwWillDMACnt = 0x80000;
 		} else {
 			dwWillDMACnt = downloadFileSize - totalDmaCount;
 		}
-
-		// dwEmptyCnt = (dwUSBBufReadPtr - dwUSBBufWritePtr - 1 + USB_BUF_SIZE) % USB_BUF_SIZE; /* thisway.diy, 2006.06.21 */
 		dwEmptyCnt = (dwUSBBufReadPtr - dwUSBBufWritePtr - 1 + dwUSBBufSize) % dwUSBBufSize;
 		if (dwEmptyCnt >= dwWillDMACnt) {
 			ConfigEp3DmaMode(dwUSBBufWritePtr, dwWillDMACnt);

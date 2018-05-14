@@ -76,9 +76,8 @@ enum EINT_NUM{
 };
 void enable_irq(void);
 void disable_irq(void);
-void INTMSK_set(enum INT_NUM num);
-void INTMSK_clr(enum INT_NUM num);
-void INTSUBMSK_set(enum INT_SUB_NUM num);
-void INTSUBMSK_clr(enum INT_SUB_NUM num);
-void set_irq_handler(int offset,int (*hander)(void));
+void set_subint(enum INT_SUB_NUM num);
+void clr_subint(enum INT_SUB_NUM num);
+void request_irq(enum INT_NUM num,int (*hander)(void));
+void free_irq(enum INT_NUM offset);
 #endif

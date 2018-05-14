@@ -48,7 +48,7 @@ void ReconfigUsbd(void) {
 
 	/* ¶Ëµã1 */
 	usbdevregs->INDEX_REG = 1;
-#if (EP1_PKT_SIZE==32)
+#if (EP1_PKT_SIZE == 32)
 	usbdevregs->MAXP_REG = FIFO_SIZE_32;	//EP1:max packit size = 32
 #else
 	usbdevregs->MAXP_REG = FIFO_SIZE_64;	//EP1:max packit size = 64
@@ -105,50 +105,32 @@ void RdPktEp0(U8 *buf, int num) {
 		buf[i] = (U8)usbdevregs->fifo[0].EP_FIFO_REG;
 	}
 }
-
-
 void WrPktEp0(U8 *buf, int num) {
 	for (int i = 0; i < num; i++) {
 		usbdevregs->fifo[0].EP_FIFO_REG = buf[i];
 	}
 }
-
-
 void WrPktEp1(U8 *buf, int num) {
-	int i;
-
-	for (i = 0; i < num; i++) {
+	for (int i = 0; i < num; i++) {
 		usbdevregs->fifo[1].EP_FIFO_REG = buf[i];
 	}
 }
-
-
 void WrPktEp2(U8 *buf, int num) {
-	int i;
-
-	for (i = 0; i < num; i++) {
+	for (int i = 0; i < num; i++) {
 		usbdevregs->fifo[2].EP_FIFO_REG = buf[i];
 	}
 }
-
-
 void RdPktEp3(U8 *buf, int num) {
 	for (int i = 0; i < num; i++) {
 		buf[i] = (U8)usbdevregs->fifo[3].EP_FIFO_REG;
 	}
 }
-
-
 void RdPktEp4(U8 *buf, int num) {
 	for (int i = 0; i < num; i++) {
 		buf[i] = (U8)usbdevregs->fifo[4].EP_FIFO_REG;
 	}
 }
-
-
 void ConfigEp3DmaMode(U32 bufAddr, U32 count) {
-	int i;
-
 	usbdevregs->INDEX_REG = 3;
 	count = count & 0xfffff; //transfer size should be <1MB
 
@@ -161,17 +143,14 @@ void ConfigEp3DmaMode(U32 bufAddr, U32 count) {
 	//demand,requestor=APB,CURR_TC int enable,unit transfer,
 	//single service,src=USBD,H/W request,autoreload,byte,CURR_TC
 #else
-//    rDCON2=(count)|(1<<31)|(0<<30)|(1<<29)|(0<<28)|(0<<27)|(4<<24)|(1<<23)|(0<<22)|(0<<20);
-	/* changed by thisway.diy to disable autoreload */
+	/* disable autoreload */
 	dmaregs->dma[2].DCON = (count) | (1 << 31) | (0 << 30) | (1 << 29) | (0 << 28) | (0 << 27) | (4 << 24) | (1 << 23) | (1 << 22) | (0 << 20);
 	//handshake,requestor=APB,CURR_TC int enable,unit transfer,
-	//single service,src=USBD,H/W request,autoreload,byte,CURR_TC
+	//single service,src=USBD,H/W request,byte,CURR_TC
 #endif
 	dmaregs->dma[2].DMASKTRIG = (1 << 1);
 	//DMA 2 on
-
 	//rEP3_DMA_FIFO=0x40; //not needed for OUT operation.
-
 	usbdevregs->ep3.EP_DMA_TTC_L = 0xff;
 	usbdevregs->ep3.EP_DMA_TTC_M = 0xff;
 	usbdevregs->ep3.EP_DMA_TTC_H = 0x0f;
@@ -189,7 +168,7 @@ void ConfigEp3DmaMode(U32 bufAddr, U32 count) {
 #endif
 	//wait until DMA_CON is effective.
 	usbdevregs->ep3.EP_DMA_CON;
-	for (i = 0; i < 10; i++);
+	for (int i = 0; i < 10; i++);
 
 	/* add by thisway.diy for non-autoreload */
 	dmaregs->dma[3].DMASKTRIG = (1 << 1);

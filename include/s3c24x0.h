@@ -329,7 +329,10 @@ typedef struct {
     S3C24X0_REG8    res9[7];
     S3C24X0_REG8    MAXP_REG;
     S3C24X0_REG8    res10[3];
-    S3C24X0_REG8    EP0_CSR_IN_CSR1_REG;
+	union{
+		S3C24X0_REG8    EP0_CSR;
+		S3C24X0_REG8    IN_CSR1_REG;
+	};
     S3C24X0_REG8    res11[3];
     S3C24X0_REG8    IN_CSR2_REG;
     S3C24X0_REG8    res12[7];

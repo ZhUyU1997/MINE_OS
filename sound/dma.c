@@ -55,7 +55,7 @@ void dma_exit() {
 	if (dma_status == DMA_FINISH) {
 		dma_end_func = NULL;
 		dma_regs.dmasktrig  &= ~(1 << 1);
-		INTMSK_clr(INT_DMA2);
+		free_irq(INT_DMA2);
 		dma_init();
 	}
 }
@@ -92,8 +92,7 @@ void DMA2IntHandle(void) {
 void dma_start(void) {
 	assert(dma_status == DMA_READY);
 	if (dma_status == DMA_READY) {
-		set_irq_handler(INT_DMA2, DMA2IntHandle);
-		INTMSK_set(INT_DMA2);
+		request_irq(INT_DMA2, DMA2IntHandle);
 		dma_regs.dmasktrig  = (1 << 1);
 		dma_status = DMA_RUN;
 	}

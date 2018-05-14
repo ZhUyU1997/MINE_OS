@@ -68,7 +68,7 @@ int main() {
 	show_bss_info();
 	printf("初始化MMU...\n");
 	mmu_init();
-	enable_irq();
+
 	printf("初始化TIMER...\n");
 	timer_init();
 
@@ -83,6 +83,8 @@ int main() {
 	SDI_init();
 	printf("初始化fatfs...\n");
 	f_mount(0,&fatworkarea);
+	usb_init_slave();
+	enable_irq();
 	cmd_loop();
 	/*TEST_SD();*/
 	printf("初始化uC/OS...\n");
@@ -172,7 +174,6 @@ void Task0(void *pdata) {
 
 
 void EINT_DM9000_Init(void) {
-	set_irq_handler(EINT4_7, DM9000A_Rx);
 	//GPF7=EINT7
 	GPFCON &=  ~(3 << 14);
 	GPFCON |=  (2 << 14);
@@ -185,7 +186,7 @@ void EINT_DM9000_Init(void) {
 	EXTINT0 |= (1 << 28);
 	
 	EINTMASK &= ~(1 << EINT7);
-	INTMSK_set(EINT4_7);
+	request_irq(EINT4_7, DM9000A_Rx);
 }
 
 //lwip module init

@@ -42,10 +42,9 @@ static void UART0_UART0_ISR(){
 void uart0_interrupt_init(void)
 { 
 	//TODO:INT_ERR0
-	set_irq_handler(INT_UART0, UART0_UART0_ISR);
 	//INTSUBMSK_set(INT_RXD0|INT_TXD0);
-	INTSUBMSK_set(INT_RXD0);
-	INTMSK_set(INT_UART0);
+	set_subint(INT_RXD0);
+	request_irq(INT_UART0, UART0_UART0_ISR);
 }  
 
 /*
