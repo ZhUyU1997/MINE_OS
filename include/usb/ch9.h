@@ -366,13 +366,7 @@ struct usb_hid_descriptor
 	__le16   wDescriptorLength;
 }__attribute__ ((packed));
 
-struct g_config_desc_to_send 
-{
-	struct usb_config_descriptor g_config_desc;
-	struct usb_interface_descriptor g_interface_desc;
-	struct usb_hid_descriptor g_hid_desc;
-	struct usb_endpoint_descriptor g_endpoint_desc;
-}__attribute__ ((packed));
+
 /*-------------------------------------------------------------------------*/
 
 /**

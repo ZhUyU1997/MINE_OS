@@ -1,8 +1,15 @@
 #include <s3c24x0.h>
+#include <sys/types.h>
 #include <assert.h>
 #include <usb/ch9.h>
-#include "usb.h"
-#include "2440usb.h"
+#include <usb/2440usb.h>
+struct g_config_desc_to_send 
+{
+	struct usb_config_descriptor g_config_desc;
+	struct usb_interface_descriptor g_interface_desc;
+	struct usb_hid_descriptor g_hid_desc;
+	struct usb_endpoint_descriptor g_endpoint_desc;
+} __attribute__ ((packed));
 
 /*
  * USB报告描述符的定义
@@ -12,7 +19,7 @@
  * 滚轮的改变量。我们在中断端点1中应该要按照上面的格式返回实际的
  * 鼠标数据。
  */
-const char gHIDReportDescriptor[52] = {
+static const char gHIDReportDescriptor[52] = {
 	//每行开始的第一字节为该条目的前缀，前缀的格式为：
 	//D7~D4：bTag。D3~D2：bType；D1~D0：bSize。以下分别对每个条目注释。
 
@@ -117,7 +124,7 @@ const char gHIDReportDescriptor[52] = {
 	0xC0U                           /* End Collection (Application)         */
 };
 
-struct usb_device_descriptor g_usb_dev_desc = {
+static struct usb_device_descriptor g_usb_dev_desc = {
 	.bLength 			= USB_DT_DEVICE_SIZE,
 	.bDescriptorType 	= USB_DT_DEVICE,
 	.bcdUSB 			= 0x0110,
@@ -132,7 +139,7 @@ struct usb_device_descriptor g_usb_dev_desc = {
 	.iSerialNumber		= 3,
 	.bNumConfigurations	= 1
 };
-struct g_config_desc_to_send g_config_all = {
+static struct g_config_desc_to_send g_config_all = {
 	.g_config_desc =
 	{
 		.bLength			= USB_DT_CONFIG_SIZE,
@@ -185,13 +192,13 @@ struct g_config_desc_to_send g_config_all = {
 
 #define LANGID_US_L 		    	(0x09)
 #define LANGID_US_H 		    	(0x04)
-char g_string_desc0[4] = {
+static char g_string_desc0[4] = {
 	4,
 	USB_DT_STRING,
 	LANGID_US_L,
 	LANGID_US_H
 };
-char g_string_desc1[20] = {
+static char g_string_desc1[20] = {
 	20,
 	USB_DT_STRING,
 	'T', 0x00,
@@ -204,7 +211,7 @@ char g_string_desc1[20] = {
 	'D', 0x00,
 	' ', 0x00,
 };
-char g_string_desc2[20] = {
+static char g_string_desc2[20] = {
 	20,
 	USB_DT_STRING,
 	'U', 0x00,
@@ -217,7 +224,7 @@ char g_string_desc2[20] = {
 	'E', 0x00,
 	' ', 0x00,
 };
-char g_string_desc3[20] = {
+static char g_string_desc3[20] = {
 	20,
 	USB_DT_STRING,
 	'U', 0x00,
@@ -229,4 +236,70 @@ char g_string_desc3[20] = {
 	'S', 0x00,
 	'E', 0x00,
 	' ', 0x00,
+};
+
+static void usbdev_mouse_reset(void) {
+	usbdevregs->EP_INT_EN_REG = 0;
+	usbdevregs->USB_INT_EN_REG = 0;
+	/* 禁止挂起模式 */
+	usbdevregs->PWR_REG = PWR_REG_DEFAULT_VALUE;	//disable suspend mode
+	usbdevregs->FUNC_ADDR_REG = 0x80;
+	/* 端点0 */
+	SET_INDEX(0);
+	usbdevregs->INDEX_REG = 0;
+	usbdevregs->MAXP_REG = FIFO_SIZE_8;   	//EP0 max packit size = 8
+	usbdevregs->EP0_CSR = EP0_SERVICED_OUT_PKT_RDY | EP0_SERVICED_SETUP_END;
+	FLUSH_EP0_FIFO();
+	/* 端点1 */
+	SET_INDEX(1);
+	usbdevregs->MAXP_REG = FIFO_SIZE_64;
+	usbdevregs->IN_CSR1_REG = EPI_FIFO_FLUSH | EPI_CDT;
+	//usbdevregs->IN_CSR2_REG = EPI_MODE_IN | EPI_IN_DMA_INT_MASK | EPO_ISO; //IN mode, IN_DMA_INT=masked
+	//TODO:EPO_ISO需去除，原因未知
+	usbdevregs->IN_CSR2_REG = EPI_MODE_IN | EPI_IN_DMA_INT_MASK; //IN mode, IN_DMA_INT=masked
+	usbdevregs->OUT_CSR1_REG = EPO_CDT;
+	usbdevregs->OUT_CSR2_REG = EPO_ISO | EPO_OUT_DMA_INT_MASK;
+
+	usbdevregs->EP_INT_REG = EP0_INT | EP1_INT | EP2_INT | EP3_INT | EP4_INT;
+	usbdevregs->USB_INT_REG = RESET_INT | SUSPEND_INT | RESUME_INT;
+
+	usbdevregs->EP_INT_EN_REG = EP0_INT | EP1_INT;
+	usbdevregs->USB_INT_EN_REG = RESET_INT;
+
+	ep0State = EP0_STATE_INIT;
+}
+
+static void Ep1Handler(void) {
+	return;
+}
+
+extern void handle_hid_class(struct usb_ctrlrequest ctrlreq);
+
+struct usbdev_struct usbdev = {
+	.dev_desc = &g_usb_dev_desc,
+	.config_desc = &g_config_all.g_config_desc,
+	.interface_desc = &g_config_all.g_interface_desc,
+	.hid_desc = &g_config_all.g_hid_desc,
+	.endpoint_desc[0] = &g_config_all.g_endpoint_desc,
+	.endpoint_desc[1] = NULL,
+	.endpoint_desc[2] = NULL,
+	.endpoint_desc[3] = NULL,
+	.string_desc[0] = &g_string_desc0,
+	.string_desc[1] = &g_string_desc1,
+	.string_desc[2] = &g_string_desc2,
+	.string_desc[3] = &g_string_desc3,
+	.string_desc_size[0] = sizeof(g_string_desc0),
+	.string_desc_size[1] = sizeof(g_string_desc1),
+	.string_desc_size[2] = sizeof(g_string_desc2),
+	.string_desc_size[3] = sizeof(g_string_desc3),
+	.config_all = &g_config_all,
+	.config_all_size = sizeof(g_config_all),
+	.report_desc = &gHIDReportDescriptor,
+	.report_desc_size = sizeof(gHIDReportDescriptor),
+	.ep_handler[0] = Ep1Handler,
+	.ep_handler[1] = NULL,
+	.ep_handler[2] = NULL,
+	.ep_handler[3] = NULL,
+	.reset = usbdev_mouse_reset,
+	.handle_class = handle_hid_class,
 };

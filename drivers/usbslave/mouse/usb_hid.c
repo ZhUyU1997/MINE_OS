@@ -1,7 +1,7 @@
 #include <s3c24x0.h>
 #include <assert.h>
 #include <usb/ch9.h>
-#include "2440usb.h"
+#include <usb/2440usb.h>
 
 /* Class-specific Request Codes */
 #define GET_DEVICE_ID               (0)

@@ -1,5 +1,6 @@
 #include <sys/types.h>
 #include <assert.h>
+#include <usb/2440usb.h>
 #include "command.h"
 #include "ff.h"
 
@@ -78,10 +79,13 @@ CMD_DEFINE(nes, "nes", "nes") {
 	return 0;
 }
 CMD_DEFINE(usbdebug, "usbdebug", "usbdebug") {
-	//DbgPrintf("show");
+	#if USB_DEBUG == 1
+	DbgPrintf("show");
+	#endif
 	return 0;
 }
 CMD_DEFINE(usbmouse, "usbmouse", "usbmouse") {
+#if 1
 	while (1) {
 		U8 Buf[4]={0,0,0,0};
 		switch(getc()){
@@ -110,9 +114,10 @@ CMD_DEFINE(usbmouse, "usbmouse", "usbmouse") {
 			default:
 				break;
 		}
-		send_ep1_data(Buf, sizeof(Buf));
+		usb_send_init(EP1, Buf, sizeof(Buf));
+		usb_send_message(EP1);
 	}
-	
+#endif
 	return 0;
 }
 CMD_DEFINE(delay_u, "delay_u", "delay_u") {

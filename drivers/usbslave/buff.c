@@ -1,10 +1,11 @@
 #include <sys/types.h>
 #include <assert.h>
-#include "usb.h"
-#include "2440usb.h"
+#include <usb/2440usb.h>
 
 void usb_buf_init(struct usb_buf *ub, U8 *buf, U32 size) {
 	assert(ub && buf && size);
+	//buf不为空，size则必须大于0
+	assert((!buf) || size);
 	ub->buf = buf;
 	ub->size = size;
 	ub->count = 0;

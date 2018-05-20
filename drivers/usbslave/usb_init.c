@@ -1,7 +1,7 @@
 #include <s3c24x0.h>
 #include <interrupt.h>
 #include <timer.h>
-#include "2440usb.h"
+#include <usb/2440usb.h>
 
 S3C24X0_USB_DEVICE  *usbdevregs = S3C24X0_GetBase_USB_DEVICE();
 S3C24X0_GPIO *gpioregs = S3C24X0_GetBase_GPIO();
@@ -102,44 +102,14 @@ void Port_Init(void) {
 	gpioregs->EXTINT2 = 0x22222222;    // EINT[23:16]
 }
 
-void ReconfigUsbd(void) {
-	usbdevregs->EP_INT_EN_REG = 0;
-	usbdevregs->USB_INT_EN_REG = 0;
-	/* 禁止挂起模式 */
-	usbdevregs->PWR_REG = PWR_REG_DEFAULT_VALUE;	//disable suspend mode
-	usbdevregs->FUNC_ADDR_REG = 0x80;
-	/* 端点0 */
-	SET_INDEX(0);
-	usbdevregs->INDEX_REG = 0;
-	usbdevregs->MAXP_REG = FIFO_SIZE_8;   	//EP0 max packit size = 8
-	usbdevregs->EP0_CSR = EP0_SERVICED_OUT_PKT_RDY | EP0_SERVICED_SETUP_END;
-	FLUSH_EP0_FIFO();
-	/* 端点1 */
-	SET_INDEX(1);
-	usbdevregs->MAXP_REG = FIFO_SIZE_32;
-	usbdevregs->IN_CSR1_REG = EPI_FIFO_FLUSH | EPI_CDT;
-	//usbdevregs->IN_CSR2_REG = EPI_MODE_IN | EPI_IN_DMA_INT_MASK | EPO_ISO; //IN mode, IN_DMA_INT=masked
-	//TODO:EPO_ISO需去除，原因未知
-	usbdevregs->IN_CSR2_REG = EPI_MODE_IN | EPI_IN_DMA_INT_MASK; //IN mode, IN_DMA_INT=masked
-	usbdevregs->OUT_CSR1_REG = EPO_CDT;
-	usbdevregs->OUT_CSR2_REG = EPO_ISO | EPO_OUT_DMA_INT_MASK;
 
-	usbdevregs->EP_INT_REG = EP0_INT | EP1_INT | EP2_INT | EP3_INT | EP4_INT;
-	usbdevregs->USB_INT_REG = RESET_INT | SUSPEND_INT | RESUME_INT;
-
-	usbdevregs->EP_INT_EN_REG = EP0_INT | EP1_INT;
-	usbdevregs->USB_INT_EN_REG = RESET_INT;
-
-	ep0State = EP0_STATE_INIT;
-	isUsbdSetConfiguration = 0;
-}
 //配置UPLLCON寄存器
 void ChangeUPllValue(int mdiv, int pdiv, int sdiv) {
 	clk_powerregs->UPLLCON = (mdiv << 12) | (pdiv << 4) | sdiv;
 }
 void usb_init_slave(void) {
 	ChangeUPllValue(0x38, 2, 2);	// UCLK=48Mhz
-	ReconfigUsbd();
+	usbdev.reset();
 	request_irq(INT_USBD, IsrUsbd);
 	udelay(100000);
 	/* enable USB Device */

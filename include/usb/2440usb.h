@@ -2,6 +2,7 @@
 #define __24XUSB_H__
 #include <sys/types.h>
 #include <s3c24x0.h>
+#include <usb/ch9.h>
 /*
  * USB definitons
  */
@@ -36,6 +37,24 @@ struct usb_buf {
 	U32 count;
 };
 
+
+struct usbdev_struct {
+	struct usb_device_descriptor *dev_desc;
+	struct usb_config_descriptor *config_desc;
+	struct usb_interface_descriptor *interface_desc;
+	struct usb_hid_descriptor *hid_desc;
+	struct usb_endpoint_descriptor *endpoint_desc[4];
+	char *string_desc[4];
+	U32 string_desc_size[4];
+	U8 *config_all;
+	U32 config_all_size;
+	U8 *report_desc;
+	U32 report_desc_size;
+	void (*ep_handler[4])();
+	void (*reset)();
+	void (*handle_class)(struct usb_ctrlrequest ctrlreq);
+};
+
 #ifndef S32
 typedef int S32;
 #endif
@@ -50,9 +69,6 @@ typedef char S8;
 
 #define TRUE 						(1)
 #define FALSE 						(0)
-
-
-
 
 /* Feature Selectors */
 #define DEVICE_REMOTE_WAKEUP        (1)
@@ -152,10 +168,10 @@ typedef char S8;
 #define EP_CAT_I(x,y)				x##y
 #define EP_PKT_SIZE(ep)				EP_CAT(EP_CAT(EP,ep),_PKT_SIZE)
 #define EP0_PKT_SIZE				8
-#define EP1_PKT_SIZE				32
-#define EP2_PKT_SIZE				32
-#define EP3_PKT_SIZE				32
-#define EP4_PKT_SIZE				32
+#define EP1_PKT_SIZE				64
+#define EP2_PKT_SIZE				64
+#define EP3_PKT_SIZE				64
+#define EP4_PKT_SIZE				64
 
 #define ADDR_EP_FIFO(ep)			(&(usbdevregs->fifo[ep].EP_FIFO_REG))
 #define STORE_INDEX(ep)				int index = usbdevregs->INDEX_REG;SET_INDEX(ep)
@@ -164,20 +180,25 @@ typedef char S8;
 #define PWR_REG_DEFAULT_VALUE		(DISABLE_SUSPEND)
 
 
-#define CLR_EP0_OUT_PKT_RDY() 		usbdevregs->EP0_CSR =( (usbdevregs->EP0_CSR) & (~EP0_WR_BITS) | EP0_SERVICED_OUT_PKT_RDY )
-#define CLR_EP0_OUTPKTRDY_DATAEND() usbdevregs->EP0_CSR =( (usbdevregs->EP0_CSR) & (~EP0_WR_BITS) | (EP0_SERVICED_OUT_PKT_RDY|EP0_DATA_END) )
-#define SET_EP0_IN_PKT_RDY() 		usbdevregs->EP0_CSR =( (usbdevregs->EP0_CSR) & (~EP0_WR_BITS) | (EP0_IN_PKT_READY) )
-#define SET_EP0_INPKTRDY_DATAEND() 	usbdevregs->EP0_CSR =( (usbdevregs->EP0_CSR) & (~EP0_WR_BITS) | (EP0_IN_PKT_READY|EP0_DATA_END) )
-#define CLR_EP0_SETUP_END() 		usbdevregs->EP0_CSR =( (usbdevregs->EP0_CSR) & (~EP0_WR_BITS) | (EP0_SERVICED_SETUP_END) )
-#define CLR_EP0_SENT_STALL() 		usbdevregs->EP0_CSR =( (usbdevregs->EP0_CSR) & (~EP0_WR_BITS) & (~EP0_SENT_STALL) )
+#define CLR_EP0_OUT_PKT_RDY() 		usbdevregs->EP0_CSR =((usbdevregs->EP0_CSR) & (~EP0_WR_BITS) | EP0_SERVICED_OUT_PKT_RDY)
+#define CLR_EP0_OUTPKTRDY_DATAEND() usbdevregs->EP0_CSR =((usbdevregs->EP0_CSR) & (~EP0_WR_BITS) | (EP0_SERVICED_OUT_PKT_RDY|EP0_DATA_END))
+#define SET_EP0_IN_PKT_RDY() 		usbdevregs->EP0_CSR =((usbdevregs->EP0_CSR) & (~EP0_WR_BITS) | (EP0_IN_PKT_READY))
+#define SET_EP0_INPKTRDY_DATAEND() 	usbdevregs->EP0_CSR =((usbdevregs->EP0_CSR) & (~EP0_WR_BITS) | (EP0_IN_PKT_READY|EP0_DATA_END))
+#define CLR_EP0_SETUP_END() 		usbdevregs->EP0_CSR =((usbdevregs->EP0_CSR) & (~EP0_WR_BITS) | (EP0_SERVICED_SETUP_END))
+#define CLR_EP0_SENT_STALL() 		usbdevregs->EP0_CSR =((usbdevregs->EP0_CSR) & (~EP0_WR_BITS) & (~EP0_SENT_STALL))
 #define FLUSH_EP0_FIFO() 			{while(usbdevregs->OUT_FIFO_CNT1_REG) usbdevregs->fifo[0].EP_FIFO_REG;}
+#define WAIT_EP0_IN_PKT()			while (usbdevregs->EP0_CSR & EP0_IN_PKT_READY);
 
-#define SET_EPX_IN_PKT_READY()		usbdevregs->IN_CSR1_REG = ( (usbdevregs->IN_CSR1_REG) & (~EPI_WR_BITS) | EPI_IN_PKT_READY )
-#define SET_EPX_SEND_STALL()		usbdevregs->IN_CSR1_REG = ( (usbdevregs->IN_CSR1_REG) & (~EPI_WR_BITS) | EPI_SEND_STALL   )
-#define CLR_EPX_SENT_STALL()		usbdevregs->IN_CSR1_REG = ( (usbdevregs->IN_CSR1_REG) & (~EPI_WR_BITS) & (~EPI_SENT_STALL))
-#define FLUSH_EPX_FIFO()			usbdevregs->IN_CSR1_REG = ( (usbdevregs->IN_CSR1_REG) & (~EPI_WR_BITS) | EPI_FIFO_FLUSH   )
+#define SET_EPX_IN_PKT_RDY()		usbdevregs->IN_CSR1_REG = ((usbdevregs->IN_CSR1_REG) & (~EPI_WR_BITS) | EPI_IN_PKT_READY)
+#define SET_EPX_IN_SEND_STALL()		usbdevregs->IN_CSR1_REG = ((usbdevregs->IN_CSR1_REG) & (~EPI_WR_BITS) | EPI_SEND_STALL)
+#define CLR_EPX_IN_SENT_STALL()		usbdevregs->IN_CSR1_REG = ((usbdevregs->IN_CSR1_REG) & (~EPI_WR_BITS) & (~EPI_SENT_STALL))
+#define FLUSH_EPX_IN_FIFO()			usbdevregs->IN_CSR1_REG = ((usbdevregs->IN_CSR1_REG) & (~EPI_WR_BITS) | EPI_FIFO_FLUSH)
+#define WAIT_EPX_IN_PKT()			while (usbdevregs->IN_CSR1_REG & EPI_IN_PKT_READY);
 
-
+#define CLR_EPX_OUT_PKT_RDY() 		usbdevregs->OUT_CSR1_REG = ((usbdevregs->OUT_CSR1_REG) & (~EPO_WR_BITS) & (~EPO_OUT_PKT_READY))
+#define SET_EPX_OUT_SEND_STALL()	usbdevregs->OUT_CSR1_REG = ((usbdevregs->OUT_CSR1_REG) & (~EPO_WR_BITS) | EPO_SEND_STALL)
+#define CLR_EPX_OUT_SENT_STALL()	usbdevregs->OUT_CSR1_REG = ((usbdevregs->OUT_CSR1_REG) & (~EPO_WR_BITS) & (~EPO_SENT_STALL))
+#define FLUSH_EPX_OUT_FIFO()		usbdevregs->OUT_CSR1_REG = ((usbdevregs->OUT_CSR1_REG) & (~EPO_WR_BITS) | EPO_FIFO_FLUSH) 
 
 U32 get_ep_fifo_size(enum ENDPOINT ep);
 U32 usb_buf_remain(struct usb_buf *ub);
@@ -188,21 +209,17 @@ U32 usb_buf_tx(struct usb_buf *ub, enum ENDPOINT ep);
 void usb_buf_ep0_tx(struct usb_buf *ub);
 
 void ep_tx_fifo(enum ENDPOINT ep, U8 *buf, U32 size);
-void ep_rx_fifo(enum ENDPOINT ep, U8 *buf, U32 size);
+U32 ep_rx_fifo(enum ENDPOINT ep, U8 *buf, U32 size);
 
-void RdPktEp0(U8 *buf, U32 size);
-void WrPktEp0(U8 *buf, U32 size);
-void WrPktEp1(U8 *buf, U32 size);
+void usb_send_init(enum ENDPOINT ep, U8 *buf, U32 size);
+void usb_send_message(enum ENDPOINT ep);
+void usb_receive_message(enum ENDPOINT ep, U8 *buf, U32 size);
 
-void PrintEp0Pkt(U8 *pt);
-
-void Ep1Handler(void);
 void Ep0Handler(void);
 
 void IsrUsbd(void);
-void ReconfigUsbd(void);
 
-#define USB_DEBUG 2
+#define USB_DEBUG 0
 #if USB_DEBUG == 1
 void DbgPrintf(char *fmt, ...);
 #elif USB_DEBUG == 2
@@ -211,16 +228,12 @@ void DbgPrintf(char *fmt, ...);
 #define DbgPrintf(fmt, args...)
 #endif
 
+extern struct usb_buf ub[4];
+
 extern S3C24X0_GPIO * gpioregs;
 extern S3C24X0_USB_DEVICE * usbdevregs;
 extern enum USB_DEV_STATE usbd_state;
 extern enum EP0_STATE ep0State;
-extern volatile int isUsbdSetConfiguration;
-extern const char gHIDReportDescriptor[52];
-extern struct usb_device_descriptor g_usb_dev_desc;
-extern struct g_config_desc_to_send g_config_all;
-extern char g_string_desc0[4];
-extern char g_string_desc1[20];
-extern char g_string_desc2[20];
-extern char g_string_desc3[20];
+
+extern struct usbdev_struct usbdev;
 #endif //__24XUSB_H__
