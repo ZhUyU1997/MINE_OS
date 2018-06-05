@@ -1,9 +1,14 @@
 obj-y += nand.o
 obj-y += serial.o
-obj-y += framebuffer.o
-obj-y += lcddrv.o
-obj-y += adc_ts.o
+obj-y += touch_screen.o
+obj-y += tslib.o
 obj-y += timer.o
 obj-y += dm9000.o
 obj-y += sdi.o
+obj-y += adc.o
+obj-y += RTC.o
 obj-y += usbslave/
+obj-y += lcd/
+obj-y += i2c/
+obj-y += spi/
+obj-y += sensors/

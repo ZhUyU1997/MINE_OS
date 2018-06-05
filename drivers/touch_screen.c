@@ -48,31 +48,64 @@
  * (2)对于S3C2440，位[8]为0、1时分别表示等待Pen Down中断或Pen Up中断
  */
 /* 进入"等待中断模式"，等待触摸屏被按下 */
-#define wait_down_int() { ADCTSC = DOWN_INT | XP_PULL_UP_EN | \
-	                                   XP_AIN | XM_HIZ | YP_AIN | YM_GND | \
-	                                   XP_PST(WAIT_INT_MODE); }
+void wait_down_int() {
+	ADCTSC = DOWN_INT | XP_PULL_UP_EN | XP_AIN | XM_HIZ | YP_AIN | YM_GND |  XP_PST(WAIT_INT_MODE);
+}
 /* 进入"等待中断模式"，等待触摸屏被松开 */
-#define wait_up_int()   { ADCTSC = UP_INT | XP_PULL_UP_EN | XP_AIN | XM_HIZ | \
-	                                   YP_AIN | YM_GND | XP_PST(WAIT_INT_MODE); }
+void wait_up_int()   {
+	ADCTSC = UP_INT | XP_PULL_UP_EN | XP_AIN | XM_HIZ | YP_AIN | YM_GND | XP_PST(WAIT_INT_MODE);
+}
 
 /* 进入自动(连续) X/Y轴坐标转换模式 */
-#define mode_auto_xy()  { ADCTSC = CONVERT_AUTO | XP_PULL_UP_DIS | XP_PST(NOP_MODE); }
+void mode_auto_xy() {
+	ADCTSC = CONVERT_AUTO | XP_PULL_UP_DIS | XP_PST(NOP_MODE);
+}
 
 
-static int adc_x = 0, adc_y = 0;
+static int g_ts_x = 0;
+static int g_ts_y = 0;
+static int g_ts_pressure = 0;
+volatile int g_ts_data_valid = 0;
+static int test_x_array[16];
+static int test_y_array[16];
+
+
 int get_touch_x() {
-	return adc_x;
+	return g_ts_x;
 }
 int get_touch_y() {
-	return adc_y;
+	return g_ts_y;
 }
-static void set_touch_x(int x) {
-	adc_x = x;
-	//printf("x:%d\n", x);
+
+void report_ts_xy(int x, int y, int pressure) {
+	//printf("x = %08d, y = %08d\n", x, y);
+	if (g_ts_data_valid == 0) {
+		g_ts_x = x;
+		g_ts_y = y;
+		g_ts_pressure = pressure;
+		g_ts_data_valid = 1;
+		//TODO:
+		//GUI_TOUCH_Exec();
+		//GUI_TOUCH_Exec();
+	}
 }
-static void set_touch_y(int y) {
-	adc_y = y;
-	//printf("y:%d\n", y);
+
+void ts_read_raw(int *px, int *py, int *ppressure) {
+	while (g_ts_data_valid == 0);
+	*px = g_ts_x;
+	*py = g_ts_y;
+	*ppressure = g_ts_pressure;
+	g_ts_data_valid = 0;
+}
+
+int ts_read_raw_asyn(int *px, int *py, int *ppressure) {
+	if (g_ts_data_valid == 0)
+		return -1;
+	*px = g_ts_x;
+	*py = g_ts_y;
+	*ppressure = g_ts_pressure;
+	g_ts_data_valid = 0;
+	return 0;
 }
 
 /*
@@ -84,15 +117,8 @@ static void Isr_Tc(void) {
 	if (ADCDAT0 & 0x8000) {
 		//printf("Stylus Up\n");
 		close_timer();
-
-		set_touch_y(-1);
-		set_touch_x(-1);
-
-		//TODO:
-		GUI_TOUCH_Exec();
-		GUI_TOUCH_Exec();
+		report_ts_xy(-1, -1, 0);
 		wait_down_int();    /* 进入"等待中断模式"，等待触摸屏被按下 */
-
 	} else {
 		//printf("Stylus Down\n");
 
@@ -107,32 +133,79 @@ static void Isr_Tc(void) {
 	}
 }
 static void timer_handle() {
-	//TODO:有时adc失败
-	//printf("timer_handle\n");
 	mode_auto_xy();
 	ADCCON |= ADC_START;
 }
+
+#define ABS(x) (((x)>0)?(x):(-(x)))
 /*
  * INT_ADC的中断服务程序
  * A/D转换结束时发生此中断
  * 先读取X、Y坐标值，再进入等待中断模式
  */
 static void Isr_Adc(void) {
-	// 设置X、Y坐标值
-	set_touch_y((int)(ADCDAT0 & 0x3ff));
-	set_touch_x((int)(ADCDAT1 & 0x3ff));
+	int x = ADCDAT0 & 0x3ff;
+	int y = ADCDAT1 & 0x3ff;
 
-	//TODO:
-	GUI_TOUCH_Exec();
-	GUI_TOUCH_Exec();
-	set_timer(60, timer_handle);
-	/* 判断是S3C2410还是S3C2440 */
-	if ((GSTATUS1 == 0x32410000) || (GSTATUS1 == 0x32410002)) {
-		// S3C2410
-		wait_down_int();    /* 进入"等待中断模式"，等待触摸屏被松开 */
+	static int adc_cnt = 0;
+	static int adc_x = 0;
+	static int adc_y = 0;
+	static int pre_adc_x = 0;
+	static int pre_adc_y = 0;
+	/* 进入ADC中断时, TS处于"自动测量模式" */
+
+	/* 只有在"等待中断模式"下才可以使用ADCDAT0'BIT 15来判断触摸笔状态 */
+	wait_up_int();      /* 进入"等待中断模式"，等待触摸屏被松开 */
+
+	//TODO
+	udelay(5);
+	if (ADCDAT0 & 0x8000) {
+		adc_cnt = 0;
+		adc_x = 0;
+		adc_y = 0;
+		close_timer();
+		report_ts_xy(-1, -1, 0);
+		wait_down_int();
+		return;
+	}
+#if 0
+	//abs > 1000 ,如果太小会死循环，可以设个计数器解决
+	if ((adc_cnt > 0)
+			&& ((ABS(adc_x / adc_cnt - x) > 1000) || (ABS(adc_y / adc_cnt - y) > 1000))) {
+		mode_auto_xy();/* 进入"自动测量"模式 */
+		ADCCON |= (1 << 0);/* 启动ADC */
+		return;
+	}
+#endif
+	/* 第1次启动ADC后:
+	 *   a. 要连续启动N次, 获得N个数据, 求平均值并上报
+	 *   b. 得到N次数据后, 再启动TIMER
+	 */
+
+	adc_x += x;
+	adc_y += y;
+
+	test_x_array[adc_cnt] = pre_adc_x = x;
+	test_y_array[adc_cnt] = pre_adc_y = y;
+
+	adc_cnt++;
+
+	if (adc_cnt == 16) {
+		adc_x >>= 4;
+		adc_y >>= 4;
+		report_ts_xy(adc_x, adc_y, 1);
+
+		adc_cnt = 0;
+		adc_x = 0;
+		adc_y = 0;
+
+		/* 启动定时器以再次读取数据 */
+		/* 先设置TS进入"等待中断模式" */
+		wait_up_int();
+		set_timer(10, timer_handle);
 	} else {
-		// S3C2440
-		wait_up_int();      /* 进入"等待中断模式"，等待触摸屏被松开 */
+		mode_auto_xy();/* 进入"自动测量"模式 */
+		ADCCON |= (1 << 0);/* 启动ADC */
 	}
 }
 
@@ -141,10 +214,10 @@ static void Isr_Adc(void) {
  * 对于INT_TC、INT_ADC中断，分别调用它们的处理程序
  */
 void AdcTsIntHandle(void) {
-	if (SUBSRCPND & (1 << INT_TC)) {
+	if (get_subsrcpnd() & (1 << INT_TC)) {
 		Isr_Tc();
 	}
-	if (SUBSRCPND & (1 << INT_ADC_S)) {
+	if (get_subsrcpnd() & (1 << INT_ADC_S)) {
 		Isr_Adc();
 	}
 }

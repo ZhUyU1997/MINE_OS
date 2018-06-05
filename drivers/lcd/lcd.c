@@ -32,11 +32,11 @@ static const unsigned short DEMO256pal[] = {
  */
 void Lcd_Port_Init(void) {
 	//GPC5为USB使能引脚，需要过滤掉
-	GPCUP   &= 0x1<<5;
-	GPCUP   |= ~(0x1<<5);   // 禁止内部上拉
-	GPCCON	&= 0x3<<10;
+	GPCUP   &= 0x1 << 5;
+	GPCUP   |= ~(0x1 << 5); // 禁止内部上拉
+	GPCCON	&= 0x3 << 10;
 	GPCCON  |= 0xaaaaa2aa;	// GPIO管脚用于VD[7:0],LCDVF[2:0],VM,VFRAME,VLINE,VCLK,LEND
-	
+
 	GPDUP   = 0xffffffff;	// 禁止内部上拉
 	GPDCON  = 0xaaaaaaaa;	// GPIO管脚用于VD[23:8]
 	GPBCON  &= ~(GPB0_MSK);	// Power enable pin
@@ -55,7 +55,6 @@ void Lcd_Port_Init(void) {
  */
 void Tft_Lcd_Init(int type) {
 	switch (type) {
-
 		case MODE_TFT_8BIT_480272:
 			/*
 			 * 设置LCD控制器的控制寄存器LCDCON1~5
@@ -79,13 +78,13 @@ void Tft_Lcd_Init(int type) {
 			 *    字节交换使能
 			 */
 			LCDCON1 = (4 << 8) | (LCDTYPE_TFT << 5) | \
-			          (BPPMODE_8BPP << 1) | (ENVID_DISABLE << 0);
+					  (BPPMODE_8BPP << 1) | (ENVID_DISABLE << 0);
 			LCDCON2 = (1 << 24) | (271 << 14) | \
-			          (1 << 6) | (9);
+					  (1 << 6) | (9);
 			LCDCON3 = (1 << 19) | (479 << 8) | (1);
 			LCDCON4 = 40;
 			LCDCON5 = (FORMAT8BPP_565 << 11) | (HSYNC_INV << 9) | (VSYNC_INV << 8) | \
-			          (BSWP << 1);
+					  (BSWP << 1);
 
 			/*
 			 * 设置LCD控制器的地址寄存器LCDSADDR1~3
@@ -104,7 +103,7 @@ void Tft_Lcd_Init(int type) {
 			 */
 			LCDSADDR1 = ((LCDFRAMEBUFFER >> 22) << 21) | LOWER21BITS(LCDFRAMEBUFFER >> 1);
 			LCDSADDR2 = LOWER21BITS((LCDFRAMEBUFFER + \
-			                         (480) * (272) * 1) >> 1);
+									 (480) * (272) * 1) >> 1);
 			LCDSADDR3 = (0 << 11) | (480 / 2);
 
 			/* 禁止临时调色板寄存器 */
@@ -140,13 +139,13 @@ void Tft_Lcd_Init(int type) {
 			 *    半字(2字节)交换使能
 			 */
 			LCDCON1 = (4 << 8) | (LCDTYPE_TFT << 5) | \
-			          (BPPMODE_16BPP << 1) | (ENVID_DISABLE << 0);
+					  (BPPMODE_16BPP << 1) | (ENVID_DISABLE << 0);
 			LCDCON2 = (1 << 24) | (271 << 14) | \
-			          (1 << 6) | (9);
+					  (1 << 6) | (9);
 			LCDCON3 = (1 << 19) | (479 << 8) | (1);
 			LCDCON4 = 40;
 			LCDCON5 = (FORMAT8BPP_565 << 11) | (HSYNC_INV << 9) | (VSYNC_INV << 8) | \
-			          (HWSWP << 0);
+					  (HWSWP << 0);
 
 			/*
 			 * 设置LCD控制器的地址寄存器LCDSADDR1~3
@@ -165,7 +164,7 @@ void Tft_Lcd_Init(int type) {
 			 */
 			LCDSADDR1 = ((LCDFRAMEBUFFER >> 22) << 21) | LOWER21BITS(LCDFRAMEBUFFER >> 1);
 			LCDSADDR2 = LOWER21BITS((LCDFRAMEBUFFER + \
-			                         (480) * (272) * 2) >> 1);
+									 (480) * (272) * 2) >> 1);
 			LCDSADDR3 = (0 << 11) | (480 * 2 / 2);
 
 			/* 禁止临时调色板寄存器 */
@@ -274,3 +273,10 @@ void DisableTmpPlt(void) {
 	TPAL = 0;
 }
 
+void get_lcd_params(unsigned int *fb_base, int *xres, int *yres, int *bpp)
+{
+	*fb_base = fb_base_addr;
+	*xres = xsize;
+	*yres = ysize;
+	*bpp = bpp;
+}

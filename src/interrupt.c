@@ -60,11 +60,21 @@ void irq_init(void) {
 }
 static void clear_pending(enum INT_NUM offset);
 
+static U32 subsrcpnd;
+void save_subsrcpnd(U32 reg) {
+	subsrcpnd = reg;
+}
+
+U32 get_subsrcpnd() {
+	return subsrcpnd;
+}
+
 void do_irq(void) {
 	enum INT_NUM offset = (enum INT_NUM)INTOFFSET;
+	save_subsrcpnd(SUBSRCPND);
 	OSIntEnter();
-	isr_handle_array[offset]();
 	clear_pending(offset);
+	isr_handle_array[offset]();
 	OSIntExit();
 }
 
@@ -77,12 +87,14 @@ void request_irq(enum INT_NUM offset, int (*handler)(void)) {
 	clear_pending(offset);
 	set_int(offset);
 }
+
 void free_irq(enum INT_NUM offset) {
 	assert((offset >= EINT0) && (offset <= INT_ADC));
 	clr_int(offset);
 	isr_handle_array[offset] = dummy_isr;
 	clear_pending(offset);
 }
+
 //ÇåÖÐ¶Ï
 static void clear_pending(enum INT_NUM offset) {
 	assert((offset >= EINT0) && (offset <= INT_ADC));

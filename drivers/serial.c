@@ -32,10 +32,10 @@ static void UART0_RX(){//接收中断
 static void UART0_TX(){//清除发送中断
 }
 static void UART0_UART0_ISR(){
-	if (SUBSRCPND & (1 << INT_RXD0)) {
+	if (get_subsrcpnd() & (1 << INT_RXD0)) {
 		UART0_RX();
 	}
-	if (SUBSRCPND & (1 << INT_TXD0)) {
+	if (get_subsrcpnd() & (1 << INT_TXD0)) {
 		UART0_TX();
 	}
 }

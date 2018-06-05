@@ -1,5 +1,6 @@
 #ifndef __INTERRUPT_H__
 #define __INTERRUPT_H__
+#include <sys/types.h>
 enum INT_NUM{
 	EINT0 = 0,
 	EINT1,
@@ -78,6 +79,8 @@ void enable_irq(void);
 void disable_irq(void);
 void set_subint(enum INT_SUB_NUM num);
 void clr_subint(enum INT_SUB_NUM num);
+void save_subsrcpnd(U32 reg);
+U32 get_subsrcpnd();
 void request_irq(enum INT_NUM num,int (*hander)(void));
 void free_irq(enum INT_NUM offset);
 #endif

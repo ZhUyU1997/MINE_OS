@@ -1,4 +1,3 @@
-
 #ifndef __STDIO_H__
 #define __STDIO_H__
 #define stdin	0

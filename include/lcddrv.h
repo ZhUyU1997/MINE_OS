@@ -42,55 +42,14 @@
 
 #define LCDFRAMEBUFFER 0x33c00000
 
-/*
- * 初始化用于LCD的引脚
- */
+
 void Lcd_Port_Init(void);
-
-
 void Tft_Lcd_Init(int type);
-
-/*
- * 设置调色板
- */
 void Lcd_Palette8Bit_Init(void);
-
-/*
- * 设置LCD控制器是否输出信号
- * 输入参数：
- * onoff: 
- *      0 : 关闭
- *      1 : 打开
- */
 void Lcd_EnvidOnOff(int onoff);
-
-/*
- * 设置是否输出LCD电源开关信号LCD_PWREN
- * 输入参数：
- *     invpwren: 0 - LCD_PWREN有效时为正常极性
- *               1 - LCD_PWREN有效时为反转极性
- *     pwren:    0 - LCD_PWREN输出有效
- *               1 - LCD_PWREN输出无效
- */
 void Lcd_PowerEnable(int invpwren, int pwren);
-
-/*
- * 使用临时调色板寄存器输出单色图像
- * 输入参数：
- *     color: 颜色值，格式为0xRRGGBB
- */
 void ClearScrWithTmpPlt(UINT32 color);
-
-/*
- * 停止使用临时调色板寄存器
- */
 void DisableTmpPlt(void);
-
-/*
- * 改变调色板为一种颜色
- * 输入参数：
- *     color: 颜色值，格式为0xRRGGBB
- */
 void ChangePalette(UINT32 color);
 
 
