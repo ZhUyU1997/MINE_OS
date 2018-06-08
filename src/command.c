@@ -87,6 +87,14 @@ CMD_DEFINE(usbtest, "usbtest", "usbtest") {
 	usb_init_slave();
 	return 0;
 }
+CMD_DEFINE(backtrace, "backtrace", "backtrace") {
+	printf("backtrace测试\n");
+	char s[128];
+	for (int i = 0; i < 128 / 3; i++) {
+		*(volatile int *)(s + 3 * i) = 0;
+	}
+	return 0;
+}
 CMD_DEFINE(ts_cal, "ts_cal", "ts_cal") {
 	ts_cal();
 	return 0;
@@ -257,6 +265,10 @@ CMD_DEFINE(irda_nec, "irda_nec", "irda_nec") {
 	irda_nec_test();
 	return 0;
 }
+CMD_DEFINE(bmp_test, "bmp_test", "bmp_test") {
+	drawImage("xx01.bmp");
+	return 0;
+}
 CMD_DEFINE(RTC, "RTC", "RTC") {
 	char data[7] = {0};
 	char *week_str[7] = {"一", "二", "三", "四", "五", "六", "日"};
@@ -400,6 +412,8 @@ cmd_table *ct_list[] = {
 	CMD_ENTRY(RTC),
 	CMD_ENTRY(irda_raw),
 	CMD_ENTRY(irda_nec),
+	CMD_ENTRY(bmp_test),
+	CMD_ENTRY(backtrace),
 	NULL
 };
 cmd_table *search_cmd(char *name) {

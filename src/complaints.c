@@ -6,3 +6,6 @@ int raise(int signum) {
 void __aeabi_unwind_cpp_pr0(void) {
 	printf("__aeabi_unwind_cpp_pr0\n");
 };
+void __aeabi_unwind_cpp_pr1(void) {
+	printf("__aeabi_unwind_cpp_pr1\n");
+};

@@ -28,8 +28,8 @@
 */
 
 #include <ucos_ii.h>
-#include "GUI_Private.H"
-#include "stdio.H"
+#include "GUI_Private.h"
+#include "stdio.h"
 
 /*
 *********************************************************************************************************

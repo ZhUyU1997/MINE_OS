@@ -69,6 +69,7 @@ Reset:
 
 	msr cpsr_c, #0xd3		@ 进入管理模式设置I-bit=1，关IRQ中断
     ldr sp, =0x33f00000     @ 设置管理模式栈指针
+	ldr fp, =0x33f00000     @ 设置栈帧指针
 
 	@跳转地址过大不能用bl指令
     ldr lr, =halt_loop    @ 设置返回地址

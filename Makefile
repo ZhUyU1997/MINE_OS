@@ -19,10 +19,10 @@ TOPDIR			:= $(subst /c,c:,$(shell pwd))
 INCLUDEDIR 		:= $(TOPDIR)/include
 #WFLAGS			:= -Wall
 WFLAGS			:= -w
-CFLAGS 			:= -std=gnu99 $(WFLAGS) -O2 -fno-builtin -march=armv4t -mtune=arm920t -nostdlib -nostdinc -msoft-float -fsigned-char
+CFLAGS 			:= -std=gnu99 $(WFLAGS) -O2 -fno-builtin -march=armv4t -mtune=arm920t -nostdlib -nostdinc -msoft-float -fsigned-char -fno-omit-frame-pointer
 CFLAGS   		+= -I$(INCLUDEDIR) -I$(TOPDIR)/ucos2/SOURCE -iquote$(TOPDIR)/ucos2/PORT \
 				-iquote$(TOPDIR)/uCGUI/Config \
-				-iquote$(TOPDIR)/uCGUI/GUI/Core -iquote$(TOPDIR)/uCGUI/GUI/WM -iquote$(TOPDIR)/uCGUI/GUI/widget \
+				-iquote$(TOPDIR)/uCGUI/GUI/Core -iquote$(TOPDIR)/uCGUI/GUI/WM -iquote$(TOPDIR)/uCGUI/GUI/Widget \
 				-I$(TOPDIR)/lwip/include -iquote$(TOPDIR)/lwip/include/arch \
 				-iquote$(TOPDIR)/lwip/include/ipv4 \
 				-I$(TOPDIR)/drivers \
@@ -52,14 +52,18 @@ obj-y += sound/
 all:
 	@echo $(shell pwd):
 	@make -s -C ./ -f $(TOPDIR)/Makefile.build
-	@echo LD $(TARGET)
-	@$(LD) -o $(TARGET) built-in.o $(LDFLAGS)
+	@$(LD) -o system_temp built-in.o $(LDFLAGS)
+	@gcc -o kallsyms $(TOPDIR)/scripts/kallsyms.c
+	@nm -n system_temp | ./kallsyms > kallsyms.S
+	@$(CC) $(CFLAGS) -c -o kallsyms.o kallsyms.S
+	@echo LD system
+	@$(LD) -o system built-in.o kallsyms.o $(LDFLAGS)
 	@echo OBJCOPY $(TARGET).bin
-	@$(OBJCOPY) -O binary -S $(TARGET) $(TARGET).bin
+	@$(OBJCOPY) -O binary -S system $(TARGET).bin
 
-dis:$(TARGET).bin
+dis:system
 	@echo OBJDUMP $(TARGET).dis
-	@$(OBJDUMP) -D -m arm $(TARGET) > $(TARGET).dis
+	@$(OBJDUMP) -D -m arm system > $(TARGET).dis
 
 dnw:$(TARGET).bin
 	dnw $(TARGET).bin
@@ -73,4 +77,4 @@ distclean:
 	rm -f $(shell find -name "*.d")
 	rm -f $(shell find -name "*.a")
 	rm -f $(shell find -name "*.mac")
-	rm -f $(TARGET) $(TARGET).dis $(TARGET).bin
+	rm -f $(TARGET) $(TARGET).dis $(TARGET).bin system system_temp kallsyms.S kallsyms.exe

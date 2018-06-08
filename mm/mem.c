@@ -27,7 +27,7 @@ struct page {
 
 #define AVERAGE_PAGE_NUM_PER_BUDDY	(KERNEL_PAGE_NUM/MAX_BUDDY_PAGE_NUM)
 #define PAGE_NUM_FOR_EACH_BUDDY(j) ((AVERAGE_PAGE_NUM_PER_BUDDY>>(j))*(1<<(j)))
-#define PAGE_NUM_FOR_MAX_BUDDY	((1<<MAX_BUDDY_PAGE_NUM)-1)//=0xff=255ï¼Œæœ€å¤§é¡µé¢å‡1
+#define PAGE_NUM_FOR_MAX_BUDDY	((1<<MAX_BUDDY_PAGE_NUM)-1)//=0xff=255£¬×î´óÒ³Ãæ¼õ1
 
 struct list_head page_buddy[MAX_BUDDY_PAGE_NUM];
 
@@ -44,7 +44,7 @@ void init_page_buddy(void) {
 		INIT_LIST_HEAD(&page_buddy[i]);
 	}
 }
-//è·å–æœ€ä½ä½1æ‰€åœ¨ä½
+//»ñÈ¡×îµÍÎ»1ËùÔÚÎ»
 static int position_of_the_lowest_bit_set(unsigned int addr) {
 	unsigned int r = 0;
 	if(!addr)
@@ -54,7 +54,7 @@ static int position_of_the_lowest_bit_set(unsigned int addr) {
 	assert(r < 32);
 	return 31-r;
 }
-//è·å–æœ€é«˜ä½1æ‰€åœ¨ä½
+//»ñÈ¡×î¸ßÎ»1ËùÔÚÎ»
 static int position_of_the_highest_bit_set(unsigned int addr) {
 	unsigned int r = 0;
 	while (addr >>= 1)
@@ -62,18 +62,18 @@ static int position_of_the_highest_bit_set(unsigned int addr) {
 	assert(r < 32);
 	return r;
 }
-//ç”±pageçš„sizeè®¡ç®—orderå€¼
+//ÓÉpageµÄsize¼ÆËãorderÖµ
 static int get_order(unsigned int size){
 	int pos = position_of_the_highest_bit_set(size >> PAGE_SHIFT);
 	assert(pos < 20);
 	if ((1 << pos) < (size >> PAGE_SHIFT)){
-		if(pos >= 19)//è¶…è¿‡äº†åˆ†é…ä¸Šé™
+		if(pos >= 19)//³¬¹ıÁË·ÖÅäÉÏÏŞ
 			return NULL;
 		pos++;
 	}
 	return pos;
 }
-static unsigned int align_value(int vaddr){//vaddr 4k*n å­—èŠ‚å¯¹é½ï¼Œè¿”å›n
+static unsigned int align_value(int vaddr){//vaddr 4k*n ×Ö½Ú¶ÔÆë£¬·µ»Øn
 	assert(vaddr != 0);
 	unsigned int i = position_of_the_lowest_bit_set(vaddr >> PAGE_SHIFT);
 	if(i > 0xff)
@@ -92,12 +92,12 @@ void init_page_map(void) {
 		INIT_LIST_HEAD(&(pg->list));
 
 		/*make the memory max buddy as possible*/
-		if (i < (KERNEL_PAGE_NUM & (~PAGE_NUM_FOR_MAX_BUDDY))) {	//å¦‚æœå¤Ÿåˆ†é…1Mï¼Œæ”¾åˆ°page_buddy[MAX_BUDDY_PAGE_NUM-1]
+		if (i < (KERNEL_PAGE_NUM & (~PAGE_NUM_FOR_MAX_BUDDY))) {	//Èç¹û¹»·ÖÅä1M£¬·Åµ½page_buddy[MAX_BUDDY_PAGE_NUM-1]
 			/*the following code should be dealt carefully,we would change the order field of a head struct page to the corresponding order,and change others to -1*/
-			if ((i & PAGE_NUM_FOR_MAX_BUDDY) == 0) { //å¦‚æœä¸º1Må¤§é¡µç¬¬ä¸€ä¸ª4ké¡µ
+			if ((i & PAGE_NUM_FOR_MAX_BUDDY) == 0) { //Èç¹ûÎª1M´óÒ³µÚÒ»¸ö4kÒ³
 				pg->order = MAX_BUDDY_PAGE_NUM - 1;
 			} else {
-				pg->order = -1; //è¡¨ç¤ºè¿™ä¸ª page ç»“æ„ä½“ä¸æ˜¯ buddy çš„ä¸Šè¾¹ç•Œ
+				pg->order = -1; //±íÊ¾Õâ¸ö page ½á¹¹Ìå²»ÊÇ buddy µÄÉÏ±ß½ç
 			}
 			list_add_tail(&(pg->list), &page_buddy[MAX_BUDDY_PAGE_NUM - 1]);
 			/*the remainder not enough to merge into a max buddy is done as min buddy*/
@@ -124,7 +124,7 @@ struct page *get_pages_from_list(unsigned int flags, int order) {
 	int neworder = order;
 	struct page *pg, *pgt;
 	struct list_head *tlst, *tlst1, *plist;
-	for (; neworder < MAX_BUDDY_PAGE_NUM; neworder++) { //ä»orderéå†page_buddy
+	for (; neworder < MAX_BUDDY_PAGE_NUM; neworder++) { //´Óorder±éÀúpage_buddy
 		if (list_empty(&page_buddy[neworder])) {
 			continue;
 		} else {
@@ -141,9 +141,9 @@ struct page *get_pages_from_list(unsigned int flags, int order) {
 				pg = list_entry(plist, struct page, list);
 				trace(KERN_DEBUG, "*** i = %d  ",i);
 				trace(KERN_DEBUG, "plist = %X ,vaddr = %X, order = %d, align = %d\n",plist,page_address(pg),order,(pg->flags & PAGE_ALIGN_MASK)>>4);
-				//æ£€æŸ¥æ˜¯å¦æ»¡è¶³å­—èŠ‚å¯¹é½æ¡ä»¶
-				//TODO:å¯ä»¥ä¼˜åŒ–æ£€æŸ¥åŠ å¿«é€Ÿåº¦
-				//TODO:ç°åœ¨åªæ£€æŸ¥é¡µé¢å…¶å®åœ°å€ï¼Œå¯ä»¥è¿›ä¸€æ­¥æ£€æŸ¥é¡µé¢åœ°å€èŒƒå›´å†…æœ‰æ— åˆé€‚åœ°å€
+				//¼ì²éÊÇ·ñÂú×ã×Ö½Ú¶ÔÆëÌõ¼ş
+				//TODO:¿ÉÒÔÓÅ»¯¼ì²é¼Ó¿ìËÙ¶È
+				//TODO:ÏÖÔÚÖ»¼ì²éÒ³ÃæÆäÊµµØÖ·£¬¿ÉÒÔ½øÒ»²½¼ì²éÒ³ÃæµØÖ··¶Î§ÄÚÓĞÎŞºÏÊÊµØÖ·
 				if((flags & PAGE_ALIGN_MASK) <= (pg->flags & PAGE_ALIGN_MASK)){
 					tlst = plist;
 					tlst1 = &(BUDDY_END(pg, neworder)->list);
@@ -152,13 +152,13 @@ struct page *get_pages_from_list(unsigned int flags, int order) {
 				}
 				i++;
 			}
-			continue;//å¦‚æœå¾ªç¯ç»“æŸï¼Œåˆ™å¢å¤§é¡µé¢å°ºå¯¸
+			continue;//Èç¹ûÑ­»·½áÊø£¬ÔòÔö´óÒ³Ãæ³ß´ç
 		}
 	}
 	return NULL;
 
 OUT_OK:
-	//å°†å¤§é¡µé¢åˆ†ä¸ºå°é¡µé¢
+	//½«´óÒ³Ãæ·ÖÎªĞ¡Ò³Ãæ
 	for (neworder--; neworder >= order; neworder--) {
 		pgt = NEXT_BUDDY_START(pg, neworder);
 		tlst = &(pgt->list);
@@ -187,7 +187,7 @@ void put_pages_to_list(struct page *pg, int order) {
 		return;
 	}
 	pg->flags &= ~PAGE_BUDDY_BUSY;
-	//TODO:å¦‚æœputç¬¬ä¸€ä¸ªé¡µé¢å’Œæœ€åä¸€ä¸ªé¡µé¢ï¼Œå¯èƒ½ä¼šå‡ºé—®é¢˜
+	//TODO:Èç¹ûputµÚÒ»¸öÒ³ÃæºÍ×îºóÒ»¸öÒ³Ãæ£¬¿ÉÄÜ»á³öÎÊÌâ
 	for (; order < MAX_BUDDY_PAGE_NUM; order++) {
 		tnext = NEXT_BUDDY_START(pg, order);
 		tprev = PREV_BUDDY_START(pg, order);
@@ -288,7 +288,7 @@ int kmem_cache_line_object(void *head, unsigned int size, int order) {
 	p = (char *)head + size;
 	int i, s = PAGE_SIZE * (1 << order);
 	for (i = 0; s > size; i++, s -= size) {
-		*pl = (void *)p; //ä¿å­˜ä¸‹ä¸ªå†…å­˜å—é¦–åœ°å€äºå½“å‰å†…å­˜å—
+		*pl = (void *)p; //±£´æÏÂ¸öÄÚ´æ¿éÊ×µØÖ·ÓÚµ±Ç°ÄÚ´æ¿é
 		pl = (void **)p;
 		p = p + size;
 	}
@@ -334,7 +334,7 @@ void kmem_cache_destroy(struct kmem_cache *cache) {
 }
 
 void kmem_cache_free(struct kmem_cache *cache, void *objp) {
-	*(void **)objp = cache->nf_block; //ä¿å­˜ä¸‹ä¸ªå†…å­˜å—é¦–åœ°å€äºå½“å‰å†…å­˜å—
+	*(void **)objp = cache->nf_block; //±£´æÏÂ¸öÄÚ´æ¿éÊ×µØÖ·ÓÚµ±Ç°ÄÚ´æ¿é
 	cache->nf_block = objp;
 	cache->obj_nr++;
 }
@@ -349,8 +349,8 @@ void *kmem_cache_alloc(struct kmem_cache *cache, unsigned int flags) {
 	unsigned int *nr = &(cache->obj_nr);
 	int order = cache->page_order;
 
-	if (!*nr) { //å‰©ä½™ä¸ªæ•°ä¸º0
-		//å†ç”³è¯·slab
+	if (!*nr) { //Ê£Óà¸öÊıÎª0
+		//ÔÙÉêÇëslab
 		if ((pg = alloc_pages(0, order)) == NULL)
 			return NULL;
 		*nf_block = page_address(pg);
@@ -361,13 +361,13 @@ void *kmem_cache_alloc(struct kmem_cache *cache, unsigned int flags) {
 	}
 
 	(*nr)--;
-	//è·å–å¯¹åº”åˆ†é…å†…å­˜å—åœ°å€
+	//»ñÈ¡¶ÔÓ¦·ÖÅäÄÚ´æ¿éµØÖ·
 	p = *nf_block;
-	//ä½¿kmem_cache ç»“æ„ä½“çš„ nf_block æˆå‘˜æŒ‡å‘ä¸‹ä¸€ä¸ªç©ºé—²å­å†…å­˜å—
+	//Ê¹kmem_cache ½á¹¹ÌåµÄ nf_block ³ÉÔ±Ö¸ÏòÏÂÒ»¸ö¿ÕÏĞ×ÓÄÚ´æ¿é
 	*nf_block = *(void **)p;
-	//è·å–å¯¹åº”åˆ†é…å†…å­˜å—æ‰€åœ¨pageç»“æ„ä½“
+	//»ñÈ¡¶ÔÓ¦·ÖÅäÄÚ´æ¿éËùÔÚpage½á¹¹Ìå
 	pg = virt_to_page((unsigned int)p);
-	//ç¡®ä¿æ¯ä¸ª struct page ç»“æ„åªå±äºä¸€ä¸ª kmem_cache
+	//È·±£Ã¿¸ö struct page ½á¹¹Ö»ÊôÓÚÒ»¸ö kmem_cache
 	pg->cachep = cache;
 	return p;
 }
