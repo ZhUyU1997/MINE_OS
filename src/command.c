@@ -61,12 +61,15 @@ CMD_DEFINE(wav, "wav", "wav") {
 	return 0;
 }
 CMD_DEFINE(mp3, "mp3", "mp3") {
+#ifdef CONFIG_MP3
 	if (argc != 2)
 		return 1;
 	AudioDecode(argv[1]);
+#endif
 	return 0;
 }
 CMD_DEFINE(nes, "nes", "nes") {
+#ifdef CONFIG_NES
 	if (argc != 2)
 		return 1;
 	if (InfoNES_Load(argv[1])) {
@@ -74,6 +77,7 @@ CMD_DEFINE(nes, "nes", "nes") {
 		return 1;
 	}
 	InfoNES_Main();
+#endif
 	return 0;
 }
 CMD_DEFINE(usbdebug, "usbdebug", "usbdebug") {
@@ -95,12 +99,16 @@ CMD_DEFINE(backtrace, "backtrace", "backtrace") {
 	}
 	return 0;
 }
-CMD_DEFINE(ts_cal, "ts_cal", "ts_cal") {
-	ts_cal();
+CMD_DEFINE(ts_test, "ts_test", "ts_test") {
+	ts_test_view();
 	return 0;
 }
 CMD_DEFINE(test, "test", "test") {
-	ten_test();
+	ten_test_view();
+	return 0;
+}
+CMD_DEFINE(lcd_test, "lcd_test", "lcd_test") {
+	lcd_putstr(0, 0, "11113145623vdfhigaeruirh4uifthv89y9q3ry478h7f@#$%^^!@#$%^&*((*)_+-=\":>?<{}|;'][]\./,./");
 	return 0;
 }
 CMD_DEFINE(usbmouse, "usbmouse", "usbmouse") {
@@ -256,12 +264,10 @@ CMD_DEFINE(ds_test, "ds_test", "ds_test") {
 	return 0;
 }
 CMD_DEFINE(irda_raw, "irda_raw", "irda_raw") {
-	init_tick(1000, NULL);
 	irda_raw_test();
 	return 0;
 }
 CMD_DEFINE(irda_nec, "irda_nec", "irda_nec") {
-	init_tick(1000, NULL);
 	irda_nec_test();
 	return 0;
 }
@@ -398,8 +404,9 @@ cmd_table *ct_list[] = {
 	CMD_ENTRY(usbdebug),
 	CMD_ENTRY(usbmouse),
 	CMD_ENTRY(usbtest),
-	CMD_ENTRY(ts_cal),
+	CMD_ENTRY(ts_test),
 	CMD_ENTRY(test),
+	CMD_ENTRY(lcd_test),
 	CMD_ENTRY(wr_at24xx),
 	CMD_ENTRY(rd_at24xx),
 	CMD_ENTRY(i2c_init),

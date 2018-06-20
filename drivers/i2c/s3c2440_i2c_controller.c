@@ -53,7 +53,6 @@ void i2c_interrupt_func(int irq) {
 				IICCON &= ~(1 << 4);
 				p_cur_msg->err = -1;
 				printf("tx err, no ack\n");
-				udelay(1000);
 				return;
 			}
 		}
@@ -68,7 +67,6 @@ void i2c_interrupt_func(int irq) {
 			/* 停止传输 */
 			IICSTAT = 0xd0;
 			IICCON &= ~(1 << 4);
-			udelay(1000);
 		}
 	} else { /* read */
 		/* 对于第1个中断, 它是发送出设备地址后产生的
@@ -84,7 +82,6 @@ void i2c_interrupt_func(int irq) {
 				IICCON &= ~(1 << 4);
 				p_cur_msg->err = -1;
 				printf("rx err, no ack\n\r");
-				udelay(1000);
 				return;
 			} else { /* ack */
 				/* 如果是最后一个数据, 启动传输时要设置为不回应ACK */
@@ -116,7 +113,6 @@ void i2c_interrupt_func(int irq) {
 			/* 发出停止信号 */
 			IICSTAT = 0x90;
 			IICCON &= ~(1 << 4);
-			udelay(1000);
 		}
 	}
 }
@@ -163,7 +159,7 @@ int do_master_tx(p_i2c_msg msg) {
 
 	/* 循环等待中断处理完毕 */
 	while (!msg->err && msg->cnt_transferred != msg->len);
-
+	udelay(1000);
 	if (msg->err)
 		return -1;
 	else
@@ -192,7 +188,7 @@ int do_master_rx(p_i2c_msg msg) {
 
 	/* 循环等待中断处理完毕 */
 	while (!msg->err && msg->cnt_transferred != msg->len);
-
+	udelay(1000);
 	if (msg->err)
 		return -1;
 	else

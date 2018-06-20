@@ -5,25 +5,23 @@
 #include <assert.h>
 #include "command.h"
 
-//ucosii
-#include "ucos_ii.h"
-#include "app_cfg.h"
-
 //lcd driver
 #include "lcddrv.h"
 #include "framebuffer.h"
 
+
+#ifdef CONFIG_UCOS2
+#include "ucos_ii.h"
+#include "app_cfg.h"
+#endif
+
+#ifdef CONFIG_UCGUI
 //ucgui
 #include "GUI.h"
+#endif
 
 //fs
 #include "ff.h"
-
-OS_STK  MainTaskStk[MainTaskStkLengh];
-OS_STK	Task0Stk[Task0StkLengh];       // Define the Task0 stack
-
-void OSTickISR();
-
 FATFS fatworkarea;         // Work area (file system object) for logical drives 
 
 void show_bss_info(){
@@ -40,6 +38,16 @@ static void initer(void (*init)(), char *msg){
 	}
 }
 
+#ifdef CONFIG_UCOS2
+OS_STK  MainTaskStk[MainTaskStkLengh];
+OS_STK	Task0Stk[Task0StkLengh];       // Define the Task0 stack
+
+void OSTickISR();
+
+
+
+
+
 void OSMainTask(void *pdata) {
 #if OS_CRITICAL_METHOD == 3                                /* Allocate storage for CPU status register */
 	OS_CPU_SR  cpu_sr;
@@ -54,16 +62,19 @@ void OSMainTask(void *pdata) {
 	OSStatInit();		//----统计任务初始化函数
 #endif
 
+#ifdef CONFIG_LWIP
 	printf("初始化网络...\n");
 	net_init();
+#endif
 
 	printf("创建任务0...\n");
 	OSTaskCreate (Task0, (void *)0, &Task0Stk[Task0StkLengh - 1], Task0Prio);
 	INT8U  err;
 	OSTaskNameSet(Task0Prio, (INT8U *)"Task0", &err);
-
+#ifdef CONFIG_UCGUI
 	init_Ts();
 	MainTask2();
+#endif
 	while (1);
 }
 
@@ -89,6 +100,7 @@ void ucosii_init(){
 	printf("启动uC/OS...\n");
 	OSStart ();
 }
+#endif
 
 int main() {
 	irq_init();
@@ -103,6 +115,9 @@ int main() {
 
 	printf("初始化TIMER...\n");
 	timer_init();
+
+	printf("初始化TICK...\n");
+	init_tick(1000, NULL);
 
 	printf("初始化LCD...\n");
 	Lcd_Port_Init();						// 设置LCD引脚
@@ -120,9 +135,11 @@ int main() {
 	printf("使能IRQ...\n");
 	enable_irq();
 
-	cmd_loop();
-
+#ifdef CONFIG_UCOS2
 	printf("初始化uC/OS...\n");
 	ucosii_init();
+#else
+	cmd_loop();
+#endif
 	while (1);
 }

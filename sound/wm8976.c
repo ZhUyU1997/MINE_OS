@@ -1,13 +1,10 @@
+#include <timer.h>
 #include "common.h"
 #include "s3c24xx.h"
 #define L3M (1<<2)
 #define L3D (1<<2)
 #define L3C (1<<2)
 
-static void udelay(int time) {
-	for (volatile int i = 0; i < 36; i++)
-		for (volatile int i = 0; i < time; i++);
-}
 
 static void wm8976_write_reg(unsigned char reg, unsigned int data) {
 	//Ê±Ðò¿ØÖÆ£¬wm8976ÊÖ²áp16

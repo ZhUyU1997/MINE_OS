@@ -1,3 +1,4 @@
+#include <timer.h>
 #include "nand.h"
 /* NAND FLASH¿ØÖÆÆ÷ */
 #define NFCONF (*((volatile unsigned long *)0x4E000000))
@@ -21,10 +22,7 @@
 #define CMD_RANDOMWRITE	0x85			//ËæÒâĞ´ÃüÁî
 
 static void nand_reset(void);
-static void udelay(int time) {
-	for (volatile int i = 0; i < 36; i++)
-		for (volatile int i = 0; i < time; i++);
-}
+
 void nand_init(void) {
 #define TACLS   0
 #define TWRPH0  1

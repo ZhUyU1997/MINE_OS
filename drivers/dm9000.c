@@ -1,3 +1,4 @@
+#include <timer.h>
 #include "dm9000.h"
 #include "ucos_ii.h"
 
@@ -305,10 +306,6 @@ CONFIG DM9000 DEBUG
 #define DM9000A_DEBUG(x,fmt,arg...)  printf(fmt,##arg)
 #define DM9000A_DEBUG_COM 1
 
-static void udelay(int time){
-	for(volatile int i=0;i<36;i++)
-		for(volatile int i=0;i<time;i++);
-}
 /*********************************************************************************************
 º¯ÊýÃû  : NetDly_us()
 ÊäÈë    : null

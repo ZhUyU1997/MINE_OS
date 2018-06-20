@@ -158,7 +158,7 @@ static void Isr_Adc(void) {
 	wait_up_int();      /* 进入"等待中断模式"，等待触摸屏被松开 */
 
 	//TODO
-	udelay(5);
+	udelay(10);
 	if (ADCDAT0 & 0x8000) {
 		adc_cnt = 0;
 		adc_x = 0;
@@ -227,12 +227,19 @@ void AdcTsIntHandle(void) {
  */
 void init_Ts(void) {
 	// 使能预分频功能，设置A/D转换器的时钟 = PCLK/(49+1)
+	/* [15] : ECFLG,  1 = End of A/D conversion
+	 * [14] : PRSCEN, 1 = A/D converter prescaler enable
+	 * [13:6]: PRSCVL, adc clk = PCLK / (PRSCVL + 1)
+	 * [5:3] : SEL_MUX, 000 = AIN 0
+	 * [2]   : STDBM
+	 * [0]   : 1 = A/D conversion starts and this bit is cleared after the startup.
+	 */
 	ADCCON = PRESCALE_EN | PRSCVL(49);
 
-	/* 采样延时时间 = (1/3.6864M)*50000 = 13.56ms
-	 * 即按下触摸屏后，再过13.56ms才采样
+	/*  按下触摸屏, 延时一会再发出TC中断
+	 *  延时时间 = ADCDLY * 晶振周期 = ADCDLY * 1 / 12000000 = 5ms
 	 */
-	ADCDLY = 50000;
+	ADCDLY = 60000;
 	set_subint(INT_TC);// 开启INT_TC中断，即触摸屏被按下或松开时产生中断
 	set_subint(INT_ADC_S);// 开启INT_ADC中断，即A/D转换结束时产生中断
 	request_irq(INT_ADC, AdcTsIntHandle); // 设置ADC中断服务程序

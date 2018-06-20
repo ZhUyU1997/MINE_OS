@@ -1,23 +1,48 @@
 
-static double g_kx;
-static double g_ky;
-
-static int g_ts_xc, g_ts_yc;
-static int g_lcd_xc, g_lcd_yc;
-static int g_ts_xy_swap = 0;
-
+static double a1, b1, c1;
+static double a2, b2, c2;
 
 static unsigned int fb_base;
 static int xres, yres, bpp;
 
-int get_lcd_x_frm_ts_x(int ts_x) {
-	return g_kx * (ts_x - g_ts_xc) + g_lcd_xc;
+int get_lcd_x(int ts_x, int ts_y) {
+	return a1 + b1 * ts_x + c1 * ts_y;
 }
 
-int get_lcd_y_frm_ts_y(int ts_y) {
-	return g_ky * (ts_y - g_ts_yc) + g_lcd_yc;
+int get_lcd_y(int ts_x, int ts_y) {
+	return a2 + b2 * ts_x + c2 * ts_y;
+}
+static double avg1(int *a, int len) {
+	double  res = 0.0;
+	for (int i = 0; i < len; i++) {
+		res += a[i];
+	}
+	return res / len;
+}
+static double avg2(int *a, int len) {
+	double  res = 0.0;
+	for (int i = 0; i < len; i++) {
+		res += a[i] * a[i];
+	}
+	return res / len;
 }
 
+static double L(int *a, int *b, int len) {
+	double  res = 0.0;
+	double avg_a = avg1(a, len);
+	double avg_b = avg1(b, len);
+	for (int i = 0; i < len; i++) {
+		res += (a[i] - avg_a) * (b[i] - avg_b);
+	}
+	return res;
+}
+
+static void calc(int *x1, int *x2, int *y, int len, double *a0, double *a1, double *a2) {
+	double temp = (L(x1, x1, len) * L(x2, x2, len) - L(x1, x2, len) * L(x1, x2, len));
+	*a1 = (L(x1, y, len) * L(x2, x2, len) - L(x2, y, len) * L(x1, x2, len)) / temp;
+	*a2 = (L(x2, y, len) * L(x1, x1, len) - L(x1, y, len) * L(x1, x2, len)) / temp;
+	*a0 = avg1(y, len) - (*a1) * avg1(x1, len) - (*a2) * avg1(x2, len);
+}
 
 void get_calibrate_point_data(int lcd_x, int lcd_y, int *px, int *py) {
 	int pressure;
@@ -25,7 +50,7 @@ void get_calibrate_point_data(int lcd_x, int lcd_y, int *px, int *py) {
 	int sum_x = 0, sum_y = 0;
 	int cnt = 0;
 
-	DispCross(lcd_x, lcd_y, 0xffffff);
+	DispCross(lcd_x, lcd_y, 0xff0000);
 	printf("lcd_x = %d, lcd_y = %d\n", lcd_x, lcd_y);
 	/* 等待点击 */
 
@@ -50,118 +75,31 @@ void get_calibrate_point_data(int lcd_x, int lcd_y, int *px, int *py) {
 	printf("return raw data: x = %08d, y = %08d\n", *px, *py);
 
 	/* 直到松开才返回 */
-	DispCross(lcd_x, lcd_y, 0);
+	DispCross(lcd_x, lcd_y, 0xd4d4d4);
 }
-
-
-int is_ts_xy_swap(int a_ts_x, int a_ts_y, int b_ts_x, int b_ts_y) {
-	int dx = b_ts_x - a_ts_x;
-	int dy = b_ts_y - a_ts_y;
-
-	if (dx < 0)
-		dx = 0 - dx;
-	if (dy < 0)
-		dy = 0 - dy;
-
-	if (dx > dy)
-		return 0; /* xy没有反转 */
-	else
-		return 1; /* xy反了 */
-}
-
-void swap_xy(int *px, int *py) {
-	int tmp = *px;
-	*px = *py;
-	*py = tmp;
-}
-
-/*
-----------------------------
-|                          |
-|  +(A)              (B)+  |
-|                          |
-|                          |
-|                          |
-|            +(E)          |
-|                          |
-|                          |
-|                          |
-|  +(D)              (C)+  |
-|                          |
-----------------------------
-
-*/
 
 void ts_calibrate(void) {
+#define POINT_NUM 5
+	get_lcd_params(&fb_base, &xres, &yres, &bpp);
+	int ts_x[POINT_NUM], ts_y[POINT_NUM];
+	int lcd_x[POINT_NUM] = {50,	xres - 50,	xres - 50,	50,			xres / 2};
+	int lcd_y[POINT_NUM] = {50,	50,			yres - 50,	yres - 50,	yres / 2};
 
-	int a_ts_x, a_ts_y;
-	int b_ts_x, b_ts_y;
-	int c_ts_x, c_ts_y;
-	int d_ts_x, d_ts_y;
-	int e_ts_x, e_ts_y;
-
-	/* X轴方向 */
-	int ts_s1, ts_s2;
-	int lcd_s;
-
-	/* Y轴方向 */
-	int ts_d1, ts_d2;
-	int lcd_d;
 
 	/* 获得LCD的参数: fb_base, xres, yres, bpp */
-	get_lcd_params(&fb_base, &xres, &yres, &bpp);
+
 	printf("xres = %d, yres = %d\n", xres, yres);
-	/* 对于ABCDE, 循环: 显示"+"、点击、读ts原始值 */
-	/* A(50, 50) */
-	get_calibrate_point_data(50, 50, &a_ts_x, &a_ts_y);
 
-	/* B(xres-50, 50) */
-	get_calibrate_point_data(xres - 50, 50, &b_ts_x, &b_ts_y);
-
-	/* C(xres-50, yres-50) */
-	get_calibrate_point_data(xres - 50, yres - 50, &c_ts_x, &c_ts_y);
-
-	/* D(50, yres-50) */
-	get_calibrate_point_data(50, yres - 50, &d_ts_x, &d_ts_y);
-
-	/* E(xres/2, yres/2) */
-	get_calibrate_point_data(xres / 2, yres / 2, &e_ts_x, &e_ts_y);
-
-	/* 确定触摸屏数据XY是否反转 */
-	g_ts_xy_swap = is_ts_xy_swap(a_ts_x, a_ts_y, b_ts_x, b_ts_y);
-
-	if (g_ts_xy_swap) {
-		/* 对调所有点的XY坐标 */
-		swap_xy(&a_ts_x, &a_ts_y);
-		swap_xy(&b_ts_x, &b_ts_y);
-		swap_xy(&c_ts_x, &c_ts_y);
-		swap_xy(&d_ts_x, &d_ts_y);
-		swap_xy(&e_ts_x, &e_ts_y);
+	for (int i = 0; i < POINT_NUM; i++) {
+		get_calibrate_point_data(lcd_x[i], lcd_y[i], &ts_x[i], &ts_y[i]);
 	}
 
-	/* 确定公式的参数并保存 */
-	ts_s1 = b_ts_x - a_ts_x;
-	ts_s2 = c_ts_x - d_ts_x;
-	lcd_s = xres - 50 - 50;
-
-	ts_d1 = d_ts_y - a_ts_y;
-	ts_d2 = c_ts_y - b_ts_y;
-	lcd_d = yres - 50 - 50;
-
-	g_kx = ((double)(2 * lcd_s)) / (ts_s1 + ts_s2);
-	g_ky = ((double)(2 * lcd_d)) / (ts_d1 + ts_d2);
-
-	g_ts_xc = e_ts_x;
-	g_ts_yc = e_ts_y;
-
-	g_lcd_xc = xres / 2;
-	g_lcd_yc = yres / 2;
-
-	printf("A lcd_x = %08d, lcd_y = %08d\n", get_lcd_x_frm_ts_x(a_ts_x), get_lcd_y_frm_ts_y(a_ts_y));
-	printf("B lcd_x = %08d, lcd_y = %08d\n", get_lcd_x_frm_ts_x(b_ts_x), get_lcd_y_frm_ts_y(b_ts_y));
-	printf("C lcd_x = %08d, lcd_y = %08d\n", get_lcd_x_frm_ts_x(c_ts_x), get_lcd_y_frm_ts_y(c_ts_y));
-	printf("D lcd_x = %08d, lcd_y = %08d\n", get_lcd_x_frm_ts_x(d_ts_x), get_lcd_y_frm_ts_y(d_ts_y));
-	printf("E lcd_x = %08d, lcd_y = %08d\n", get_lcd_x_frm_ts_x(e_ts_x), get_lcd_y_frm_ts_y(e_ts_y));
+	calc(ts_x, ts_y, lcd_x, POINT_NUM, &a1, &b1, &c1);
+	calc(ts_x, ts_y, lcd_y, POINT_NUM, &a2, &b2, &c2);
+	
+#define F(x) (int)(x), (int)(((int)((x)*1000) - ((int)(x))*1000))
+	printf("a1 = %d.%d, b1 = %d.%d, c1 = %d.%d\n", F(a1), F(b1), F(c1));
+	printf("a2 = %d.%d, b2 = %d.%d, c2 = %d.%d\n", F(a2), F(b2), F(c2));
 }
 
 /*
@@ -173,14 +111,10 @@ int ts_read(int *lcd_x, int *lcd_y, int *lcd_pressure) {
 
 	ts_read_raw(&ts_x, &ts_y, &ts_pressure);
 
-	if (g_ts_xy_swap) {
-		swap_xy(&ts_x, &ts_y);
-	}
-
 	/* 使用公式计算 */
-	tmp_x = g_kx * (ts_x - g_ts_xc) + g_lcd_xc;
-	tmp_y = g_ky * (ts_y - g_ts_yc) + g_lcd_yc;
-
+	tmp_x = get_lcd_x(ts_x, ts_y);
+	tmp_y = get_lcd_y(ts_x, ts_y);
+	//printf("x = %d,y = %d\n", tmp_x, tmp_y);
 	if (tmp_x < 0 || tmp_x >= xres || tmp_y < 0 || tmp_y >= yres)
 		return 0;
 
@@ -197,13 +131,9 @@ int ts_read_asyn(int *lcd_x, int *lcd_y, int *lcd_pressure) {
 	if (ts_read_raw_asyn(&ts_x, &ts_y, &ts_pressure))
 		return -1;
 
-	if (g_ts_xy_swap) {
-		swap_xy(&ts_x, &ts_y);
-	}
-
 	/* 使用公式计算 */
-	tmp_x = g_kx * (ts_x - g_ts_xc) + g_lcd_xc;
-	tmp_y = g_ky * (ts_y - g_ts_yc) + g_lcd_yc;
+	tmp_x = get_lcd_x(ts_x, ts_y);
+	tmp_y = get_lcd_y(ts_x, ts_y);
 
 	if (tmp_x < 0 || tmp_x >= xres || tmp_y < 0 || tmp_y >= yres)
 		return -1;
@@ -212,4 +142,23 @@ int ts_read_asyn(int *lcd_x, int *lcd_y, int *lcd_pressure) {
 	*lcd_y = tmp_y;
 	*lcd_pressure = ts_pressure;
 	return 0;
+}
+
+void get_calibrate_params(double *pa){
+	pa[0] = a1;
+	pa[1] = b1;
+	pa[2] = c1;
+	pa[3] = a2;
+	pa[4] = b2;
+	pa[5] = c2;
+}
+
+void set_calibrate_params(double *pa){
+	get_lcd_params(&fb_base, &xres, &yres, &bpp);
+	a1 = pa[0];
+	b1 = pa[1];
+	c1 = pa[2];
+	a2 = pa[3];
+	b2 = pa[4];
+	c2 = pa[5];
 }

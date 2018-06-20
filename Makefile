@@ -29,7 +29,8 @@ CFLAGS   		+= -I$(INCLUDEDIR) -I$(TOPDIR)/ucos2/SOURCE -iquote$(TOPDIR)/ucos2/PO
 				-I$(TOPDIR)/fs/Fatfs_f8a \
 				-iquote$(TOPDIR)/src/helix/pub
 LDFLAGS			:= -L$(shell dirname `$(CC) $(CFLAGS) -print-libgcc-file-name`) -L$(TOPDIR)/uCGUI
-LDFLAGS			+= -lucgui -lgcc
+#LDFLAGS		+= -lucgui
+LDFLAGS			+= -lgcc
 LDFLAGS			+= -Tucosii.lds 
 
 export CFLAGS LDFLAGS
@@ -42,9 +43,9 @@ obj-y += drivers/
 obj-y += src/
 obj-y += lib/
 obj-y += mm/
-obj-y += ucos2/
-obj-y += uCGUI/
-obj-y += lwip/
+#obj-y += ucos2/
+#obj-y += uCGUI/
+#obj-y += lwip/
 obj-y += fs/
 obj-y += sound/
 

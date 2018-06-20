@@ -134,6 +134,17 @@ void OLEDPrint(int page, int col, char *str) {
 	}
 }
 
+void OLEDPutImage(char buf[8][16][8]) {
+	for (int i = 0; i < 8; i++){
+		for (int j = 0; j < 16; j++){
+			OLEDSetPos(i, 8*j);
+			/* 发出8字节数据 */
+			for (int k = 0; k < 8; k++)
+				OLEDWriteDat(buf[i][j][k]);
+		}
+	}
+}
+
 void OLEDClearPage(int page) {
 	int i;
 	OLEDSetPos(page, 0);

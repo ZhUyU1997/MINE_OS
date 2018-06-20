@@ -4,8 +4,6 @@
 
 /* IRDA引脚 : EINT1/GPF1 */
 
-static unsigned long long g_last_time = 0;
-
 /*
  * 配置GPIO, 注册中断
  * 在中断处理函数里:
@@ -40,6 +38,7 @@ void irda_irq(int irq) {
 	  读取引脚极性
 	  把数据放入环型缓冲区
 	*/
+	static unsigned long long g_last_time = 0;
 	irda_raw_event event;
 	unsigned long long cur = get_system_time_us();
 

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <framebuffer.h>
+#include <s3c24xx.h>
 #include "ff.h"
 
 
@@ -84,6 +85,7 @@ int drawImage(char *name) {
 	int totalSize = (bmpInfo.bWidth * bmpInfo.bBitCount / 8 + 3) / 4 * 4 * bmpInfo.bHeight; //计算总字节数（4字节对齐）
 	RGB rgb;
 	char buf[3 * 480];
+
 	for (int y = 0; y < bmpInfo.bHeight; y++) {
 		int count;
 		for (int x = 0; x < bmpInfo.bWidth; x += count) {
