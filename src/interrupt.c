@@ -2,7 +2,11 @@
 #include <interrupt.h>
 #include <assert.h>
 #include "s3c24xx.h"
+
+#ifdef CONFIG_UCOS2
 #include "ucos_ii.h"
+#endif
+
 void (*isr_handle_array[50])(void);
 void enable_irq(void) {
 	__asm__ volatile(
