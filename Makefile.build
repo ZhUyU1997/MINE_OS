@@ -101,10 +101,10 @@ dep_file = .$@.d
 
 %.o : %.c
 	@echo CC $(CURDIR)/$@
-	@$(CC) $(CFLAGS) -Wp,-MD,$(dep_file) -c -o $@ $<
+	@$(CC) $(CFLAGS) $(CPPFLAGS) -Wp,-MD,$(dep_file) -c -o $@ $<
 
 %.o : %.S
 	@echo CC $(CURDIR)/$@
-	@$(CC) $(CFLAGS) -Wp,-MD,$(dep_file) -c -o $@ $<
+	@$(CC) $(CFLAGS) $(CPPFLAGS) -Wp,-MD,$(dep_file) -c -o $@ $<
 	
 .PHONY : $(PHONY)

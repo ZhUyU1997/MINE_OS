@@ -60,26 +60,6 @@ CMD_DEFINE(wav, "wav", "wav") {
 	read_wav_file(argv[1]);
 	return 0;
 }
-CMD_DEFINE(mp3, "mp3", "mp3") {
-#ifdef CONFIG_MP3
-	if (argc != 2)
-		return 1;
-	AudioDecode(argv[1]);
-#endif
-	return 0;
-}
-CMD_DEFINE(nes, "nes", "nes") {
-#ifdef CONFIG_NES
-	if (argc != 2)
-		return 1;
-	if (InfoNES_Load(argv[1])) {
-		printf("\033[31m”Œœ∑º”‘ÿ ß∞‹\033[0m\n");
-		return 1;
-	}
-	InfoNES_Main();
-#endif
-	return 0;
-}
 CMD_DEFINE(usbdebug, "usbdebug", "usbdebug") {
 #if USB_DEBUG == 1
 	DbgPrintf("show");
@@ -396,8 +376,6 @@ cmd_table *ct_list[] = {
 	CMD_ENTRY(help),
 	CMD_ENTRY(ls),
 	CMD_ENTRY(wav),
-	CMD_ENTRY(mp3),
-	CMD_ENTRY(nes),
 	CMD_ENTRY(usbslave),
 	CMD_ENTRY(delay_u),
 	CMD_ENTRY(udelay),

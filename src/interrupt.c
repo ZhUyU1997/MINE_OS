@@ -3,10 +3,6 @@
 #include <assert.h>
 #include "s3c24xx.h"
 
-#ifdef CONFIG_UCOS2
-#include "ucos_ii.h"
-#endif
-
 void (*isr_handle_array[50])(void);
 void enable_irq(void) {
 	__asm__ volatile(
@@ -76,14 +72,8 @@ U32 get_subsrcpnd() {
 void do_irq(void) {
 	enum INT_NUM offset = (enum INT_NUM)INTOFFSET;
 	save_subsrcpnd(SUBSRCPND);
-#ifdef CONFIG_UCOS2
-	OSIntEnter();
-#endif
 	clear_pending(offset);
 	isr_handle_array[offset]();
-#ifdef CONFIG_UCOS2
-	OSIntExit();
-#endif
 }
 
 void request_irq(enum INT_NUM offset, int (*handler)(void)) {
