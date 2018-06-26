@@ -145,9 +145,9 @@ U8 CMD1(void) {
 功能：检测卡类型、固件版本、工作电压状况
 入口：无
 出口：
-	=1：SD V1.X或MMC
-	=2：标准SD卡或SDHC V2.0
-	=0：无效卡
+ =1：SD V1.X或MMC
+ =2：标准SD卡或SDHC V2.0
+ =0：无效卡
 说明：无
 **********************************************/
 U8 CMD8(void) {
@@ -176,9 +176,9 @@ U8 CMD55(U16 iRCA) {
 功能：检测SD卡上电状态
 入口：iRCA:RCA
 出口：
-	=0应答错误或者卡正忙
-	=1标准SD卡
-	=2SDHC V2.0
+ =0应答错误或者卡正忙
+ =1标准SD卡
+ =2SDHC V2.0
 说明：无
 **********************************************/
 U8 ACMD41(U16 iRCA) {
@@ -237,7 +237,7 @@ U8 CMD2(U8 *cCID_Info) {
 /**********************************************
 功能：给SD卡设定一个地址(RCA)
 入口：
-	iCardType = 0:SD卡，=1:MMC卡
+ iCardType = 0:SD卡，=1:MMC卡
 出口：=0 失败 =1 成功
 说明：无
 **********************************************/
@@ -302,8 +302,8 @@ U16 CMD13(U16 iRCA) {
 /**********************************************
 功能：设定数据总线位宽
 入口：
-	BusWidth =0：1bit =1：4bit
-	iRCA:RCA
+ BusWidth =0：1bit =1：4bit
+ iRCA:RCA
 出口：=0：失败 =1：成功
 说明：无
 **********************************************/
@@ -317,8 +317,8 @@ U8 ACMD6(U8 BusWidth, U16 iRCA) {
 /**********************************************
 功能：获取卡的CSD寄存器的值
 入口：
-	iRCA:卡的RCA
-	lCSD：读取的CSD缓存
+ iRCA:卡的RCA
+ lCSD：读取的CSD缓存
 出口：=0失败 =1成功
 说明：无
 **********************************************/
@@ -434,8 +434,8 @@ U8 CMD38(void) {
 /**********************************************
 功能：锁定或者解锁SD卡
 入口：
-	cSelDesel = 1:锁定 =0解锁
-	iCardRCA: CARD RCA
+ cSelDesel = 1:锁定 =0解锁
+ iCardRCA: CARD RCA
 出口：=1：成功 =0：失败
 说明：无
 **********************************************/
@@ -446,10 +446,10 @@ U8 Card_sel_desel(U8 cSelDesel, U16 iCardRCA) {
 /**********************************************
 功能：设置卡通信宽度
 入口：
-	cCardType 卡类型
-	cBusWidth =0：1bit =1：4bit
+ cCardType 卡类型
+ cBusWidth =0：1bit =1：4bit
 出口：
-	=1：成功 =0：失败
+ =1：成功 =0：失败
 说明：无
 **********************************************/
 U8 Set_bus_Width(U8 cCardType, U8 cBusWidth, U16 iRCA) {
@@ -480,12 +480,12 @@ U8 SDI_CheckDATend(void) {
 功 能：该函数用于从 SD 卡中读出指定块起始地址和数据块数目的多个连续数据块，当要读取的
 数据量满足时则停止读取。
 参 数：
-	U32 Addr 被读块的起始地址
-	U32 count 期待被读出的块数目
-	U32* RxBuffer 用于接收读出数据的缓冲区
+ U32 Addr 被读块的起始地址
+ U32 count 期待被读出的块数目
+ U32* RxBuffer 用于接收读出数据的缓冲区
 返回值：
-	0 读块操作不成功
-	1 读块操作成功
+ 0 读块操作不成功
+ 1 读块操作成功
 举 例：
 在主调函数中定义一个数组作为接收缓冲区，如 U32 Rx_buffer[BufferSize];
 然后开始调用 Read_Mult_Block(addr,BufferSize,Rx_buffer);
@@ -601,7 +601,7 @@ U8 Write_Mult_Block(U32 Addr, U32 count, U8* TxBuffer) {
 		return 0;
 	} else {					//*** remain counter became zero
 		rSDIDCON  =  0x0; 		//DataCon clear
-		
+
 		if (count > 1)			//CMD12 is needed after CMD25 to change SD states to tran
 			while (CMD12() != 1);	//发送结束指令
 		do {
@@ -642,8 +642,7 @@ U8 Erase_Block(U32 StartAddr, U32 EndAddr) {
 说明：无
 **********************************************/
 U8 SDI_init(void) {
-	U16 i;
-	U16 iTemp;
+	int i;
 	U8  MBR[512];
 
 	udelay(500000);	//当板子重新上电时需要延时
@@ -666,22 +665,31 @@ U8 SDI_init(void) {
 		switch (CMD8()) {
 			case 0://卡固件无效
 				SDCard.cCardType = INVALID_CARD;
+				SD_DEBUG("卡固件无效\n");
 				break;
 			case 1://非 SD2.0 卡
 				SDCard.cCardType = SD_V1X_CARD;
+				SD_DEBUG("非 SD2.0 卡n");
 				break;
 			case 2://SD2.0 卡
 				SDCard.cCardType = SDHC_V20_CARD;
+				SD_DEBUG("SD2.0 卡\n");
 				break;
 		}
 	}
 
 	SDCard.iCardRCA = 0;
-	for (i = 0; i < 100; i++) {
-		if (ACMD41(SDCard.iCardRCA))
+	for (int j = 0; j < 20; j++) {
+		for (i = 0; i < 100; i++) {
+			if (ACMD41(SDCard.iCardRCA))
+				break;
+			udelay(2000);
+		}
+		if (i < 100)
 			break;
-		udelay(2000);
+		CMD1();
 	}
+
 
 	if (i == 100) {
 		printf("Initialize fail\nNo Card assertion\n");
@@ -776,7 +784,7 @@ U8 SDI_init(void) {
 
 
 U8 Read_Block(U32 Addr, U32 count, U8* RxBuffer) {
-	assert((count)&&(RxBuffer));
+	assert((count) && (RxBuffer));
 	if (count == 0) {
 		return 0;
 	} else if (count < 4096) {
@@ -789,7 +797,7 @@ U8 Read_Block(U32 Addr, U32 count, U8* RxBuffer) {
 	}
 }
 U8 Write_Block(U32 Addr, U32 count, U8* TxBuffer) {
-	assert((count)&&(TxBuffer));
+	assert((count) && (TxBuffer));
 	if (count == 0) {
 		return 0;
 	} else if (count < 4096) {
