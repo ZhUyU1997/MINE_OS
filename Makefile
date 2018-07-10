@@ -49,7 +49,7 @@ TARGET := mine
 
 obj-y += init/
 obj-y += drivers/
-obj-y += src/
+obj-y += kernel/
 obj-y += lib/
 obj-y += mm/
 obj-y += fs/
