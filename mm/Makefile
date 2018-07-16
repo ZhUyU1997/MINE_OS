@@ -1,2 +1,2 @@
-obj-y += mem.o
+obj-y += memory.o
 obj-y += mmu.o
