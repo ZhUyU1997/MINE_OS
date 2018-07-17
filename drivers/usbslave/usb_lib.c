@@ -108,9 +108,9 @@ U32 usb_buf_tx(struct usb_buf *ub, enum ENDPOINT ep) {
 	return ret;
 }
 /*
- * Ã¿´Î·¢ËÍÍê³É£¬mcu ÖÃÎ» IN_PKT_RDY(packet ready)
- * USB·¢ËÍÍê³ÉÊ±,USB½«IN_PKT_RDYÇåÁã
- * Èç¹ûÊÇ×îºóÒ»¸öÊý¾Ý°ü£¬IN_PKT_RDYÖÃÎ»µÄÍ¬Ê±»¹Òª½« DATA_END ÖÃÎ»
+ * æ¯æ¬¡å‘é€å®Œæˆï¼Œmcu ç½®ä½ IN_PKT_RDY(packet ready)
+ * USBå‘é€å®Œæˆæ—¶,USBå°†IN_PKT_RDYæ¸…é›¶
+ * å¦‚æžœæ˜¯æœ€åŽä¸€ä¸ªæ•°æ®åŒ…ï¼ŒIN_PKT_RDYç½®ä½çš„åŒæ—¶è¿˜è¦å°† DATA_END ç½®ä½
  */
 void usb_buf_ep0_tx(struct usb_buf *ub) {
 	U32 size = get_ep_fifo_size(EP0);
@@ -125,7 +125,7 @@ void usb_buf_ep0_tx(struct usb_buf *ub) {
 		ep0State = EP0_STATE_INIT;
 		SET_EP0_INPKTRDY_DATAEND();
 	} else {
-		//Èç¹ûÃèÊö·ûÎªEP0_PKT_SIZEÕûÊý±¶£¬ÔÚ·¢ÍêËùÓÐÊý¾ÝºóÐèÒªÔÙ·¢Ò»¸ö¿ÕÊý¾Ý°ü
+		//å¦‚æžœæè¿°ç¬¦ä¸ºEP0_PKT_SIZEæ•´æ•°å€ï¼Œåœ¨å‘å®Œæ‰€æœ‰æ•°æ®åŽéœ€è¦å†å‘ä¸€ä¸ªç©ºæ•°æ®åŒ…
 		DbgPrintf("[NULL]");
 		ep0State = EP0_STATE_INIT;
 		SET_EP0_INPKTRDY_DATAEND();
@@ -139,7 +139,7 @@ void usb_buf_epx_tx(enum ENDPOINT ep, struct usb_buf *ub) {
 	if (reamin_size > 0 && reamin_size < size) {
 		//ep0State = EP0_STATE_INIT;
 	} else if (reamin_size <= 0) {
-		//Èç¹ûÃèÊö·ûÎªEP0_PKT_SIZEÕûÊý±¶£¬ÔÚ·¢ÍêËùÓÐÊý¾ÝºóÐèÒªÔÙ·¢Ò»¸ö¿ÕÊý¾Ý°ü
+		//å¦‚æžœæè¿°ç¬¦ä¸ºEP0_PKT_SIZEæ•´æ•°å€ï¼Œåœ¨å‘å®Œæ‰€æœ‰æ•°æ®åŽéœ€è¦å†å‘ä¸€ä¸ªç©ºæ•°æ®åŒ…
 		DbgPrintf("[NULL]");
 		//ep0State = EP0_STATE_INIT;
 	}

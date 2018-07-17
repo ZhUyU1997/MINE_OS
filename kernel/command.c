@@ -3,6 +3,7 @@
 #include <timer.h>
 #include <usb/2440usb.h>
 #include "command.h"
+#include <memory.h>
 #include "ff.h"
 
 #define CMD_MAX_CMD_NUM 50
@@ -67,12 +68,12 @@ CMD_DEFINE(usbdebug, "usbdebug", "usbdebug") {
 	return 0;
 }
 CMD_DEFINE(usbtest, "usbtest", "usbtest") {
-	printf("USB slave ²âÊÔ\n");
+	printf("USB slave æµ‹è¯•\n");
 	usb_init_slave();
 	return 0;
 }
 CMD_DEFINE(backtrace, "backtrace", "backtrace") {
-	printf("backtrace²âÊÔ\n");
+	printf("backtraceæµ‹è¯•\n");
 	char s[128];
 	for (int i = 0; i < 128 / 3; i++) {
 		*(volatile int *)(s + 3 * i) = 0;
@@ -97,22 +98,22 @@ CMD_DEFINE(usbmouse, "usbmouse", "usbmouse") {
 		U8 Buf[4] = {0, 0, 0, 0};
 		switch (getc()) {
 			case 'a':
-				Buf[1] = -1;	//ÕâÀïÒ»´ÎÍù×óÒÆ¶¯Ò»¸öµ¥Î»¡£
+				Buf[1] = -1;	//è¿™é‡Œä¸€æ¬¡å¾€å·¦ç§»åŠ¨ä¸€ä¸ªå•ä½ã€‚
 				break;
 			case 'd':
-				Buf[1] = 1;		//ÕâÀïÒ»´ÎÍùÓÒÒÆ¶¯Ò»¸öµ¥Î»¡£
+				Buf[1] = 1;		//è¿™é‡Œä¸€æ¬¡å¾€å³ç§»åŠ¨ä¸€ä¸ªå•ä½ã€‚
 				break;
 			case 'w':
-				Buf[2] = -1;	//ÕâÀïÒ»´ÎÍùÉÏÒÆ¶¯Ò»¸öµ¥Î»¡£
+				Buf[2] = -1;	//è¿™é‡Œä¸€æ¬¡å¾€ä¸Šç§»åŠ¨ä¸€ä¸ªå•ä½ã€‚
 				break;
 			case 's':
-				Buf[2] = 1;		//ÕâÀïÒ»´ÎÍùÏÂÒÆ¶¯Ò»¸öµ¥Î»¡£
+				Buf[2] = 1;		//è¿™é‡Œä¸€æ¬¡å¾€ä¸‹ç§»åŠ¨ä¸€ä¸ªå•ä½ã€‚
 				break;
 			case 'j':
-				Buf[0] |= 0x01;	//D0ÎªÊó±ê×ó¼ü
+				Buf[0] |= 0x01;	//D0ä¸ºé¼ æ ‡å·¦é”®
 				break;
 			case 'k':
-				Buf[0] |= 0x02;	//D1ÎªÊó±êÓÒ¼ü
+				Buf[0] |= 0x02;	//D1ä¸ºé¼ æ ‡å³é”®
 				break;
 			case 'q':
 			case 'Q':
@@ -150,7 +151,7 @@ CMD_DEFINE(wr_at24xx, "wr_at24xx", "wr_at24xx") {
 		return 1;
 	int err;
 
-	/* »ñµÃµØÖ· */
+	/* è·å¾—åœ°å€ */
 	unsigned int addr = simple_strtoul(argv[1], NULL, 10);
 	if (addr > 256) {
 		printf("address > 256, error!\n");
@@ -170,7 +171,7 @@ CMD_DEFINE(rd_at24xx, "rd_at24xx", "rd_at24xx addr len") {
 
 	if (argc != 3)
 		return 1;
-	/* »ñµÃµØÖ· */
+	/* è·å¾—åœ°å€ */
 	unsigned int addr = simple_strtoul(argv[1], NULL, 10);
 
 	if (addr > 256) {
@@ -178,7 +179,7 @@ CMD_DEFINE(rd_at24xx, "rd_at24xx", "rd_at24xx addr len") {
 		return;
 	}
 
-	/* »ñµÃ³¤¶È */
+	/* è·å¾—é•¿åº¦ */
 	int len = simple_strtoul(argv[2], NULL, 10);
 	err = at24cxx_read(addr, data, len);
 	if (err)
@@ -186,9 +187,9 @@ CMD_DEFINE(rd_at24xx, "rd_at24xx", "rd_at24xx addr len") {
 	printf("[data view]\n");
 
 	for (int i = 0; i < (len + 15) / 16; i++) {
-		/* Ã¿ĞĞ´òÓ¡16¸öÊı¾İ */
+		/* æ¯è¡Œæ‰“å°16ä¸ªæ•°æ® */
 		for (int j = 0; j < 16; j++) {
-			/* ÏÈ´òÓ¡ÊıÖµ */
+			/* å…ˆæ‰“å°æ•°å€¼ */
 			unsigned char c = data[cnt++];
 			str[j] = c;
 			if (j < len - i * 16)
@@ -200,8 +201,8 @@ CMD_DEFINE(rd_at24xx, "rd_at24xx", "rd_at24xx addr len") {
 		printf("   ; ");
 
 		for (int j = 0; j < len - i * 16; j++) {
-			/* ºó´òÓ¡×Ö·û */
-			if (str[j] < 0x20 || str[j] > 0x7e)  /* ²»¿ÉÊÓ×Ö·û */
+			/* åæ‰“å°å­—ç¬¦ */
+			if (str[j] < 0x20 || str[j] > 0x7e)  /* ä¸å¯è§†å­—ç¬¦ */
 				putchar('.');
 			else
 				putchar(str[j]);
@@ -224,7 +225,7 @@ CMD_DEFINE(adc_test, "adc_test", "adc_test") {
 	int vol0, vol1;
 	int t0, t1;
 	printf("Measuring the voltage of AIN0 and AIN1, press any key to exit\n");
-	while (!serial_getc_async()) {  // ´®¿ÚÎŞÊäÈë£¬Ôò²»¶Ï²âÊÔ
+	while (!serial_getc_async()) {  // ä¸²å£æ— è¾“å…¥ï¼Œåˆ™ä¸æ–­æµ‹è¯•
 		get_adc(&vol0, &t0, 0);
 		get_adc(&vol1, &t1, 2);
 		printf("AIN0 = %d.%-3dV    AIN2 = %d.%-3dV\r", (int)vol0, t0, (int)vol1, t1);
@@ -257,14 +258,14 @@ CMD_DEFINE(bmp_test, "bmp_test", "bmp_test") {
 }
 CMD_DEFINE(RTC, "RTC", "RTC") {
 	char data[7] = {0};
-	char *week_str[7] = {"Ò»", "¶ş", "Èı", "ËÄ", "Îå", "Áù", "ÈÕ"};
+	char *week_str[7] = {"ä¸€", "äºŒ", "ä¸‰", "å››", "äº”", "å…­", "æ—¥"};
 	char *week;
 	if (argc == 1) {
 		RTC_Read(&data[0], &data[1], &data[2], &data[3], &data[4], &data[5], &data[6]);
 
 		if (data[3] >= 1 && data[3] <= 7) {
 			week = week_str[data[3] - 1];
-			printf("%dÄê,%dÔÂ,%dÈÕ,ĞÇÆÚ%s,%dµã,%d·Ö,%dÃë\n", 2000 + data[0],
+			printf("%då¹´,%dæœˆ,%dæ—¥,æ˜ŸæœŸ%s,%dç‚¹,%dåˆ†,%dç§’\n", 2000 + data[0],
 				   data[1], data[2], week, data[4], data[5], data[6]);
 		} else {
 			printf("error!\n");
@@ -278,15 +279,15 @@ CMD_DEFINE(RTC, "RTC", "RTC") {
 		RTC_Set(data[0], data[1], data[2], data[3], data[4], data[5], data[6]);
 		if (data[3] >= 1 && data[3] <= 7) {
 			week = week_str[data[3] - 1];
-			printf("%dÄê,%dÔÂ,%dÈÕ,ĞÇÆÚ%s,%dµã,%d·Ö,%dÃë\n", 2000 + data[0],
+			printf("%då¹´,%dæœˆ,%dæ—¥,æ˜ŸæœŸ%s,%dç‚¹,%dåˆ†,%dç§’\n", 2000 + data[0],
 				   data[1], data[2], week, data[4], data[5], data[6]);
-			printf("ÉèÖÃ³É¹¦\n");
+			printf("è®¾ç½®æˆåŠŸ\n");
 		} else {
 			printf("error!\n");
 			return 1;
 		}
 	} else {
-		printf("error!²ÎÊıÊıÁ¿Òì³£\n");
+		printf("error!å‚æ•°æ•°é‡å¼‚å¸¸\n");
 		return 1;
 	}
 	return 0;
@@ -320,7 +321,7 @@ CMD_DEFINE(spi_test, "spi_test", "spi_test") {
 	OLEDClearPage(3);
 
 	printf("Measuring the voltage of AIN0 and AIN1, press any key to exit\n");
-	while (!serial_getc_async()) {  // ´®¿ÚÎŞÊäÈë£¬Ôò²»¶Ï²âÊÔ
+	while (!serial_getc_async()) {  // ä¸²å£æ— è¾“å…¥ï¼Œåˆ™ä¸æ–­æµ‹è¯•
 		get_adc(&vol0, &t0, 0);
 		get_adc(&vol1, &t1, 2);
 		//printf("AIN0 = %d.%-3dV    AIN2 = %d.%-3dV\r", (int)vol0, t0, (int)vol1, t1);
@@ -334,19 +335,19 @@ CMD_DEFINE(usbslave,
 		   "[loadAddress] [wait] \n"
 		   "\"wait\" is 0 or 1, 0 means for return immediately, not waits for the finish of transferring") {
 #if 0
-	//TODO:×îºÃ½«ÎÄ¼şÏÂÔØµ½ÎÄ¼şÏµÍ³ÖĞ
+	//TODO:æœ€å¥½å°†æ–‡ä»¶ä¸‹è½½åˆ°æ–‡ä»¶ç³»ç»Ÿä¸­
 	extern int download_run;
 	extern volatile U32 dwUSBBufBase;
 	extern volatile U32 dwUSBBufSize;
 
 	int wait = 1;
 #define BUF_SIZE (1024*1024)
-	/* download_runÎª1Ê±±íÊ¾½«ÎÄ¼ş±£´æÔÚUSB Host·¢ËÍ¹¤¾ßdnwÖ¸¶¨µÄÎ»ÖÃ
-	 * download_runÎª0Ê±±íÊ¾½«ÎÄ¼ş±£´æÔÚ²ÎÊıargv[2]Ö¸¶¨µÄÎ»ÖÃ
-	 * ÒªÏÂÔØ³ÌĞòµ½ÄÚ´æ£¬È»ºóÖ±½ÓÔËĞĞÊ±£¬ÒªÉèÖÃdownload_run=1£¬ÕâÒ²ÊÇÕâ¸ö²ÎÊıÃû×ÖµÄÀ´ÓÉ
+	/* download_runä¸º1æ—¶è¡¨ç¤ºå°†æ–‡ä»¶ä¿å­˜åœ¨USB Hostå‘é€å·¥å…·dnwæŒ‡å®šçš„ä½ç½®
+	 * download_runä¸º0æ—¶è¡¨ç¤ºå°†æ–‡ä»¶ä¿å­˜åœ¨å‚æ•°argv[2]æŒ‡å®šçš„ä½ç½®
+	 * è¦ä¸‹è½½ç¨‹åºåˆ°å†…å­˜ï¼Œç„¶åç›´æ¥è¿è¡Œæ—¶ï¼Œè¦è®¾ç½®download_run=1ï¼Œè¿™ä¹Ÿæ˜¯è¿™ä¸ªå‚æ•°åå­—çš„æ¥ç”±
 	 */
-	//ÓÉÓÚ0x3000000´æ·ÅÁËÒ³±í£¬±ØĞëdownload_run = 0È·±£ÏÂÔØµØÖ·ÕıÈ·£¬¼´²»²ÉÓÃÉÏÎ»»úÉèÖÃµÄµØÖ·
-	download_run = 0;//Ä¬ÈÏÓÉÏÂÎ»»ú¾ö¶¨µØÖ·ºÍ´óĞ¡
+	//ç”±äº0x3000000å­˜æ”¾äº†é¡µè¡¨ï¼Œå¿…é¡»download_run = 0ç¡®ä¿ä¸‹è½½åœ°å€æ­£ç¡®ï¼Œå³ä¸é‡‡ç”¨ä¸Šä½æœºè®¾ç½®çš„åœ°å€
+	download_run = 0;//é»˜è®¤ç”±ä¸‹ä½æœºå†³å®šåœ°å€å’Œå¤§å°
 	if (argc == 2) {
 		//dwUSBBufBase = kmalloc(BUF_SIZE);
 		dwUSBBufBase = 0x30a00000;
@@ -363,6 +364,10 @@ CMD_DEFINE(usbslave,
 	int size = usb_receive(dwUSBBufBase, dwUSBBufSize, wait);
 	assert(size > 0 && size <= BUF_SIZE);
 #endif
+	return 0;
+}
+CMD_DEFINE(mmtest, "mmtest", "mmtest") {
+	
 	return 0;
 }
 CMD_DEFINE(help, "help", "help") {
@@ -399,6 +404,7 @@ cmd_table *ct_list[] = {
 	CMD_ENTRY(irda_nec),
 	CMD_ENTRY(bmp_test),
 	CMD_ENTRY(backtrace),
+	CMD_ENTRY(mmtest),
 	NULL
 };
 cmd_table *search_cmd(char *name) {
@@ -449,10 +455,7 @@ static int get_str(char *buf, int len) {
 	int i;
 	for (i = 0; i < len - 1; i++) {
 		char c = getc();
-		//xshell »Ø³µ²úÉú\r\n
 		if (c == '\r') {
-			getc();
-
 			if (i == 0) {
 				return -1;
 			} else {
@@ -461,10 +464,10 @@ static int get_str(char *buf, int len) {
 				break;
 			}
 		} else if (c == '\b') {
-			if (i > 0) { //Ç°ÃæÓĞ×Ö·û
+			if (i > 0) { //å‰é¢æœ‰å­—ç¬¦
 				putc(c);
 				i = i - 2;
-			} else { //Ç°ÃæÃ»ÓĞ×Ö·û
+			} else { //å‰é¢æ²¡æœ‰å­—ç¬¦
 				i = i - 1;
 			}
 		} else {

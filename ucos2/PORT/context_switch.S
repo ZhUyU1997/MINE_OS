@@ -55,11 +55,11 @@ OSCtxSw:
 .global OSIntCtxSw
 OSIntCtxSw:
 	PUSH	{LR}
-	@гп╩╩╣╫SVCдёй╫обё╛╪стьSP
+	@Е┬┤Ф█╒Е┬╟SVCФ╗║Е╪▐Д╦▀О╪▄Е┼═Х╫╫SP
 	MRS		R0, CPSR
 	MSR		CPSR_c, #0xd3
 	MOV		R1,SP
-	MSR		CPSR_cxsf, R0		@гп╩╩╩ь╣╠г╟дёй╫
+	MSR		CPSR_cxsf, R0		@Е┬┤Ф█╒Е⌡·Е╫⌠Е┴█Ф╗║Е╪▐
 
 	@----------------------------------------------------------------------------------
 	@ 		OSTCBCur->OSTCBStkPtr = SP
@@ -100,10 +100,10 @@ OSIntCtxSw:
 	@Restore New task context
 	@----------------------------------------------------------------------------------	
 
-	@гп╩╩╣╫SVCдёй╫обё╛╪стьSP
+	@Е┬┤Ф█╒Е┬╟SVCФ╗║Е╪▐Д╦▀О╪▄Е┼═Х╫╫SP
 	MRS		R0, CPSR
 	MSR		CPSR_c, #0xd3
 	MOV		SP,R1
-	MSR		CPSR_cxsf, R0	@гп╩╩╩ь╣╠г╟дёй╫
+	MSR		CPSR_cxsf, R0	@Е┬┤Ф█╒Е⌡·Е╫⌠Е┴█Ф╗║Е╪▐
 	POP		{LR}
 	BX		LR

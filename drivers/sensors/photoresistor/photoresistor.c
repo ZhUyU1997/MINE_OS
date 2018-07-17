@@ -5,13 +5,13 @@ void photoresistor_get_vol(int *m, int *n, int c){
 	val = adc_read(c);
 	vol = (double)val / 1023 * 3.3; /* 1023----3.3v */
 	*m = (int)vol;	/* 3.01, m = 3 */
-	vol = vol - *m;	/* 小数部分: 0.01 */
+	vol = vol - *m;	/* 灏忔暟閮ㄥ垎: 0.01 */
 	*n = vol * 1000;  /* 10 */
 }
 
 void photoresistor_test(void) {
-	int m, m0; /* 整数部分 */
-	int n, n0; /* 小数部分 */
+	int m, m0; /* 鏁存暟閮ㄥ垎 */
+	int n, n0; /* 灏忔暟閮ㄥ垎 */
 
 	while (!serial_getc_async()) {
 		photoresistor_get_vol(&m0, &n0, 0);

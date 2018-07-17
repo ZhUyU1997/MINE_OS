@@ -4,7 +4,7 @@
 #include "s3c24xx.h"
 #include "serial.h"
 
-// ADCCON¼Ä´æÆ÷
+// ADCCONå¯„å­˜å™¨
 #define PRESCALE_DIS        (0 << 14)
 #define PRESCALE_EN         (1 << 14)
 #define PRSCVL(x)           ((x) << 6)
@@ -19,30 +19,30 @@ static void adc_init(int channel) {
 	 * [2]   : STDBM
 	 * [0]   : 1 = A/D conversion starts and this bit is cleared after the startup.
 	 */
-	// Ñ¡ÔñÄ£ÄâÍ¨µÀ£¬Ê¹ÄÜÔ¤·ÖÆµ¹¦ÄÜ£¬ÉèÖÃA/D×ª»»Æ÷µÄÊ±ÖÓ = PCLK/(49+1)
+	// é€‰æ‹©æ¨¡æ‹Ÿé€šé“ï¼Œä½¿èƒ½é¢„åˆ†é¢‘åŠŸèƒ½ï¼Œè®¾ç½®A/Dè½¬æ¢å™¨çš„æ—¶é’Ÿ = PCLK/(49+1)
 	ADCCON = PRESCALE_EN | PRSCVL(49) | ADC_INPUT(channel);
 	ADCDLY = 0xff;
-	// Çå³ýÎ»[2]£¬ÉèÎªÆÕÍ¨×ª»»Ä£Ê½
+	// æ¸…é™¤ä½[2]ï¼Œè®¾ä¸ºæ™®é€šè½¬æ¢æ¨¡å¼
 	ADCTSC &= ~(1 << 2);
 }
 
 int adc_read(int channel) {
 	adc_init(channel);
-	// ÉèÖÃÎ»[0]Îª1£¬Æô¶¯A/D×ª»»
+	// è®¾ç½®ä½[0]ä¸º1ï¼Œå¯åŠ¨A/Dè½¬æ¢
 	ADCCON |= ADC_START;
-	// µ±A/D×ª»»ÕæÕý¿ªÊ¼Ê±£¬Î»[0]»á×Ô¶¯Çå0
+	// å½“A/Dè½¬æ¢çœŸæ­£å¼€å§‹æ—¶ï¼Œä½[0]ä¼šè‡ªåŠ¨æ¸…0
 	while (ADCCON & ADC_START);
-	// ¼ì²âÎ»[15]£¬µ±ËüÎª1Ê±±íÊ¾×ª»»½áÊø
+	// æ£€æµ‹ä½[15]ï¼Œå½“å®ƒä¸º1æ—¶è¡¨ç¤ºè½¬æ¢ç»“æŸ
 	while (!(ADCCON & ADC_ENDCVT));
-	// ¶ÁÈ¡Êý¾Ý
+	// è¯»å–æ•°æ®
 	return (ADCDAT0 & 0x3ff);
 }
 
 /*
- * Í¨¹ýA/D×ª»»£¬²âÁ¿¿É±äµç×èÆ÷µÄµçÑ¹Öµ
+ * é€šè¿‡A/Dè½¬æ¢ï¼Œæµ‹é‡å¯å˜ç”µé˜»å™¨çš„ç”µåŽ‹å€¼
  */
 void get_adc(int *vol, int *t, int ch) {
-	float v = ((float)adc_read(ch) * 3.3) / 1024.0; // ¼ÆËãµçÑ¹Öµ
+	float v = ((float)adc_read(ch) * 3.3) / 1024.0; // è®¡ç®—ç”µåŽ‹å€¼
 	*vol = v;
-	*t = (v - (int)v) * 1000;   // ¼ÆËãÐ¡Êý²¿·Ö, ±¾´úÂëÖÐµÄprintfÎÞ·¨´òÓ¡¸¡µãÊý
+	*t = (v - (int)v) * 1000;   // è®¡ç®—å°æ•°éƒ¨åˆ†, æœ¬ä»£ç ä¸­çš„printfæ— æ³•æ‰“å°æµ®ç‚¹æ•°
 }

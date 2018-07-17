@@ -3,77 +3,77 @@
 .global _start 
 _start:
 @******************************************************************************       
-@ ÖĞ¶ÏÏòÁ¿£¬±¾³ÌĞòÖĞ£¬³ıResetºÍHandleIRQÍâ£¬ÆäËüÒì³£¶¼Ã»ÓĞÊ¹ÓÃ
+@ ä¸­æ–­å‘é‡ï¼Œæœ¬ç¨‹åºä¸­ï¼Œé™¤Resetå’ŒHandleIRQå¤–ï¼Œå…¶å®ƒå¼‚å¸¸éƒ½æ²¡æœ‰ä½¿ç”¨
 @******************************************************************************       
     b   Reset
 
-@ 0x04: Î´¶¨ÒåÖ¸ÁîÖĞÖ¹Ä£Ê½µÄÏòÁ¿µØÖ·
+@ 0x04: æœªå®šä¹‰æŒ‡ä»¤ä¸­æ­¢æ¨¡å¼çš„å‘é‡åœ°å€
     ldr pc, = HandleUndef 
 
-@ 0x08: ¹ÜÀíÄ£Ê½µÄÏòÁ¿µØÖ·£¬Í¨¹ıSWIÖ¸Áî½øÈë´ËÄ£Ê½
+@ 0x08: ç®¡ç†æ¨¡å¼çš„å‘é‡åœ°å€ï¼Œé€šè¿‡SWIæŒ‡ä»¤è¿›å…¥æ­¤æ¨¡å¼
     ldr pc, = HandleSWI
 
-@ 0x0c: Ö¸ÁîÔ¤È¡ÖÕÖ¹µ¼ÖÂµÄÒì³£µÄÏòÁ¿µØÖ·
+@ 0x0c: æŒ‡ä»¤é¢„å–ç»ˆæ­¢å¯¼è‡´çš„å¼‚å¸¸çš„å‘é‡åœ°å€
     ldr pc, = HandlePrefetchAbort
 
-@ 0x10: Êı¾İ·ÃÎÊÖÕÖ¹µ¼ÖÂµÄÒì³£µÄÏòÁ¿µØÖ·
+@ 0x10: æ•°æ®è®¿é—®ç»ˆæ­¢å¯¼è‡´çš„å¼‚å¸¸çš„å‘é‡åœ°å€
     ldr pc, = HandleDataAbort
 
-@ 0x14: ±£Áô
+@ 0x14: ä¿ç•™
 HandleNotUsed:
     ldr pc, = HandleNotUsed
 
-@ 0x18: ÖĞ¶ÏÄ£Ê½µÄÏòÁ¿µØÖ·
+@ 0x18: ä¸­æ–­æ¨¡å¼çš„å‘é‡åœ°å€
     ldr pc, = HandleIRQ
 
-@ 0x1c: ¿ìÖĞ¶ÏÄ£Ê½µÄÏòÁ¿µØÖ·
+@ 0x1c: å¿«ä¸­æ–­æ¨¡å¼çš„å‘é‡åœ°å€
 HandleFIQ:
     ldr pc, = HandleFIQ
 
 Reset:
 #if BOOT_MODE == BOOT_FORM_STEPPINGSTONE
-	msr cpsr_c, #0xd3		@ ½øÈë¹ÜÀíÄ£Ê½ÉèÖÃI-bit=1£¬¹ØIRQÖĞ¶Ï
-    ldr sp, =4096           @ ÉèÖÃ¹ÜÀíÄ£Ê½Õ»Ö¸Õë
+	msr cpsr_c, #0xd3		@ è¿›å…¥ç®¡ç†æ¨¡å¼è®¾ç½®I-bit=1ï¼Œå…³IRQä¸­æ–­
+    ldr sp, =4096           @ è®¾ç½®ç®¡ç†æ¨¡å¼æ ˆæŒ‡é’ˆ
 #elif BOOT_MODE == BOOT_FORM_SDRAM
-	msr cpsr_c, #0xd3		@ ½øÈë¹ÜÀíÄ£Ê½ÉèÖÃI-bit=1£¬¹ØIRQÖĞ¶Ï
-    ldr sp, =0x33f00000     @ ÉèÖÃ¹ÜÀíÄ£Ê½Õ»Ö¸Õë
+	msr cpsr_c, #0xd3		@ è¿›å…¥ç®¡ç†æ¨¡å¼è®¾ç½®I-bit=1ï¼Œå…³IRQä¸­æ–­
+    ldr sp, =0x33f00000     @ è®¾ç½®ç®¡ç†æ¨¡å¼æ ˆæŒ‡é’ˆ
 #else
-	#error ÇëÉèÖÃÆô¶¯Ä£Ê½
+	#error è¯·è®¾ç½®å¯åŠ¨æ¨¡å¼
 #endif
-	bl disable_watch_dog	@ 1. ¹Ø¿´ÃÅ¹·
-	bl clock_init			@ 2. ÉèÖÃÊ±ÖÓ
-	bl memsetup				@ 3. ³õÊ¼»¯SDRAM
+	bl disable_watch_dog	@ 1. å…³çœ‹é—¨ç‹—
+	bl clock_init			@ 2. è®¾ç½®æ—¶é’Ÿ
+	bl memsetup				@ 3. åˆå§‹åŒ–SDRAM
 
 #if BOOT_MODE == BOOT_FORM_STEPPINGSTONE
 	bl nand_init_ll
 
-	@¸´ÖÆ´úÂëµ½SDRAMÖĞ					
-    ldr r0, =_start			@ 1. Ä¿±êµØÖ·
-    mov r1, #0				@ 2. Ô´µØÖ·  ÔËĞĞµØÖ·ÔÚSDRAMÖĞµÄ´úÂë±£´æÔÚNAND Flash 0µØÖ·¿ªÊ¼´¦
+	@å¤åˆ¶ä»£ç åˆ°SDRAMä¸­					
+    ldr r0, =_start			@ 1. ç›®æ ‡åœ°å€
+    mov r1, #0				@ 2. æºåœ°å€  è¿è¡Œåœ°å€åœ¨SDRAMä¸­çš„ä»£ç ä¿å­˜åœ¨NAND Flash 0åœ°å€å¼€å§‹å¤„
 	ldr r2, =__bss_start
-	sub r2, r2, r0			@ 3. ¸´ÖÆ³¤¶È = __bss_start - _start
-    bl  copy_code_to_sdram  @ µ÷ÓÃCº¯Êıcopy_code_to_SDRAM
+	sub r2, r2, r0			@ 3. å¤åˆ¶é•¿åº¦ = __bss_start - _start
+    bl  copy_code_to_sdram  @ è°ƒç”¨Cå‡½æ•°copy_code_to_SDRAM
 #endif
-    bl  clean_bss           @ Çå³ıbss¶Î£¬Î´³õÊ¼»¯»ò³õÖµÎª0µÄÈ«¾Ö/¾²Ì¬±äÁ¿±£´æÔÚbss¶Î
-    msr cpsr_c, #0xd2       @ ½øÈëÖĞ¶ÏÄ£Ê½
-    ldr sp, =0x33d80000     @ ÉèÖÃÖĞ¶ÏÄ£Ê½Õ»Ö¸Õë
+    bl  clean_bss           @ æ¸…é™¤bssæ®µï¼Œæœªåˆå§‹åŒ–æˆ–åˆå€¼ä¸º0çš„å…¨å±€/é™æ€å˜é‡ä¿å­˜åœ¨bssæ®µ
+    msr cpsr_c, #0xd2       @ è¿›å…¥ä¸­æ–­æ¨¡å¼
+    ldr sp, =0x33d80000     @ è®¾ç½®ä¸­æ–­æ¨¡å¼æ ˆæŒ‡é’ˆ
 
-    msr cpsr_c, #0xdf       @ ½øÈëÏµÍ³Ä£Ê½
-    ldr sp, =0x33e00000     @ ÉèÖÃÏµÍ³Ä£Ê½Õ»Ö¸Õë
+    msr cpsr_c, #0xdf       @ è¿›å…¥ç³»ç»Ÿæ¨¡å¼
+    ldr sp, =0x33e00000     @ è®¾ç½®ç³»ç»Ÿæ¨¡å¼æ ˆæŒ‡é’ˆ
 
-	msr cpsr_c, #0xd7       @ ½øÈëÊı¾İ·ÃÎÊÖÕÖ¹Ä£Ê½
-    ldr sp, =0x33e80000     @ ÉèÖÃÊı¾İ·ÃÎÊÖÕÖ¹Ä£Ê½Õ»Ö¸Õë
+	msr cpsr_c, #0xd7       @ è¿›å…¥æ•°æ®è®¿é—®ç»ˆæ­¢æ¨¡å¼
+    ldr sp, =0x33e80000     @ è®¾ç½®æ•°æ®è®¿é—®ç»ˆæ­¢æ¨¡å¼æ ˆæŒ‡é’ˆ
 
-	msr cpsr_c, #0xdb       @ ½øÈëÎ´¶¨ÒåÖ¸ÁîÖĞÖ¹Ä£Ê½
-    ldr sp, =0x33e80000     @ ÉèÖÃÎ´¶¨ÒåÖ¸ÁîÖĞÖ¹Ä£Ê½Õ»Ö¸Õë
+	msr cpsr_c, #0xdb       @ è¿›å…¥æœªå®šä¹‰æŒ‡ä»¤ä¸­æ­¢æ¨¡å¼
+    ldr sp, =0x33e80000     @ è®¾ç½®æœªå®šä¹‰æŒ‡ä»¤ä¸­æ­¢æ¨¡å¼æ ˆæŒ‡é’ˆ
 
-	msr cpsr_c, #0xd3		@ ½øÈë¹ÜÀíÄ£Ê½ÉèÖÃI-bit=1£¬¹ØIRQÖĞ¶Ï
-    ldr sp, =0x33f00000     @ ÉèÖÃ¹ÜÀíÄ£Ê½Õ»Ö¸Õë
-	ldr fp, =0x33f00000     @ ÉèÖÃÕ»Ö¡Ö¸Õë
+	msr cpsr_c, #0xd3		@ è¿›å…¥ç®¡ç†æ¨¡å¼è®¾ç½®I-bit=1ï¼Œå…³IRQä¸­æ–­
+    ldr sp, =0x33f00000     @ è®¾ç½®ç®¡ç†æ¨¡å¼æ ˆæŒ‡é’ˆ
+	ldr fp, =0x33f00000     @ è®¾ç½®æ ˆå¸§æŒ‡é’ˆ
 
-	@Ìø×ªµØÖ·¹ı´ó²»ÄÜÓÃblÖ¸Áî
-    ldr lr, =halt_loop    @ ÉèÖÃ·µ»ØµØÖ·
-    ldr pc, =main       @ µ÷ÓÃÖĞ¶Ï³õÊ¼»¯º¯Êı
+	@è·³è½¬åœ°å€è¿‡å¤§ä¸èƒ½ç”¨blæŒ‡ä»¤
+    ldr lr, =halt_loop    @ è®¾ç½®è¿”å›åœ°å€
+    ldr pc, =main       @ è°ƒç”¨ä¸­æ–­åˆå§‹åŒ–å‡½æ•°
 halt_loop:
     b   halt_loop
 
@@ -83,7 +83,7 @@ HandleIRQ:
 	SUB     R2, LR, #4              @ Adjust PC for return address to task
 	MRS     R3, SPSR				@ Copy SPSR (Task CPSR)
 	
-	@ÇĞ»»µ½SVCÄ£Ê½ÏÂ£¬¼ÓÔØSP,LR
+	@åˆ‡æ¢åˆ°SVCæ¨¡å¼ä¸‹ï¼ŒåŠ è½½SP,LR
 	MRS		R0, CPSR
 	MSR     CPSR_c, #0xd3			@ Change to SVC mode
 	STMFD   SP!, {R2}				@ Push task''s PC 
@@ -92,18 +92,18 @@ HandleIRQ:
 	STMFD   SP!, {R4-R7}			@ Push Task''s R0-R3 to SVC stack
 	STMFD   SP!, {R3}				@ Push task''s CPSR
 
-	MSR		CPSR_cxsf, R0			@ÇĞ»»»Øµ±Ç°Ä£Ê½
+	MSR		CPSR_cxsf, R0			@åˆ‡æ¢å›å½“å‰æ¨¡å¼
 
-                                    @ ×¢Òâ£¬´ËÊ±µÄspÊÇÖĞ¶ÏÄ£Ê½µÄsp
-                                    @ ³õÊ¼ÖµÊÇÉÏÃæÉèÖÃµÄ0x33d00000
+                                    @ æ³¨æ„ï¼Œæ­¤æ—¶çš„spæ˜¯ä¸­æ–­æ¨¡å¼çš„sp
+                                    @ åˆå§‹å€¼æ˜¯ä¸Šé¢è®¾ç½®çš„0x33d00000
 
-    LDR		LR, =int_return			@ ÉèÖÃµ÷ÓÃIRQ_Handleº¯ÊıºóµÄ·µ»ØµØÖ·  
-    LDR		PC, =do_irq				@ µ÷ÓÃÖĞ¶Ï·Ö·¢º¯Êı£¬ÔÚinterrupt.cÖĞ
+    LDR		LR, =int_return			@ è®¾ç½®è°ƒç”¨IRQ_Handleå‡½æ•°åçš„è¿”å›åœ°å€  
+    LDR		PC, =do_irq				@ è°ƒç”¨ä¸­æ–­åˆ†å‘å‡½æ•°ï¼Œåœ¨interrupt.cä¸­
 int_return:
 	MSR     CPSR_c, #0xd3
 	LDMFD   SP!, {R0}               @ POP the task''s CPSR 
     MSR		SPSR_cxsf, R0
-    LDMFD   SP!, {R0-R12,LR,PC}^	@ ÖĞ¶Ï·µ»Ø, ^±íÊ¾½«spsrµÄÖµ¸´ÖÆµ½cpsr
+    LDMFD   SP!, {R0-R12,LR,PC}^	@ ä¸­æ–­è¿”å›, ^è¡¨ç¤ºå°†spsrçš„å€¼å¤åˆ¶åˆ°cpsr
 
 
 HandleSWI:

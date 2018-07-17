@@ -4,7 +4,7 @@
 
 void usb_buf_init(struct usb_buf *ub, U8 *buf, U32 size) {
 	assert(ub && buf && size);
-	//buf²»Îª¿Õ£¬sizeÔò±ØĞë´óÓÚ0
+	//bufä¸ä¸ºç©ºï¼Œsizeåˆ™å¿…é¡»å¤§äº0
 	assert((!buf) || size);
 	ub->buf = buf;
 	ub->size = size;
@@ -18,7 +18,7 @@ static inline U32 usb_buf_read_single(struct usb_buf *ub, U8 *buf) {
 		return 0;
 	}
 }
-//Ä¿µÄµØÖ·Ôö¼Ó
+//ç›®çš„åœ°å€å¢åŠ 
 U32 usb_buf_read_inc(struct usb_buf *ub, U8 *buf, U32 size) {
 	assert(ub && buf && size);
 	for (U32 i = 0; i < size; i++) {
@@ -27,7 +27,7 @@ U32 usb_buf_read_inc(struct usb_buf *ub, U8 *buf, U32 size) {
 	}
 	return size;
 }
-//Ä¿µÄµØÖ·²»±ä
+//ç›®çš„åœ°å€ä¸å˜
 U32 usb_buf_read_const(struct usb_buf *ub, U8 *buf, U32 size) {
 	assert(ub && buf && size);
 	for (U32 i = 0; i < size; i++) {

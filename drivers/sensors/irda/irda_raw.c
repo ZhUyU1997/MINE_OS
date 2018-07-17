@@ -2,24 +2,24 @@
 #include <interrupt.h>
 #include "irda_raw.h"
 
-/* IRDA���� : EINT1/GPF1 */
+/* IRDA引脚 : EINT1/GPF1 */
 
 /*
- * ����GPIO, ע���ж�
- * ���жϴ���������:
-      ��¼�жϷ�����ʱ��,
-      ���ϴ��жϵ�ʱ��Ƚ�, ������������
-      ��ȡ���ż���
-      �����ݷ��뻷�ͻ�����
+ * 配置GPIO, 注册中断
+ * 在中断处理函数里:
+      记录中断发生的时间,
+      跟上次中断的时间比较, 计算出脉冲宽度
+      读取引脚极性
+      把数据放入环型缓冲区
  */
 
-/* ��ʵ��GPIO�Ļ������� */
+/* 先实现GPIO的基本操作 */
 static void irda_data_cfg_as_eint(void) {
-	/* ����Ϊ�ж����� */
+	/* 配置为中断引脚 */
 	GPFCON &= ~(3 << 2);
 	GPFCON |= (2 << 2);
 
-	/* �����жϴ�����ʽ: ˫���ش��� */
+	/* 设置中断触发方式: 双边沿触发 */
 	EXTINT0 |= (7 << 4); /* eint1 */
 
 }
@@ -32,11 +32,11 @@ static int irda_data_get(void) {
 }
 
 void irda_irq(int irq) {
-	/* ���жϴ���������:
-	  ��¼�жϷ�����ʱ��,
-	  ���ϴ��жϵ�ʱ��Ƚ�, ������������
-	  ��ȡ���ż���
-	  �����ݷ��뻷�ͻ�����
+	/* 在中断处理函数里:
+	  记录中断发生的时间,
+	  跟上次中断的时间比较, 计算出脉冲宽度
+	  读取引脚极性
+	  把数据放入环型缓冲区
 	*/
 	static unsigned long long g_last_time = 0;
 	irda_raw_event event;
@@ -49,7 +49,7 @@ void irda_irq(int irq) {
 }
 
 
-/* ע���ж� */
+/* 注册中断 */
 void irda_init(void) {
 	irda_data_cfg_as_eint();
 	request_irq(EINT1, irda_irq);

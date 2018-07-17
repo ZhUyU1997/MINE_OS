@@ -44,11 +44,11 @@ int read_wav_file(const char *filename) {
 					  FA_READ			/* Access mode and file open mode flags */
 				  );
 	if (rst != FR_OK) {
-		printf("\033[31mÎÄ¼þ´ò¿ªÊ§°Ü\033[0m\n");
+		printf("\033[31mæ–‡ä»¶æ‰“å¼€å¤±è´¥\033[0m\n");
 		return 1;
 	}
 	if (fp.fsize <= sizeof(struct FILE_HEADER)) {
-		printf("\033[31mÎÄ¼þ³ß´ç¹ýÐ¡\033[0m\n");
+		printf("\033[31mæ–‡ä»¶å°ºå¯¸è¿‡å°\033[0m\n");
 		f_close(&fp);
 		return 1;
 	}
@@ -60,12 +60,12 @@ int read_wav_file(const char *filename) {
 			  &br		/* Pointer to number of bytes read */
 		  );
 	if (rst != FR_OK) {
-		printf("\033[31mÎÄ¼þ¶ÁÈ¡Ê§°Ü\033[0m\n");
+		printf("\033[31mæ–‡ä»¶è¯»å–å¤±è´¥\033[0m\n");
 		f_close(&fp);
 		return 1;
 	}
 	if (strncmp(file_header.riff_block.riff, "RIFF", 4)) {
-		printf("\033[31mRIFFÎÄ¼þÍ·Ð£ÑéÊ§°Ü\033[0m\n");
+		printf("\033[31mRIFFæ–‡ä»¶å¤´æ ¡éªŒå¤±è´¥\033[0m\n");
 		f_close(&fp);
 		return 1;
 	}
@@ -86,7 +86,7 @@ int read_wav_file(const char *filename) {
 				  &br		/* Pointer to number of bytes read */
 			  );
 		if (rst != FR_OK) {
-			printf("\033[31mÎÄ¼þ¶ÁÈ¡Ê§°Ü\033[0m\n");
+			printf("\033[31mæ–‡ä»¶è¯»å–å¤±è´¥\033[0m\n");
 			close_sound();
 			f_close(&fp);
 			return 1;
@@ -119,7 +119,7 @@ int read_wav_file(const char *filename) {
 	}
 
 exit:
-	//Èç¹ûÔÚDMA´«ÊäÖ®Ç°¹Ø±ÕIIS,DSTATÇåÁã»áÊ§°Ü
+	//å¦‚æžœåœ¨DMAä¼ è¾“ä¹‹å‰å…³é—­IIS,DSTATæ¸…é›¶ä¼šå¤±è´¥
 	while (!dma_can_run());
 	close_sound();
 	f_close(&fp);

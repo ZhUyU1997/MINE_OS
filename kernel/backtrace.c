@@ -1,13 +1,13 @@
 /***************************************************
-*		版权声明
+*		鐗堟潈澹版槑
 *
-*	本操作系统名为：MINE
-*	该操作系统未经授权不得以盈利或非盈利为目的进行开发，
-*	只允许个人学习以及公开交流使用
+*	鏈搷浣滅郴缁熷悕涓猴細MINE
+*	璇ユ搷浣滅郴缁熸湭缁忔巿鏉冧笉寰椾互鐩堝埄鎴栭潪鐩堝埄涓虹洰鐨勮繘琛屽紑鍙戯紝
+*	鍙厑璁镐釜浜哄涔犱互鍙婂叕寮�浜ゆ祦浣跨敤
 *
-*	代码最终所有权及解释权归田宇所有；
+*	浠ｇ爜鏈�缁堟墍鏈夋潈鍙婅В閲婃潈褰掔敯瀹囨墍鏈夛紱
 *
-*	本模块作者：	田宇
+*	鏈ā鍧椾綔鑰咃細	鐢板畤
 *	EMail:		345538255@qq.com
 *
 *
@@ -31,7 +31,7 @@ int lookup_kallsyms(unsigned long address) {
 		printf("\033[31;40mbacktrace address:%#08lx (+) %04d\tbacktrace function:%s(%#08lx)\033[0m\n", address, address - kallsyms_addresses[index], &string[kallsyms_index[index]], kallsyms_addresses[index]);
 		return 0;
 	} else {
-		printf("\033[31;40mbacktrace address:%#08lx,未找到符号\033[0m\n", address);
+		printf("\033[31;40mbacktrace address:%#08lx,鏈壘鍒扮鍙穃033[0m\n", address);
 		return 1;
 	}
 }
@@ -42,7 +42,7 @@ void backtrace(unsigned long regs) {
 
 	for (int i = 0; i < 10; i++) {
 		if (rbp >= SWI_STACK_BASE_ADDR) {
-			printf("\033[31;40m到达栈顶\033[0m\n");
+			printf("\033[31;40m鍒拌揪鏍堥《\033[0m\n");
 			break;
 		}
 

@@ -249,8 +249,8 @@ void handle_mass_bulk_out() {
 			}
 			break;
 	}
-	//TODO���򿪵������ʱ�������ep_rx_fifo()֮�����CLR_EPX_OUT_PKT_RDY(),��������⡣
-	//�ص����������������Ϊ��ͳһ��CLR_EPX_OUT_PKT_RDY���ں��棨���ܻ�Ӱ��UDC�ٶȣ�
-	//�����²���ܴ��ڴ�ӡʱ��������³�ʱ��Ե��
+	//TODO：打开调试输出时，如果在ep_rx_fifo()之后插入CLR_EPX_OUT_PKT_RDY(),会出现问题。
+	//关掉调试则正常，因此为了统一将CLR_EPX_OUT_PKT_RDY放在后面（可能会影响UDC速度）
+	//初步猜测可能串口打印时间过长导致超时的缘故
 	CLR_EPX_OUT_PKT_RDY();
 }

@@ -9,16 +9,16 @@ void init_IIS_bus(int fs) {
 	IISMOD = 0;
 	IISFCON = 0;
 
-	IISCON |= IISCON_PRESCALER_ENABLE//IIS 预分频器使能
+	IISCON |= IISCON_PRESCALER_ENABLE//IIS 棰勫垎棰戝櫒浣胯兘
 			  | IISCON_TX_DMA
-			  | IISCON_RX_IDLE; //接收通道空闲命令:初始化为空闲
+			  | IISCON_RX_IDLE; //鎺ユ敹閫氶亾绌洪棽鍛戒护:鍒濆鍖栦负绌洪棽
 
-	//fs:采样频率
+	//fs:閲囨牱棰戠巼
 	/* bit[9] : Master clock select, 0-PCLK
 	 * bit[8] : 0 = Master mode
 	 * bit[7:6] : 10 = Transmit mode
 	 * bit[4] : 1 = MSB (Left)-justified format
-	 * bit[2] : 384fs, 确定了MASTER CLOCK之后, fs = MASTER CLOCK/384
+	 * bit[2] : 384fs, 纭畾浜哅ASTER CLOCK涔嬪悗, fs = MASTER CLOCK/384
 	 * bit[1:0] : Serial bit clock frequency select, 32fs
 	 */
 

@@ -1,6 +1,6 @@
 /*
  * FILE: lcddrv.h
- * 操作LCD控制器、调色板等的底层函数接口
+ * 鎿嶄綔LCD鎺у埗鍣ㄣ�佽皟鑹叉澘绛夌殑搴曞眰鍑芥暟鎺ュ彛
  */
 
 #ifndef __LCDDRV_H__

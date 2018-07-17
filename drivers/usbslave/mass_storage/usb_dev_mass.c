@@ -137,21 +137,21 @@ static char g_string_desc3[20] = {
 static void usbdev_mass_storage_reset(void) {
 	usbdevregs->EP_INT_EN_REG = 0;
 	usbdevregs->USB_INT_EN_REG = 0;
-	/* ½ûÖ¹¹ÒÆðÄ£Ê½ */
+	/* ç¦æ­¢æŒ‚èµ·æ¨¡å¼ */
 	usbdevregs->PWR_REG = PWR_REG_DEFAULT_VALUE;	//disable suspend mode
 	usbdevregs->FUNC_ADDR_REG = 0x80;
-	/* ¶Ëµã0 */
+	/* ç«¯ç‚¹0 */
 	SET_INDEX(0);
 	usbdevregs->INDEX_REG = 0;
 	usbdevregs->MAXP_REG = FIFO_SIZE_8;   	//EP0 max packit size = 8
 	FLUSH_EP0_FIFO();
-	/* ¶Ëµã1 */
+	/* ç«¯ç‚¹1 */
 	SET_INDEX(1);
 	usbdevregs->MAXP_REG = FIFO_SIZE_64;
-	/* ¶Ëµã2 */
+	/* ç«¯ç‚¹2 */
 	SET_INDEX(2);
 	usbdevregs->MAXP_REG = FIFO_SIZE_64;
-	/* ¶Ëµã3 */
+	/* ç«¯ç‚¹3 */
 	SET_INDEX(3);
 	usbdevregs->IN_CSR2_REG = EPI_MODE_OUT;
 	usbdevregs->MAXP_REG = FIFO_SIZE_64;

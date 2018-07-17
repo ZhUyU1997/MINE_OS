@@ -1,16 +1,16 @@
 #include <interrupt.h>
 #include <s3c24xx.h>
-/*¶¨ÒåÓÃ»§ÖĞ¶Ï±êÖ¾*/
+/*å®šä¹‰ç”¨æˆ·ä¸­æ–­æ ‡å¿—*/
 void RTC_alarm_interrupt(void);
 void RTC_tick_interrupt(void);
 
-/*RTC³õÊ¼»¯*/
+/*RTCåˆå§‹åŒ–*/
 void RTC_Init(void) {
-	request_irq(INT_TICK, RTC_tick_interrupt); //RTC Ê±ÖÓµÎ´ğÖĞ¶Ï
-	request_irq(INT_RTC, RTC_alarm_interrupt); //RTC ÄÖÖÓÖĞ¶Ï
+	request_irq(INT_TICK, RTC_tick_interrupt); //RTC æ—¶é’Ÿæ»´ç­”ä¸­æ–­
+	request_irq(INT_RTC, RTC_alarm_interrupt); //RTC é—¹é’Ÿä¸­æ–­
 }
 
-/*RTCÉèÖÃ*/
+/*RTCè®¾ç½®*/
 void RTC_Set(char year, char month, char date,
 			 char week, char hour, char min, char sec) {
 	rRTCCON		= 1;
@@ -26,7 +26,7 @@ void RTC_Set(char year, char month, char date,
 	rRTCCON		&= ~1;
 }
 
-/*¶ÁÈ¡RTC*/
+/*è¯»å–RTC*/
 void RTC_Read(char *year, char *month, char *date,
 			  char *week, char *hour, char *min, char *sec) {
 	char		i;
@@ -54,19 +54,19 @@ void RTC_Read(char *year, char *month, char *date,
 	rRTCCON &= ~1;
 }
 
-/*RTC tickÊ±ÖÓÉèÖÃ*/
+/*RTC tickæ—¶é’Ÿè®¾ç½®*/
 void RTC_Tick(void) {
 	rTICNT 		&= ~0xff;
 	rTICNT 		|= (1 << 7 | 63);
 }
 
-/*RTC ÄÖÖÓ³õÊ¼»¯*/
+/*RTC é—¹é’Ÿåˆå§‹åŒ–*/
 void RTC_Alarm(void) {
 	rRTCALM 	&= ~0xff;
 	rRTCALM 	|= 0xff;
 }
 
-/*RTC ÄÖÖÓÉèÖÃ*/
+/*RTC é—¹é’Ÿè®¾ç½®*/
 void RTC_Alarm_Set(char year, char mon, char date,
 				   char hour, char min, char sec) {
 	rALMYEAR	= year;
@@ -77,12 +77,12 @@ void RTC_Alarm_Set(char year, char mon, char date,
 	rALMSEC		= ((sec  / 10) << 4) | sec  % 10;
 }
 
-/*RTC ÄÖÖÓÖĞ¶Ï·şÎñ*/
+/*RTC é—¹é’Ÿä¸­æ–­æœåŠ¡*/
 void RTC_alarm_interrupt(void) {
 
 }
 
-/*RTC tickÖĞ¶Ï·şÎñ*/
+/*RTC tickä¸­æ–­æœåŠ¡*/
 void RTC_tick_interrupt(void) {
 
 }

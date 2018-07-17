@@ -52,7 +52,7 @@ void get_calibrate_point_data(int lcd_x, int lcd_y, int *px, int *py) {
 
 	DispCross(lcd_x, lcd_y, 0xff0000);
 	printf("lcd_x = %d, lcd_y = %d\n", lcd_x, lcd_y);
-	/* µÈ´ıµã»÷ */
+	/* ç­‰å¾…ç‚¹å‡» */
 
 	do {
 		ts_read_raw(&x, &y, &pressure);
@@ -74,7 +74,7 @@ void get_calibrate_point_data(int lcd_x, int lcd_y, int *px, int *py) {
 
 	printf("return raw data: x = %08d, y = %08d\n", *px, *py);
 
-	/* Ö±µ½ËÉ¿ª²Å·µ»Ø */
+	/* ç›´åˆ°æ¾å¼€æ‰è¿”å› */
 	DispCross(lcd_x, lcd_y, 0xd4d4d4);
 }
 
@@ -86,7 +86,7 @@ void ts_calibrate(void) {
 	int lcd_y[POINT_NUM] = {50,	50,			yres - 50,	yres - 50,	yres / 2};
 
 
-	/* »ñµÃLCDµÄ²ÎÊı: fb_base, xres, yres, bpp */
+	/* è·å¾—LCDçš„å‚æ•°: fb_base, xres, yres, bpp */
 
 	printf("xres = %d, yres = %d\n", xres, yres);
 
@@ -103,7 +103,7 @@ void ts_calibrate(void) {
 }
 
 /*
- * ¶ÁTSÔ­Ê¼Êı¾İ, ×ª»»ÎªLCD×ø±ê
+ * è¯»TSåŸå§‹æ•°æ®, è½¬æ¢ä¸ºLCDåæ ‡
  */
 int ts_read(int *lcd_x, int *lcd_y, int *lcd_pressure) {
 	int ts_x, ts_y, ts_pressure;
@@ -111,7 +111,7 @@ int ts_read(int *lcd_x, int *lcd_y, int *lcd_pressure) {
 
 	ts_read_raw(&ts_x, &ts_y, &ts_pressure);
 
-	/* Ê¹ÓÃ¹«Ê½¼ÆËã */
+	/* ä½¿ç”¨å…¬å¼è®¡ç®— */
 	tmp_x = get_lcd_x(ts_x, ts_y);
 	tmp_y = get_lcd_y(ts_x, ts_y);
 	//printf("x = %d,y = %d\n", tmp_x, tmp_y);
@@ -131,7 +131,7 @@ int ts_read_asyn(int *lcd_x, int *lcd_y, int *lcd_pressure) {
 	if (ts_read_raw_asyn(&ts_x, &ts_y, &ts_pressure))
 		return -1;
 
-	/* Ê¹ÓÃ¹«Ê½¼ÆËã */
+	/* ä½¿ç”¨å…¬å¼è®¡ç®— */
 	tmp_x = get_lcd_x(ts_x, ts_y);
 	tmp_y = get_lcd_y(ts_x, ts_y);
 

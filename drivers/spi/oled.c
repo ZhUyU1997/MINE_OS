@@ -60,7 +60,7 @@ static void OLEDClear(void) {
 }
 
 void OLEDInit(void) {
-	/* ÏòOLED·¢ÃüÁîÒÔ³õÊ¼»¯ */
+	/* å‘OLEDå‘å‘½ä»¤ä»¥åˆå§‹åŒ– */
 	OLEDWriteCmd(0xAE); /*display off*/
 	OLEDWriteCmd(0x00); /*set lower column address*/
 	OLEDWriteCmd(0x10); /*set higher column address*/
@@ -96,21 +96,21 @@ void OLEDInit(void) {
 
 /* page: 0-7
  * col : 0-127
- * ×Ö·û: 8x16ÏóËØ
+ * å­—ç¬¦: 8x16è±¡ç´ 
  */
 void OLEDPutChar(int page, int col, char c) {
 	int i = 0;
-	/* µÃµ½×ÖÄ£ */
+	/* å¾—åˆ°å­—æ¨¡ */
 	const unsigned char *dots = oled_asc2_8x16[c - ' '];
 
-	/* ·¢¸øOLED */
+	/* å‘ç»™OLED */
 	OLEDSetPos(page, col);
-	/* ·¢³ö8×Ö½ÚÊı¾İ */
+	/* å‘å‡º8å­—èŠ‚æ•°æ® */
 	for (i = 0; i < 8; i++)
 		OLEDWriteDat(dots[i]);
 
 	OLEDSetPos(page + 1, col);
-	/* ·¢³ö8×Ö½ÚÊı¾İ */
+	/* å‘å‡º8å­—èŠ‚æ•°æ® */
 	for (i = 0; i < 8; i++)
 		OLEDWriteDat(dots[i + 8]);
 
@@ -119,7 +119,7 @@ void OLEDPutChar(int page, int col, char c) {
 
 /* page: 0-7
  * col : 0-127
- * ×Ö·û: 8x16ÏóËØ
+ * å­—ç¬¦: 8x16è±¡ç´ 
  */
 void OLEDPrint(int page, int col, char *str) {
 	int i = 0;
@@ -138,7 +138,7 @@ void OLEDPutImage(char buf[8][16][8]) {
 	for (int i = 0; i < 8; i++){
 		for (int j = 0; j < 16; j++){
 			OLEDSetPos(i, 8*j);
-			/* ·¢³ö8×Ö½ÚÊı¾İ */
+			/* å‘å‡º8å­—èŠ‚æ•°æ® */
 			for (int k = 0; k < 8; k++)
 				OLEDWriteDat(buf[i][j][k]);
 		}

@@ -1,6 +1,6 @@
 #include <timer.h>
 #include "nand.h"
-/* NAND FLASH¿ØÖÆÆ÷ */
+/* NAND FLASHæ§åˆ¶å™¨ */
 #define NFCONF (*((volatile unsigned long *)0x4E000000))
 #define NFCONT (*((volatile unsigned long *)0x4E000004))
 #define NFCMMD (*((volatile unsigned char *)0x4E000008))
@@ -8,18 +8,18 @@
 #define NFDATA (*((volatile unsigned char *)0x4E000010))
 #define NFSTAT (*((volatile unsigned char *)0x4E000020))
 
-#define CMD_READ1	0x00				//Ò³¶ÁÃüÁîÖÜÆÚ1
-#define CMD_READ2	0x30				//Ò³¶ÁÃüÁîÖÜÆÚ2
-#define CMD_READID	0x90				//¶ÁIDÃüÁî
-#define CMD_WRITE1	0x80				//Ò³Ğ´ÃüÁîÖÜÆÚ1
-#define CMD_WRITE2	0x10				//Ò³Ğ´ÃüÁîÖÜÆÚ2
-#define CMD_ERASE1	0x60				//¿é²Á³ıÃüÁîÖÜÆÚ1
-#define CMD_ERASE2	0xd0				//¿é²Á³ıÃüÁîÖÜÆÚ2
-#define CMD_STATUS	0x70				//¶Á×´Ì¬ÃüÁî
-#define CMD_RESET	0xff				//¸´Î»
-#define CMD_RANDOMREAD1	0x05			//ËæÒâ¶ÁÃüÁîÖÜÆÚ1
-#define CMD_RANDOMREAD2	0xE0			//ËæÒâ¶ÁÃüÁîÖÜÆÚ2
-#define CMD_RANDOMWRITE	0x85			//ËæÒâĞ´ÃüÁî
+#define CMD_READ1	0x00				//é¡µè¯»å‘½ä»¤å‘¨æœŸ1
+#define CMD_READ2	0x30				//é¡µè¯»å‘½ä»¤å‘¨æœŸ2
+#define CMD_READID	0x90				//è¯»IDå‘½ä»¤
+#define CMD_WRITE1	0x80				//é¡µå†™å‘½ä»¤å‘¨æœŸ1
+#define CMD_WRITE2	0x10				//é¡µå†™å‘½ä»¤å‘¨æœŸ2
+#define CMD_ERASE1	0x60				//å—æ“¦é™¤å‘½ä»¤å‘¨æœŸ1
+#define CMD_ERASE2	0xd0				//å—æ“¦é™¤å‘½ä»¤å‘¨æœŸ2
+#define CMD_STATUS	0x70				//è¯»çŠ¶æ€å‘½ä»¤
+#define CMD_RESET	0xff				//å¤ä½
+#define CMD_RANDOMREAD1	0x05			//éšæ„è¯»å‘½ä»¤å‘¨æœŸ1
+#define CMD_RANDOMREAD2	0xE0			//éšæ„è¯»å‘½ä»¤å‘¨æœŸ2
+#define CMD_RANDOMWRITE	0x85			//éšæ„å†™å‘½ä»¤
 
 static void nand_reset(void);
 
@@ -27,9 +27,9 @@ void nand_init(void) {
 #define TACLS   0
 #define TWRPH0  1
 #define TWRPH1  0
-	/* ÉèÖÃÊ±Ğò */
+	/* è®¾ç½®æ—¶åº */
 	NFCONF = (TACLS << 12) | (TWRPH0 << 8) | (TWRPH1 << 4);
-	/* Ê¹ÄÜNAND Flash¿ØÖÆÆ÷, ³õÊ¼»¯ECC, ½ûÖ¹Æ¬Ñ¡ */
+	/* ä½¿èƒ½NAND Flashæ§åˆ¶å™¨, åˆå§‹åŒ–ECC, ç¦æ­¢ç‰‡é€‰ */
 	NFCONT = (1 << 4) | (1 << 1) | (1 << 0);
 	nand_reset();
 }
@@ -97,10 +97,10 @@ static void nand_write_data(unsigned char data) {
 	NFDATA = data;
 }
 
-/* ¸´Î» */
+/* å¤ä½ */
 static void nand_reset(void) {
 	nand_select();
-	nand_cmd(CMD_RESET);  // ¸´Î»ÃüÁî
+	nand_cmd(CMD_RESET);  // å¤ä½å‘½ä»¤
 	nand_wait_ready();
 	nand_deselect();
 }
@@ -111,21 +111,21 @@ int nand_is_bad_block(unsigned int block_number) {
 	unsigned char val1, val2;
 
 
-	nand_select();		/* 1. Ñ¡ÖĞ */
-	nand_cmd(CMD_READ1);		/* 2. ·¢³ö¶ÁÃüÁî00h */
+	nand_select();		/* 1. é€‰ä¸­ */
+	nand_cmd(CMD_READ1);		/* 2. å‘å‡ºè¯»å‘½ä»¤00h */
 
-	/* 3. ·¢³öµØÖ·(·Ö5²½·¢³ö) */
+	/* 3. å‘å‡ºåœ°å€(åˆ†5æ­¥å‘å‡º) */
 	nand_col(col);
 	nand_page(page);
 
 
-	nand_cmd(CMD_READ2);		/* 4. ·¢³ö¶ÁÃüÁî30h */
-	nand_wait_ready();/* 5. ÅĞ¶Ï×´Ì¬ */
+	nand_cmd(CMD_READ2);		/* 4. å‘å‡ºè¯»å‘½ä»¤30h */
+	nand_wait_ready();/* 5. åˆ¤æ–­çŠ¶æ€ */
 
-	/* 6. ¶ÁÊı¾İ */
+	/* 6. è¯»æ•°æ® */
 	val1 = nand_read_data();
 	val2 = nand_read_data();
-	/* 7. È¡ÏûÑ¡ÖĞ */
+	/* 7. å–æ¶ˆé€‰ä¸­ */
 	nand_deselect();
 
 	if ((val1 == 0xff) && (val2 == 0xff))
@@ -140,28 +140,28 @@ void nand_read(unsigned char *buf, unsigned int addr , unsigned int len) {
 	int i = 0;
 
 	while (i < len) {
-		/* Ò»¸öblockÖ»ÅĞ¶ÏÒ»´Î */
-		if (!(addr & 0x1FFFF)) { //¶Áµ½ĞÂµÄblock
+		/* ä¸€ä¸ªblockåªåˆ¤æ–­ä¸€æ¬¡ */
+		if (!(addr & 0x1FFFF)) { //è¯»åˆ°æ–°çš„block
 			if (nand_is_bad_block(addr)) {
-				addr += (128 * 1024); /* Ìø¹ıµ±Ç°block */
+				addr += (128 * 1024); /* è·³è¿‡å½“å‰block */
 				continue;
 			}
 		}
 
-		nand_select();			/* 1. Ñ¡ÖĞ */
-		nand_cmd(CMD_READ1);	/* 2. ·¢³ö¶ÁÃüÁî00h */
-		nand_addr(addr);		/* 3. ·¢³öµØÖ·(·Ö5²½·¢³ö) */
-		nand_cmd(CMD_READ2);	/* 4. ·¢³ö¶ÁÃüÁî30h */
-		nand_wait_ready();		/* 5. ÅĞ¶Ï×´Ì¬ */
+		nand_select();			/* 1. é€‰ä¸­ */
+		nand_cmd(CMD_READ1);	/* 2. å‘å‡ºè¯»å‘½ä»¤00h */
+		nand_addr(addr);		/* 3. å‘å‡ºåœ°å€(åˆ†5æ­¥å‘å‡º) */
+		nand_cmd(CMD_READ2);	/* 4. å‘å‡ºè¯»å‘½ä»¤30h */
+		nand_wait_ready();		/* 5. åˆ¤æ–­çŠ¶æ€ */
 
-		/* 6. ¶ÁÊı¾İ */
+		/* 6. è¯»æ•°æ® */
 		for (col = 0 ; (col < 2048) && (i < len); col++) {
 			buf[i] = nand_read_data();
 			i++;
 			addr++;
 		}
 
-		nand_deselect();/* 7. È¡ÏûÑ¡ÖĞ */
+		nand_deselect();/* 7. å–æ¶ˆé€‰ä¸­ */
 
 	}
 }
@@ -173,7 +173,7 @@ int nand_read_with_oob(unsigned int page, unsigned char *buf, unsigned int buf_l
 	nand_addr(page << PAGE_SHIFT);
 	nand_cmd(CMD_READ2);
 	nand_wait_ready();
-	//TODO:ÓÅ»¯,Ëæ»ú¶Á
+	//TODO:ä¼˜åŒ–,éšæœºè¯»
 	if (buf) {
 		for (i = 0 ; i < 2048; i++) {
 			if (i < buf_len)
@@ -213,7 +213,7 @@ int nand_read_page(unsigned int page, unsigned char *buf, unsigned int buf_len, 
 	nand_addr(page << PAGE_SHIFT);
 	nand_cmd(CMD_READ2);
 	nand_wait_ready();
-	//TODO:ÓÅ»¯,Ëæ»ú¶Á
+	//TODO:ä¼˜åŒ–,éšæœºè¯»
 	if (buf) {
 		for (i = 0 ; i < 2048; i++) {
 			if (i < buf_len)
@@ -240,54 +240,54 @@ int nand_write(unsigned char *buf, unsigned int addr , unsigned int len) {
 	int i;
 	unsigned char stat;
 
-	int temp = nand_is_bad_block(addr);	//ÅĞ¶Ï¸Ã¿éÊÇ·ñÎª»µ¿é
+	int temp = nand_is_bad_block(addr);	//åˆ¤æ–­è¯¥å—æ˜¯å¦ä¸ºåå—
 	if (temp)
-		return -1;				//ÊÇ»µ¿é£¬·µ»Ø
+		return -1;				//æ˜¯åå—ï¼Œè¿”å›
 
-	nand_select();				//´ò¿ªnandflashÆ¬Ñ¡
-	nand_cmd(CMD_WRITE1);		//Ò³Ğ´ÃüÁîÖÜÆÚ1
+	nand_select();				//æ‰“å¼€nandflashç‰‡é€‰
+	nand_cmd(CMD_WRITE1);		//é¡µå†™å‘½ä»¤å‘¨æœŸ1
 	nand_addr(addr);
 
-	//Ğ´ÈëÒ»Ò³Êı¾İ
+	//å†™å…¥ä¸€é¡µæ•°æ®
 	for (i = 0; (i < 2048) && (i < len); i++) {
 		nand_write_data(buf[i]);
 	}
 
-	nand_cmd(CMD_WRITE2);		//Ò³Ğ´ÃüÁîÖÜÆÚ2
-	udelay(1000);				//ÑÓÊ±Ò»¶ÎÊ±¼ä£¬ÒÔµÈ´ıĞ´²Ù×÷Íê³É
-	nand_cmd(CMD_STATUS);		//¶Á×´Ì¬ÃüÁî
+	nand_cmd(CMD_WRITE2);		//é¡µå†™å‘½ä»¤å‘¨æœŸ2
+	udelay(1000);				//å»¶æ—¶ä¸€æ®µæ—¶é—´ï¼Œä»¥ç­‰å¾…å†™æ“ä½œå®Œæˆ
+	nand_cmd(CMD_STATUS);		//è¯»çŠ¶æ€å‘½ä»¤
 
-	//ÅĞ¶Ï×´Ì¬ÖµµÄµÚ6Î»ÊÇ·ñÎª1£¬¼´ÊÇ·ñÔÚÃ¦£¬¸ÃÓï¾äµÄ×÷ÓÃÓëNF_DETECT_RB();ÏàÍ¬
+	//åˆ¤æ–­çŠ¶æ€å€¼çš„ç¬¬6ä½æ˜¯å¦ä¸º1ï¼Œå³æ˜¯å¦åœ¨å¿™ï¼Œè¯¥è¯­å¥çš„ä½œç”¨ä¸NF_DETECT_RB();ç›¸åŒ
 	do {
 		stat = nand_read_data();
 	} while (!(stat & 0x40));
 
-	nand_deselect();			//¹Ø±ÕnandflashÆ¬Ñ¡
+	nand_deselect();			//å…³é—­nandflashç‰‡é€‰
 
 	if (stat & 0x1) {
-		return -2;				//Ğ´²Ù×÷Ê§°Ü
+		return -2;				//å†™æ“ä½œå¤±è´¥
 	} else
-		return 1;				//Ğ´²Ù×÷³É¹¦
+		return 1;				//å†™æ“ä½œæˆåŠŸ
 }
 
 int nand_write_with_oob(unsigned int page, unsigned char *buf, unsigned int buf_len, unsigned char *oob, unsigned int oob_len) {
 	int i;
 	unsigned char stat;
 
-	nand_select();				//´ò¿ªnandflashÆ¬Ñ¡
-	nand_cmd(CMD_WRITE1);		//Ò³Ğ´ÃüÁîÖÜÆÚ1
+	nand_select();				//æ‰“å¼€nandflashç‰‡é€‰
+	nand_cmd(CMD_WRITE1);		//é¡µå†™å‘½ä»¤å‘¨æœŸ1
 	nand_addr(page << PAGE_SHIFT);
 
-	//Ğ´ÈëÒ»Ò³Êı¾İ
+	//å†™å…¥ä¸€é¡µæ•°æ®
 	if (buf) {
 		for (i = 0; i < buf_len; i++) {
 			nand_write_data(buf[i]);
 		}
 	}
 	if (buf_len < 2048) {
-		//µ÷Õûµ½oobÇø
+		//è°ƒæ•´åˆ°oobåŒº
 		int col = 2048;
-		nand_cmd(CMD_RANDOMWRITE); // Ò³ÄÚËæ»úĞ´ÃüÁî
+		nand_cmd(CMD_RANDOMWRITE); // é¡µå†…éšæœºå†™å‘½ä»¤
 		nand_col(col);
 	}
 	nand_write_data(0xff);
@@ -305,41 +305,41 @@ int nand_write_with_oob(unsigned int page, unsigned char *buf, unsigned int buf_
 		}
 	}
 
-	nand_cmd(CMD_WRITE2);		//Ò³Ğ´ÃüÁîÖÜÆÚ2
-	udelay(1000);				//ÑÓÊ±Ò»¶ÎÊ±¼ä£¬ÒÔµÈ´ıĞ´²Ù×÷Íê³É
-	nand_cmd(CMD_STATUS);		//¶Á×´Ì¬ÃüÁî
+	nand_cmd(CMD_WRITE2);		//é¡µå†™å‘½ä»¤å‘¨æœŸ2
+	udelay(1000);				//å»¶æ—¶ä¸€æ®µæ—¶é—´ï¼Œä»¥ç­‰å¾…å†™æ“ä½œå®Œæˆ
+	nand_cmd(CMD_STATUS);		//è¯»çŠ¶æ€å‘½ä»¤
 
-	//ÅĞ¶Ï×´Ì¬ÖµµÄµÚ6Î»ÊÇ·ñÎª1£¬¼´ÊÇ·ñÔÚÃ¦£¬¸ÃÓï¾äµÄ×÷ÓÃÓëNF_DETECT_RB();ÏàÍ¬
+	//åˆ¤æ–­çŠ¶æ€å€¼çš„ç¬¬6ä½æ˜¯å¦ä¸º1ï¼Œå³æ˜¯å¦åœ¨å¿™ï¼Œè¯¥è¯­å¥çš„ä½œç”¨ä¸NF_DETECT_RB();ç›¸åŒ
 	do {
 		stat = nand_read_data();
 	} while (!(stat & 0x40));
 
-	nand_deselect();			//¹Ø±ÕnandflashÆ¬Ñ¡
+	nand_deselect();			//å…³é—­nandflashç‰‡é€‰
 
 	if (stat & 0x1) {
-		return -2;				//Ğ´²Ù×÷Ê§°Ü
+		return -2;				//å†™æ“ä½œå¤±è´¥
 	} else
-		return 1;				//Ğ´²Ù×÷³É¹¦
+		return 1;				//å†™æ“ä½œæˆåŠŸ
 }
 
 int nand_write_page(unsigned int page, unsigned char *buf, unsigned int buf_len, unsigned char *spare, unsigned int spare_len) {
 	int i;
 	unsigned char stat;
 
-	nand_select();				//´ò¿ªnandflashÆ¬Ñ¡
-	nand_cmd(CMD_WRITE1);		//Ò³Ğ´ÃüÁîÖÜÆÚ1
+	nand_select();				//æ‰“å¼€nandflashç‰‡é€‰
+	nand_cmd(CMD_WRITE1);		//é¡µå†™å‘½ä»¤å‘¨æœŸ1
 	nand_addr(page << PAGE_SHIFT);
 
-	//Ğ´ÈëÒ»Ò³Êı¾İ
+	//å†™å…¥ä¸€é¡µæ•°æ®
 	if (buf) {
 		for (i = 0; i < buf_len; i++) {
 			nand_write_data(buf[i]);
 		}
 	}
 	if (buf_len < 2048) {
-		//µ÷Õûµ½oobÇø
+		//è°ƒæ•´åˆ°oobåŒº
 		int col = 2048;
-		nand_cmd(CMD_RANDOMWRITE); // Ò³ÄÚËæ»úĞ´ÃüÁî
+		nand_cmd(CMD_RANDOMWRITE); // é¡µå†…éšæœºå†™å‘½ä»¤
 		nand_col(col);
 	}
 
@@ -349,51 +349,51 @@ int nand_write_page(unsigned int page, unsigned char *buf, unsigned int buf_len,
 		}
 	}
 
-	nand_cmd(CMD_WRITE2);		//Ò³Ğ´ÃüÁîÖÜÆÚ2
-	udelay(1000);				//ÑÓÊ±Ò»¶ÎÊ±¼ä£¬ÒÔµÈ´ıĞ´²Ù×÷Íê³É
-	nand_cmd(CMD_STATUS);		//¶Á×´Ì¬ÃüÁî
+	nand_cmd(CMD_WRITE2);		//é¡µå†™å‘½ä»¤å‘¨æœŸ2
+	udelay(1000);				//å»¶æ—¶ä¸€æ®µæ—¶é—´ï¼Œä»¥ç­‰å¾…å†™æ“ä½œå®Œæˆ
+	nand_cmd(CMD_STATUS);		//è¯»çŠ¶æ€å‘½ä»¤
 
-	//ÅĞ¶Ï×´Ì¬ÖµµÄµÚ6Î»ÊÇ·ñÎª1£¬¼´ÊÇ·ñÔÚÃ¦£¬¸ÃÓï¾äµÄ×÷ÓÃÓëNF_DETECT_RB();ÏàÍ¬
+	//åˆ¤æ–­çŠ¶æ€å€¼çš„ç¬¬6ä½æ˜¯å¦ä¸º1ï¼Œå³æ˜¯å¦åœ¨å¿™ï¼Œè¯¥è¯­å¥çš„ä½œç”¨ä¸NF_DETECT_RB();ç›¸åŒ
 	do {
 		stat = nand_read_data();
 	} while (!(stat & 0x40));
 
-	nand_deselect();			//¹Ø±ÕnandflashÆ¬Ñ¡
+	nand_deselect();			//å…³é—­nandflashç‰‡é€‰
 
 	if (stat & 0x1) {
-		return -2;				//Ğ´²Ù×÷Ê§°Ü
+		return -2;				//å†™æ“ä½œå¤±è´¥
 	} else
-		return 1;				//Ğ´²Ù×÷³É¹¦
+		return 1;				//å†™æ“ä½œæˆåŠŸ
 }
 int nand_mark_bad_block(unsigned int block_number) {
 	unsigned char oob[2] = {0xff, 0xff};
-	// Ã¿¸öblockµÚÒ»Ò³spareÇø0, 1×Ö½Ú·Ç0xff±ê¼ÇÎªºÃ»µ
+	// æ¯ä¸ªblockç¬¬ä¸€é¡µspareåŒº0, 1å­—èŠ‚é0xffæ ‡è®°ä¸ºå¥½å
 	return nand_write_page(BLOCK_TO_PAGE(block_number), 0, 2048, oob, 2);
 }
 
 int nand_erase_block(unsigned int block_number) {
 	unsigned char stat;
 
-	nand_select();					//´ò¿ªÆ¬Ñ¡
-	nand_cmd(CMD_ERASE1);			//²Á³ıÃüÁîÖÜÆÚ1
-	//Ğ´Èë3¸öµØÖ·ÖÜÆÚ£¬´ÓA18¿ªÊ¼Ğ´Æğ
+	nand_select();					//æ‰“å¼€ç‰‡é€‰
+	nand_cmd(CMD_ERASE1);			//æ“¦é™¤å‘½ä»¤å‘¨æœŸ1
+	//å†™å…¥3ä¸ªåœ°å€å‘¨æœŸï¼Œä»A18å¼€å§‹å†™èµ·
 	nand_page(block_number << 6);
-	nand_cmd(CMD_ERASE2);			//²Á³ıÃüÁîÖÜÆÚ2
-	udelay(10000);					//ÑÓÊ±Ò»¶ÎÊ±¼ä
-	nand_cmd(CMD_STATUS);			//¶Á×´Ì¬ÃüÁî
+	nand_cmd(CMD_ERASE2);			//æ“¦é™¤å‘½ä»¤å‘¨æœŸ2
+	udelay(10000);					//å»¶æ—¶ä¸€æ®µæ—¶é—´
+	nand_cmd(CMD_STATUS);			//è¯»çŠ¶æ€å‘½ä»¤
 
-	//ÅĞ¶Ï×´Ì¬ÖµµÄµÚ6Î»ÊÇ·ñÎª1£¬¼´ÊÇ·ñÔÚÃ¦£¬¸ÃÓï¾äµÄ×÷ÓÃÓëNF_DETECT_RB();ÏàÍ¬
+	//åˆ¤æ–­çŠ¶æ€å€¼çš„ç¬¬6ä½æ˜¯å¦ä¸º1ï¼Œå³æ˜¯å¦åœ¨å¿™ï¼Œè¯¥è¯­å¥çš„ä½œç”¨ä¸NF_DETECT_RB();ç›¸åŒ
 	do {
 		stat = nand_read_data();
 	} while (!(stat & 0x40));
 
-	nand_deselect();				//¹Ø±ÕnandflashÆ¬Ñ¡
+	nand_deselect();				//å…³é—­nandflashç‰‡é€‰
 
-	//ÅĞ¶Ï×´Ì¬ÖµµÄµÚ0Î»ÊÇ·ñÎª0£¬Îª0Ôò²Á³ı²Ù×÷ÕıÈ·£¬·ñÔò´íÎó
+	//åˆ¤æ–­çŠ¶æ€å€¼çš„ç¬¬0ä½æ˜¯å¦ä¸º0ï¼Œä¸º0åˆ™æ“¦é™¤æ“ä½œæ­£ç¡®ï¼Œå¦åˆ™é”™è¯¯
 	if (stat & 0x1) {
-		return -2;					//²Á³ı²Ù×÷Ê§°Ü
+		return -2;					//æ“¦é™¤æ“ä½œå¤±è´¥
 	} else
-		return 1;					//²Á³ı²Ù×÷³É¹¦
+		return 1;					//æ“¦é™¤æ“ä½œæˆåŠŸ
 }
 
 void nand_print(unsigned int page) {

@@ -1,6 +1,6 @@
 /*
  * FILE: lcddrv.c
- * �ṩ����LCD����������ɫ��ȵĵײ㺯��
+ * 提供操作LCD控制器、调色板等的底层函数
  */
 
 #include <stdio.h>
@@ -28,54 +28,54 @@ static const unsigned short DEMO256pal[] = {
 };
 
 /*
- * ��ʼ������LCD������
+ * 初始化用于LCD的引脚
  */
 void Lcd_Port_Init(void) {
-	//GPC5ΪUSBʹ�����ţ���Ҫ���˵�
+	//GPC5为USB使能引脚，需要过滤掉
 	GPCUP   &= 0x1 << 5;
-	GPCUP   |= ~(0x1 << 5); // ��ֹ�ڲ�����
+	GPCUP   |= ~(0x1 << 5); // 禁止内部上拉
 	GPCCON	&= 0x3 << 10;
-	GPCCON  |= 0xaaaaa2aa;	// GPIO�ܽ�����VD[7:0],LCDVF[2:0],VM,VFRAME,VLINE,VCLK,LEND
+	GPCCON  |= 0xaaaaa2aa;	// GPIO管脚用于VD[7:0],LCDVF[2:0],VM,VFRAME,VLINE,VCLK,LEND
 
-	GPDUP   = 0xffffffff;	// ��ֹ�ڲ�����
-	GPDCON  = 0xaaaaaaaa;	// GPIO�ܽ�����VD[23:8]
+	GPDUP   = 0xffffffff;	// 禁止内部上拉
+	GPDCON  = 0xaaaaaaaa;	// GPIO管脚用于VD[23:8]
 	GPBCON  &= ~(GPB0_MSK);	// Power enable pin
 	GPBCON  |= GPB0_out;
 	GPBDAT  &= ~(1 << 0);	// Power off
 }
 
 /*
- * ��ʼ��LCD������
- * ���������
- * type: ��ʾģʽ
- *      MODE_TFT_8BIT_240320  : 240*320 8bpp��TFT LCD
- *      MODE_TFT_16BIT_240320 : 240*320 16bpp��TFT LCD
- *      MODE_TFT_8BIT_640480  : 640*480 8bpp��TFT LCD
- *      MODE_TFT_16BIT_640480 : 640*480 16bpp��TFT LCD
+ * 初始化LCD控制器
+ * 输入参数：
+ * type: 显示模式
+ *      MODE_TFT_8BIT_240320  : 240*320 8bpp的TFT LCD
+ *      MODE_TFT_16BIT_240320 : 240*320 16bpp的TFT LCD
+ *      MODE_TFT_8BIT_640480  : 640*480 8bpp的TFT LCD
+ *      MODE_TFT_16BIT_640480 : 640*480 16bpp的TFT LCD
  */
 void Tft_Lcd_Init(int type) {
 	switch (type) {
 		case MODE_TFT_8BIT_480272:
 			/*
-			 * ����LCD�������Ŀ��ƼĴ���LCDCON1~5
+			 * 设置LCD控制器的控制寄存器LCDCON1~5
 			 * 1. LCDCON1:
-			 *    ����VCLK��Ƶ�ʣ�VCLK(Hz) = HCLK/[(CLKVAL+1)x2]
-			 *    ѡ��LCD����: TFT LCD
-			 *    ������ʾģʽ: 8BPP
-			 *    �Ƚ�ֹLCD�ź����
+			 *    设置VCLK的频率：VCLK(Hz) = HCLK/[(CLKVAL+1)x2]
+			 *    选择LCD类型: TFT LCD
+			 *    设置显示模式: 8BPP
+			 *    先禁止LCD信号输出
 			 * 2. LCDCON2/3/4:
-			 *    ���ÿ����źŵ�ʱ�����
-			 *    ���÷ֱ��ʣ�������������
-			 * ���ڣ����Ը��ݹ�ʽ�������ʾ����Ƶ�ʣ�
-			 * ��HCLK=100MHzʱ��
+			 *    设置控制信号的时间参数
+			 *    设置分辨率，即行数及列数
+			 * 现在，可以根据公式计算出显示器的频率：
+			 * 当HCLK=100MHz时，
 			 * Frame Rate = 1/[{(VSPW+1)+(VBPD+1)+(LIINEVAL+1)+(VFPD+1)}x
 			 *              {(HSPW+1)+(HBPD+1)+(HFPD+1)+(HOZVAL+1)}x
 			 *              {2x(CLKVAL+1)/(HCLK)}]
 			 *            = 60Hz
 			 * 3. LCDCON5:
-			 *    ������ʾģʽΪ8BPPʱ����ɫ���е����ݸ�ʽ: 5:6:5
-			 *    ����HSYNC��VSYNC����ļ���(����Ҫ�ο�����LCD�Ľӿ��ź�): ��ת
-			 *    �ֽڽ���ʹ��
+			 *    设置显示模式为8BPP时，调色板中的数据格式: 5:6:5
+			 *    设置HSYNC、VSYNC脉冲的极性(这需要参考具体LCD的接口信号): 反转
+			 *    字节交换使能
 			 */
 			LCDCON1 = (4 << 8) | (LCDTYPE_TFT << 5) | \
 					  (BPPMODE_8BPP << 1) | (ENVID_DISABLE << 0);
@@ -87,26 +87,26 @@ void Tft_Lcd_Init(int type) {
 					  (BSWP << 1);
 
 			/*
-			 * ����LCD�������ĵ�ַ�Ĵ���LCDSADDR1~3
-			 * ֡�ڴ����ӿ�(view point)��ȫ�Ǻϣ�
-			 * ͼ�����ݸ�ʽ����(8BPPʱ��֡�������е�����Ϊ��ɫ���е�����ֵ)��
+			 * 设置LCD控制器的地址寄存器LCDSADDR1~3
+			 * 帧内存与视口(view point)完全吻合，
+			 * 图像数据格式如下(8BPP时，帧缓冲区中的数据为调色板中的索引值)：
 			 *         |----PAGEWIDTH----|
 			 *    y/x  0   1   2       239
 			 *     0   idx idx idx ... idx
 			 *     1   idx idx idx ... idx
 			 * 1. LCDSADDR1:
-			 *    ����LCDBANK��LCDBASEU
+			 *    设置LCDBANK、LCDBASEU
 			 * 2. LCDSADDR2:
-			 *    ����LCDBASEL: ֡�������Ľ�����ַA[21:1]
+			 *    设置LCDBASEL: 帧缓冲区的结束地址A[21:1]
 			 * 3. LCDSADDR3:
-			 *    OFFSIZE����0��PAGEWIDTH����(240/2)
+			 *    OFFSIZE等于0，PAGEWIDTH等于(240/2)
 			 */
 			LCDSADDR1 = ((LCDFRAMEBUFFER >> 22) << 21) | LOWER21BITS(LCDFRAMEBUFFER >> 1);
 			LCDSADDR2 = LOWER21BITS((LCDFRAMEBUFFER + \
 									 (480) * (272) * 1) >> 1);
 			LCDSADDR3 = (0 << 11) | (480 / 2);
 
-			/* ��ֹ��ʱ��ɫ��Ĵ��� */
+			/* 禁止临时调色板寄存器 */
 			TPAL = 0;
 
 			fb_base_addr = LCDFRAMEBUFFER;
@@ -118,25 +118,25 @@ void Tft_Lcd_Init(int type) {
 
 		case MODE_TFT_16BIT_480272:
 			/*
-			 * ����LCD�������Ŀ��ƼĴ���LCDCON1~5
+			 * 设置LCD控制器的控制寄存器LCDCON1~5
 			 * 1. LCDCON1:
-			 *    ����VCLK��Ƶ�ʣ�VCLK(Hz) = HCLK/[(CLKVAL+1)x2]
-			 *    ѡ��LCD����: TFT LCD
-			 *    ������ʾģʽ: 16BPP
-			 *    �Ƚ�ֹLCD�ź����
+			 *    设置VCLK的频率：VCLK(Hz) = HCLK/[(CLKVAL+1)x2]
+			 *    选择LCD类型: TFT LCD
+			 *    设置显示模式: 16BPP
+			 *    先禁止LCD信号输出
 			 * 2. LCDCON2/3/4:
-			 *    ���ÿ����źŵ�ʱ�����
-			 *    ���÷ֱ��ʣ�������������
-			 * ���ڣ����Ը��ݹ�ʽ�������ʾ����Ƶ�ʣ�
-			 * ��HCLK=100MHzʱ��
+			 *    设置控制信号的时间参数
+			 *    设置分辨率，即行数及列数
+			 * 现在，可以根据公式计算出显示器的频率：
+			 * 当HCLK=100MHz时，
 			 * Frame Rate = 1/[{(VSPW+1)+(VBPD+1)+(LIINEVAL+1)+(VFPD+1)}x
 			 *              {(HSPW+1)+(HBPD+1)+(HFPD+1)+(HOZVAL+1)}x
 			 *              {2x(CLKVAL+1)/(HCLK)}]
 			 *            = 60Hz
 			 * 3. LCDCON5:
-			 *    ������ʾģʽΪ16BPPʱ�����ݸ�ʽ: 5:6:5
-			 *    ����HSYNC��VSYNC����ļ���(����Ҫ�ο�����LCD�Ľӿ��ź�): ��ת
-			 *    ����(2�ֽ�)����ʹ��
+			 *    设置显示模式为16BPP时的数据格式: 5:6:5
+			 *    设置HSYNC、VSYNC脉冲的极性(这需要参考具体LCD的接口信号): 反转
+			 *    半字(2字节)交换使能
 			 */
 			LCDCON1 = (4 << 8) | (LCDTYPE_TFT << 5) | \
 					  (BPPMODE_16BPP << 1) | (ENVID_DISABLE << 0);
@@ -148,26 +148,26 @@ void Tft_Lcd_Init(int type) {
 					  (HWSWP << 0);
 
 			/*
-			 * ����LCD�������ĵ�ַ�Ĵ���LCDSADDR1~3
-			 * ֡�ڴ����ӿ�(view point)��ȫ�Ǻϣ�
-			 * ͼ�����ݸ�ʽ���£�
+			 * 设置LCD控制器的地址寄存器LCDSADDR1~3
+			 * 帧内存与视口(view point)完全吻合，
+			 * 图像数据格式如下：
 			 *         |----PAGEWIDTH----|
 			 *    y/x  0   1   2       239
 			 *     0   rgb rgb rgb ... rgb
 			 *     1   rgb rgb rgb ... rgb
 			 * 1. LCDSADDR1:
-			 *    ����LCDBANK��LCDBASEU
+			 *    设置LCDBANK、LCDBASEU
 			 * 2. LCDSADDR2:
-			 *    ����LCDBASEL: ֡�������Ľ�����ַA[21:1]
+			 *    设置LCDBASEL: 帧缓冲区的结束地址A[21:1]
 			 * 3. LCDSADDR3:
-			 *    OFFSIZE����0��PAGEWIDTH����(240*2/2)
+			 *    OFFSIZE等于0，PAGEWIDTH等于(240*2/2)
 			 */
 			LCDSADDR1 = ((LCDFRAMEBUFFER >> 22) << 21) | LOWER21BITS(LCDFRAMEBUFFER >> 1);
 			LCDSADDR2 = LOWER21BITS((LCDFRAMEBUFFER + \
 									 (480) * (272) * 2) >> 1);
 			LCDSADDR3 = (0 << 11) | (480 * 2 / 2);
 
-			/* ��ֹ��ʱ��ɫ��Ĵ��� */
+			/* 禁止临时调色板寄存器 */
 			TPAL = 0;
 
 			fb_base_addr = LCDFRAMEBUFFER;
@@ -183,7 +183,7 @@ void Tft_Lcd_Init(int type) {
 }
 
 /*
- * ���õ�ɫ��
+ * 设置调色板
  */
 void Lcd_Palette8Bit_Init(void) {
 	int i;
@@ -191,7 +191,7 @@ void Lcd_Palette8Bit_Init(void) {
 
 	LCDCON1 &= ~0x01;	// stop lcd controller
 
-	LCDCON5 |= (FORMAT8BPP_565 << 11); // ���õ�ɫ�������ݸ�ʽΪ5:6:5
+	LCDCON5 |= (FORMAT8BPP_565 << 11); // 设置调色板中数据格式为5:6:5
 
 	palette = (volatile unsigned int *)PALETTE;
 	for (i = 0; i < 256; i++)
@@ -201,9 +201,9 @@ void Lcd_Palette8Bit_Init(void) {
 }
 
 /*
- * �ı��ɫ��Ϊһ����ɫ
- * ���������
- *     color: ��ɫֵ����ʽΪ0xRRGGBB
+ * 改变调色板为一种颜色
+ * 输入参数：
+ *     color: 颜色值，格式为0xRRGGBB
  */
 void ChangePalette(UINT32 color) {
 	int i;
@@ -213,39 +213,39 @@ void ChangePalette(UINT32 color) {
 	red   = (color >> 19) & 0x1f;
 	green = (color >> 10) & 0x3f;
 	blue  = (color >>  3) & 0x1f;
-	color = (red << 11) | (green << 5) | blue; // ��ʽ5:6:5
+	color = (red << 11) | (green << 5) | blue; // 格式5:6:5
 
 	palette = (UINT32 *)PALETTE;
 	LCDCON1 &= ~0x01;	// stop lcd controller
 	for (i = 0; i < 256; i++) {
-		//while (((LCDCON5>>15) & 0x3) == 2);     // �ȴ�ֱ��VSTATUS��Ϊ����Ч��
+		//while (((LCDCON5>>15) & 0x3) == 2);     // 等待直到VSTATUS不为”有效”
 		*palette++ = color;
 	}
 	LCDCON1 |= 0x01;	// re-enable lcd controller
 }
 
 /*
- * �����Ƿ����LCD��Դ�����ź�LCD_PWREN
- * ���������
- *     invpwren: 0 - LCD_PWREN��ЧʱΪ��������
- *               1 - LCD_PWREN��ЧʱΪ��ת����
- *     pwren:    0 - LCD_PWREN�����Ч
- *               1 - LCD_PWREN�����Ч
+ * 设置是否输出LCD电源开关信号LCD_PWREN
+ * 输入参数：
+ *     invpwren: 0 - LCD_PWREN有效时为正常极性
+ *               1 - LCD_PWREN有效时为反转极性
+ *     pwren:    0 - LCD_PWREN输出有效
+ *               1 - LCD_PWREN输出无效
  */
 void Lcd_PowerEnable(int invpwren, int pwren) {
-	GPGCON = (GPGCON & (~(3 << 8))) | (3 << 8);	// GPG4����LCD_PWREN
-	GPGUP  = (GPGUP & (~(1 << 4))) | (1 << 4);	// ��ֹ�ڲ�����
+	GPGCON = (GPGCON & (~(3 << 8))) | (3 << 8);	// GPG4用作LCD_PWREN
+	GPGUP  = (GPGUP & (~(1 << 4))) | (1 << 4);	// 禁止内部上拉
 
-	LCDCON5 = (LCDCON5 & (~(1 << 5))) | (invpwren << 5);	// ����LCD_PWREN�ļ���: ����/��ת
-	LCDCON5 = (LCDCON5 & (~(1 << 3))) | (pwren << 3);		// �����Ƿ����LCD_PWREN
+	LCDCON5 = (LCDCON5 & (~(1 << 5))) | (invpwren << 5);	// 设置LCD_PWREN的极性: 正常/反转
+	LCDCON5 = (LCDCON5 & (~(1 << 3))) | (pwren << 3);		// 设置是否输出LCD_PWREN
 }
 
 /*
- * ����LCD�������Ƿ�����ź�
- * ���������
+ * 设置LCD控制器是否输出信号
+ * 输入参数：
  * onoff:
- *      0 : �ر�
- *      1 : ��
+ *      0 : 关闭
+ *      1 : 打开
  */
 void Lcd_EnvidOnOff(int onoff) {
 	if (onoff == 1) {
@@ -258,16 +258,16 @@ void Lcd_EnvidOnOff(int onoff) {
 }
 
 /*
- * ʹ����ʱ��ɫ��Ĵ��������ɫͼ��
- * ���������
- *     color: ��ɫֵ����ʽΪ0xRRGGBB
+ * 使用临时调色板寄存器输出单色图像
+ * 输入参数：
+ *     color: 颜色值，格式为0xRRGGBB
  */
 void ClearScrWithTmpPlt(UINT32 color) {
 	TPAL = (1 << 24) | ((color & 0xffffff) << 0);
 }
 
 /*
- * ֹͣʹ����ʱ��ɫ��Ĵ���
+ * 停止使用临时调色板寄存器
  */
 void DisableTmpPlt(void) {
 	TPAL = 0;

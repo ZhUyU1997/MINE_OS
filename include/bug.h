@@ -13,7 +13,7 @@
 
 #define WARN_ON(condition) do{\
 		if(unlikely((condition) != 0)) {\
-			printf(“Badness in %s at %s:%d/%s()!\n", __FILE__, __LINE__, __func__); \
+			printf(鈥淏adness in %s at %s:%d/%s()!\n", __FILE__, __LINE__, __func__); \
 			dump_stack();\
 		}\
 }while(0)

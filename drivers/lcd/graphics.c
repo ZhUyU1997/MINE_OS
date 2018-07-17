@@ -24,7 +24,7 @@ U16 convert888_565(U32 rgb) {
 	return ((r << 11) | (g << 5) | (b));
 }
 
-/* ÇåÆÁ */
+/* æ¸…å± */
 void ClearScr(U32 color) {
 	UINT32 x, y;
 
@@ -35,15 +35,15 @@ void ClearScr(U32 color) {
 }
 
 /*
- * »­Ïß
- * ÊäÈë²ÎÊı£º
- *     x1¡¢y1 : Æğµã×ø±ê
- *     x2¡¢y2 : ÖÕµã×ø±ê
- *     color  : ÑÕÉ«Öµ
- *         ¶ÔÓÚ16BPP: colorµÄ¸ñÊ½Îª0xAARRGGBB (AA = Í¸Ã÷¶È),
- *     ĞèÒª×ª»»Îª5:6:5¸ñÊ½
- *         ¶ÔÓÚ8BPP: colorÎªµ÷É«°åÖĞµÄË÷ÒıÖµ£¬
- *     ÆäÑÕÉ«È¡¾öÓÚµ÷É«°åÖĞµÄÊıÖµ
+ * ç”»çº¿
+ * è¾“å…¥å‚æ•°ï¼š
+ *     x1ã€y1 : èµ·ç‚¹åæ ‡
+ *     x2ã€y2 : ç»ˆç‚¹åæ ‡
+ *     color  : é¢œè‰²å€¼
+ *         å¯¹äº16BPP: colorçš„æ ¼å¼ä¸º0xAARRGGBB (AA = é€æ˜åº¦),
+ *     éœ€è¦è½¬æ¢ä¸º5:6:5æ ¼å¼
+ *         å¯¹äº8BPP: colorä¸ºè°ƒè‰²æ¿ä¸­çš„ç´¢å¼•å€¼ï¼Œ
+ *     å…¶é¢œè‰²å–å†³äºè°ƒè‰²æ¿ä¸­çš„æ•°å€¼
  */
 void DrawLine(int x1, int y1, int x2, int y2, U32 color) {
 	int dx, dy, e;
@@ -163,7 +163,7 @@ void DrawCircle(U32 x, U32 y, U32 r, U32 color) {
 	int a = 0;
 	int b = r;
 	color = convert888_565(color);
-	while (22 * b * b >= r * r) {	 // 1/8Ô²¼´¿É
+	while (22 * b * b >= r * r) {	 // 1/8åœ†å³å¯
 		PutPixel(x + a, y - b, color); // 0~1
 		PutPixel(x - a, y - b, color); // 0~7
 		PutPixel(x - a, y + b, color); // 4~5
@@ -202,12 +202,12 @@ extern const unsigned char fontdata_8x8[];
 extern const unsigned char fontdata_8x16[];
 void put_font(U32 x, U32 y, U8 c) {
 	unsigned char line_dots;
-	/* »ñµÃ×ÖÄ£ */
+	/* è·å¾—å­—æ¨¡ */
 	unsigned char *char_dots = fontdata_8x16 + c * FONT_H;
 	U32 text_color_temp = convert888_565(text_color);
 	U32 background_color_temp = convert888_565(background_color);
 
-	/* ÔÚframebufferÀïÃèµã */
+	/* åœ¨framebufferé‡Œæç‚¹ */
 	for (int i = 0; i < FONT_H; i++) {
 		line_dots = char_dots[i];
 		for (int j = 0; j < FONT_W; j++) {
@@ -252,7 +252,7 @@ void lcd_putc(U8 c) {
 				//x=(480+(x/8-1)*8)%480;
 				//x=(480+x-8)%480;
 				//x=(472+x)%480;
-				//TODO:¿çÆÁÎÊÌâ£¬Ôİ²»Ö§³Ö¹öÆÁ
+				//TODO:è·¨å±é—®é¢˜ï¼Œæš‚ä¸æ”¯æŒæ»šå±
 				if (x == 0) {
 					y = (y + SCREEN_Y - FONT_H) % SCREEN_Y;
 				}

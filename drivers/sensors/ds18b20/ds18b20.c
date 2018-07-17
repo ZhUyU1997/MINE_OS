@@ -1,6 +1,6 @@
 #include <s3c24xx.h>
 #include <timer.h>
-/* Ê¹ÓÃGPG6×÷ÓÃds18b20µÄDATAÒı½Å */
+/* ä½¿ç”¨GPG6ä½œç”¨ds18b20çš„DATAå¼•è„š */
 
 
 /* rom commands */
@@ -19,7 +19,7 @@
 #define READ_POWER_SUPPLY    0xB4
 
 
-/* ÏÈÊµÏÖGPIOµÄ»ù±¾²Ù×÷ */
+/* å…ˆå®ç°GPIOçš„åŸºæœ¬æ“ä½œ */
 static void ds18b20_data_cfg_as_output(void) {
 	GPGCON &= ~(3 << 12);
 	GPGCON |= (1 << 12);
@@ -53,7 +53,7 @@ static void ds18b20_data_release(void) {
 	ds18b20_data_cfg_as_input();
 }
 
-/* ds18b20µÄ´úÂë */
+/* ds18b20çš„ä»£ç  */
 static int ds18b20_initialization(void) {
 	int val;
 
@@ -117,7 +117,7 @@ static void ds18b20_write_function_cmd(unsigned char cmd) {
 	ds18b20_write_byte(cmd);
 }
 
-/* Êµ¼Ê²Ù×÷º¯Êı */
+/* å®é™…æ“ä½œå‡½æ•° */
 int ds18b20_read_rom(unsigned char rom[]) {
 	int i;
 
@@ -153,7 +153,7 @@ int ds18b20_start_convert(void) {
 	ds18b20_write_rom_cmd(SKIP_ROM);
 	ds18b20_write_function_cmd(CONVERT_TEAMPERATURE);
 
-	/* µÈ´ı/ÅĞ¶Ï×ª»»³É¹¦ */
+	/* ç­‰å¾…/åˆ¤æ–­è½¬æ¢æˆåŠŸ */
 	if (0 != ds18b20_wait_when_processing(1000000)) {
 		printf("ds18b20_wait_when_processing err!\n");
 		return -1;
@@ -196,17 +196,17 @@ int ds18b20_read_temperature(double *temp) {
 	if (err)
 		return err;
 
-	/* ¼ÆËãÎÂ¶È */
+	/* è®¡ç®—æ¸©åº¦ */
 
-	/* ÏÈÅĞ¶Ï¾«¶È */
-	if (ram[4] & (3 << 5) == 0) /* ¾«¶È: 9bit */
+	/* å…ˆåˆ¤æ–­ç²¾åº¦ */
+	if (ram[4] & (3 << 5) == 0) /* ç²¾åº¦: 9bit */
 		i = 3;
-	else if (ram[4] & (3 << 5) == (1 << 5)) /* ¾«¶È: 10bit */
+	else if (ram[4] & (3 << 5) == (1 << 5)) /* ç²¾åº¦: 10bit */
 		i = 2;
-	else if (ram[4] & (3 << 5) == (2 << 5)) /* ¾«¶È: 11bit */
+	else if (ram[4] & (3 << 5) == (2 << 5)) /* ç²¾åº¦: 11bit */
 		i = 1;
 	else
-		/* ¾«¶ÈÊÇ 12 bit */
+		/* ç²¾åº¦æ˜¯ 12 bit */
 		i = 0;
 
 	for (; i < 8; i++) {
@@ -252,10 +252,10 @@ void ds18b20_test(void) {
 	while (!serial_getc_async()) {
 		if (0 == ds18b20_read_temperature(&temp)) {
 			m = (int)temp;	/* 3.01, m = 3 */
-			temp = temp - m;	/* Ğ¡Êı²¿·Ö: 0.01 */
+			temp = temp - m;	/* å°æ•°éƒ¨åˆ†: 0.01 */
 			n = temp * 10000;  /* 10 */
 
-			/* ÔÚ´®¿ÚÉÏ´òÓ¡ */
+			/* åœ¨ä¸²å£ä¸Šæ‰“å° */
 			printf("ds18b20 temperature: %d.%04d\n", m, n);  /* 3.010v */
 		}
 	}

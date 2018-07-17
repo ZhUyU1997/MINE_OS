@@ -1,22 +1,22 @@
 #include <s3c24xx.h>
 #include <timer.h>
-/* Ê¹ÓÃGPG5×÷ÓÃdht11µÄDATAÒı½Å */
+/* ä½¿ç”¨GPG5ä½œç”¨dht11çš„DATAå¼•è„š */
 
-/* ¿ØÖÆGPIO¶ÁÈ¡DHT11µÄÊı¾İ
- * 1. Ö÷»ú·¢³öÖÁÉÙ18MSµÄµÍÂö³å: startĞÅºÅ
- * 2. startĞÅºÅ±äÎª¸ß, 20-40usÖ®ºó, dht11»áÀ­µÍ×ÜÏßÎ¬³Ö80us
-      È»ºóÀ­¸ß80us: »ØÓ¦ĞÅºÅ
- * 3. Ö®ºó¾ÍÊÇÊı¾İ, ÖğÎ»·¢ËÍ
- *    bit0 : 50usµÍÂö³å, 26-28us¸ßÂö³å
- *    bit1 : 50usµÍÂö³å, 70us¸ßÂö³å
- * 4. Êı¾İÓĞ40bit: 8bitÊª¶ÈÕûÊıÊı¾İ+8bitÊª¶ÈĞ¡ÊıÊı¾İ
-                   +8bitÎÂ¶ÈÕûÊıÊı¾İ+8bitÎÂ¶ÈĞ¡ÊıÊı¾İ
-                   +8bitĞ£ÑéºÍ
+/* æ§åˆ¶GPIOè¯»å–DHT11çš„æ•°æ®
+ * 1. ä¸»æœºå‘å‡ºè‡³å°‘18MSçš„ä½è„‰å†²: startä¿¡å·
+ * 2. startä¿¡å·å˜ä¸ºé«˜, 20-40usä¹‹å, dht11ä¼šæ‹‰ä½æ€»çº¿ç»´æŒ80us
+      ç„¶åæ‹‰é«˜80us: å›åº”ä¿¡å·
+ * 3. ä¹‹åå°±æ˜¯æ•°æ®, é€ä½å‘é€
+ *    bit0 : 50usä½è„‰å†², 26-28usé«˜è„‰å†²
+ *    bit1 : 50usä½è„‰å†², 70usé«˜è„‰å†²
+ * 4. æ•°æ®æœ‰40bit: 8bitæ¹¿åº¦æ•´æ•°æ•°æ®+8bitæ¹¿åº¦å°æ•°æ•°æ®
+                   +8bitæ¸©åº¦æ•´æ•°æ•°æ®+8bitæ¸©åº¦å°æ•°æ•°æ®
+                   +8bitæ ¡éªŒå’Œ
  */
 
 static int dht11_wait_for_val(int val, int timeout_us);
 
-/* ÏÈÊµÏÖGPIOµÄ»ù±¾²Ù×÷ */
+/* å…ˆå®ç°GPIOçš„åŸºæœ¬æ“ä½œ */
 static void dht11_data_cfg_as_output(void) {
 	GPGCON &= ~(3 << 10);
 	GPGCON |= (1 << 10);
@@ -41,7 +41,7 @@ static int dht11_data_get(void) {
 }
 
 
-/* ÔÙÀ´ÊµÏÖDHT11µÄ¶Á²Ù×÷ */
+/* å†æ¥å®ç°DHT11çš„è¯»æ“ä½œ */
 
 void dht11_init(void) {
 	dht11_data_cfg_as_output();
@@ -105,12 +105,12 @@ int dht11_read(int *hum, int *temp) {
 		return -1;
 	}
 
-	if (0 != dht11_wait_for_val(1, 1000)) { /* µÈ´ıACK±äÎª¸ßµçÆ½, ³¬Ê±Ê±¼äÊÇ1000us */
+	if (0 != dht11_wait_for_val(1, 1000)) { /* ç­‰å¾…ACKå˜ä¸ºé«˜ç”µå¹³, è¶…æ—¶æ—¶é—´æ˜¯1000us */
 		printf("dht11 wait for ack high err!\n");
 		return -1;
 	}
 
-	if (0 != dht11_wait_for_val(0, 1000)) { /* Êı¾İ½×¶Î: µÈ´ıµÍµçÆ½, ³¬Ê±Ê±¼äÊÇ1000us */
+	if (0 != dht11_wait_for_val(0, 1000)) { /* æ•°æ®é˜¶æ®µ: ç­‰å¾…ä½ç”µå¹³, è¶…æ—¶æ—¶é—´æ˜¯1000us */
 		printf("dht11 wait for data low err!\n");
 		return -1;
 	}
@@ -127,7 +127,7 @@ int dht11_read(int *hum, int *temp) {
 	if (hum_m + hum_n + temp_m + temp_n == check) {
 		*hum  = hum_m;
 		*temp = temp_m;
-		mdelay(2000);  /* ¶ÁÈ¡ÖÜÆÚÊÇ2S, ²»ÄÜ¶ÁÌ«Æµ·± */
+		mdelay(2000);  /* è¯»å–å‘¨æœŸæ˜¯2S, ä¸èƒ½è¯»å¤ªé¢‘ç¹ */
 		return 0;
 	} else {
 		printf("dht11 checksum err!\n");

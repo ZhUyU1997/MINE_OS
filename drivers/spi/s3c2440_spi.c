@@ -1,7 +1,7 @@
 #include "s3c24xx.h"
 #include "timer.h"
 #if 0
-/* ÓÃGPIOÄ£ÄâSPI */
+/* ç”¨GPIOæ¨¡æ‹ŸSPI */
 
 static void SPI_GPIO_Init(void) {
 	/* GPF1 OLED_CSn output */
@@ -67,7 +67,7 @@ unsigned char SPIRecvByte(void) {
 
 
 void SPIInit(void) {
-	/* ³õÊ¼»¯Òı½Å */
+	/* åˆå§‹åŒ–å¼•è„š */
 	SPI_GPIO_Init();
 }
 #else
@@ -108,7 +108,7 @@ unsigned char SPIRecvByte(void) {
 static void SPIControllerInit(void) {
 	/* OLED  : 100ns, 10MHz
 	* FLASH : 104MHz
-	* È¡10MHz
+	* å–10MHz
 	* 10 = 50 / 2 / (Prescaler value + 1)
 	* Prescaler value = 1.5 = 2
 	* Baud rate = 50/2/3=8.3MHz
@@ -129,7 +129,7 @@ static void SPIControllerInit(void) {
 }
 
 void SPIInit(void) {
-	/* ³õÊ¼»¯Òı½Å */
+	/* åˆå§‹åŒ–å¼•è„š */
 	SPI_GPIO_Init();
 
 	SPIControllerInit();

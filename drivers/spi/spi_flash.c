@@ -19,7 +19,7 @@ static void SPIFlashSendAddr(unsigned int addr) {
  *
  */
 void SPIFlashReadID(int *pMID, int *pDID) {
-	SPIFlash_Set_CS(0); /* Ñ¡ÖÐSPI FLASH */
+	SPIFlash_Set_CS(0); /* é€‰ä¸­SPI FLASH */
 
 	SPISendByte(0x90);
 

@@ -1,7 +1,7 @@
 #include "framebuffer.h"
 #include "lcd.h"
 
-/* »­µã */
+/* ç”»ç‚¹ */
 void PutPixel(UINT32 x, UINT32 y, UINT16 color) {
 	//TODO:
 	if (x < 0 || x > xsize - 1 || y < 0 || y > ysize - 1) {

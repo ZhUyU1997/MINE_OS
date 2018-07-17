@@ -7,7 +7,7 @@
 
 
 static void wm8976_write_reg(unsigned char reg, unsigned int data) {
-	//Ê±Ğò¿ØÖÆ£¬wm8976ÊÖ²áp16
+	//æ—¶åºæ§åˆ¶ï¼Œwm8976æ‰‹å†Œp16
 	int i;
 	unsigned short val = (reg << 9) | (data & 0x1ff);
 
@@ -39,10 +39,10 @@ static void wm8976_write_reg(unsigned char reg, unsigned int data) {
 
 static volatile int sound_volume  = 0;
 /*
- * volume : 0~100, 0±íÊ¾×îĞ¡ÒôÁ¿
+ * volume : 0~100, 0è¡¨ç¤ºæœ€å°éŸ³é‡
  */
 void wm8976_set_volume(int volume) {
-	//WM8976: 52,53ºÅ¼Ä´æÆ÷bit[5:0]±íÊ¾ÒôÁ¿, ÖµÔ½´óÒôÁ¿Ô½´ó, 0-63
+	//WM8976: 52,53å·å¯„å­˜å™¨bit[5:0]è¡¨ç¤ºéŸ³é‡, å€¼è¶Šå¤§éŸ³é‡è¶Šå¤§, 0-63
 	if (volume > 100)
 		volume = 100;
 	if (volume < 0)
@@ -81,9 +81,9 @@ void init_wm8976(void) {
 	/* software reset */
 	wm8976_write_reg(0, 0);
 
-	/* OUT2µÄ×ó/ÓÒÉùµÀ´ò¿ª
-	 * ×ó/ÓÒÍ¨µÀÊä³ö»ìÒô´ò¿ª
-	 * ×ó/ÓÒDAC´ò¿ª
+	/* OUT2çš„å·¦/å³å£°é“æ‰“å¼€
+	 * å·¦/å³é€šé“è¾“å‡ºæ··éŸ³æ‰“å¼€
+	 * å·¦/å³DACæ‰“å¼€
 	 */
 	wm8976_write_reg(0x3, 0x6f);
 	wm8976_write_reg(0x1, 0x1f);//biasen,BUFIOEN.VMIDSEL=11b

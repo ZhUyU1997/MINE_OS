@@ -18,30 +18,30 @@ extern volatile U32 TOTAL_SIZE; //(MB)
 
 
 /********************************************************
- ºê¶¨Òå
+ å®å®šä¹‰
 ********************************************************/
 #define INVALID_CARD	0
 #define MMC_CARD		1
 #define SD_V1X_CARD		2
 #define SDHC_V20_CARD	3
 
-/* SD¿¨ĞÅÏ¢½á¹¹Ìå¶¨Òå */
+/* SDå¡ä¿¡æ¯ç»“æ„ä½“å®šä¹‰ */
 /* the information structure variable of SD Card*/
 typedef struct SD_STRUCT {
-	U8 cCardType;				/* ¿¨ÀàĞÍ */
-	U8 cBlockSize;				// ¿¨µÄ¿é³¤¶È£¬ÒÔÎª2µÄ2´Î·½±íÊ¾£¬Èç512×Ö½ÚÎª2µÄ9´Î·½£¬Ôò¸ÃÖµÎª9
-	U8 cCardCID[16];			// ¿¨µÄCIDĞÅÏ¢
-	U16 iCardRCA;				/* ¿¨Âß¼­µØÖ· */
-	U32 lCardCSD[4];			// ¿¨µÄCSDĞÅÏ¢
-	U32 lBlockNum;				/* ¿¨ÖĞ¿éµÄÊıÁ¿ */
-	U32 lBlockLen;				/* ¿¨µÄ¿é³¤¶È(µ¥Î»:×Ö½Ú) */
-	U32 lSectorSize;			/* Ò»´Î¿É²Á³ıµÄ¿é¸öÊı */
-	U32 lCardSize;				//¿¨ÈİÁ¿(µ¥Î»:×Ö½Ú)
+	U8 cCardType;				/* å¡ç±»å‹ */
+	U8 cBlockSize;				// å¡çš„å—é•¿åº¦ï¼Œä»¥ä¸º2çš„2æ¬¡æ–¹è¡¨ç¤ºï¼Œå¦‚512å­—èŠ‚ä¸º2çš„9æ¬¡æ–¹ï¼Œåˆ™è¯¥å€¼ä¸º9
+	U8 cCardCID[16];			// å¡çš„CIDä¿¡æ¯
+	U16 iCardRCA;				/* å¡é€»è¾‘åœ°å€ */
+	U32 lCardCSD[4];			// å¡çš„CSDä¿¡æ¯
+	U32 lBlockNum;				/* å¡ä¸­å—çš„æ•°é‡ */
+	U32 lBlockLen;				/* å¡çš„å—é•¿åº¦(å•ä½:å­—èŠ‚) */
+	U32 lSectorSize;			/* ä¸€æ¬¡å¯æ“¦é™¤çš„å—ä¸ªæ•° */
+	U32 lCardSize;				//å¡å®¹é‡(å•ä½:å­—èŠ‚)
 
 
-	U32 timeout_read;			/* ¶Á¿é³¬Ê±Ê±¼ä(µ¥Î»: 8 SPI clock) */
-	U32 timeout_write;			/* Ğ´¿é³¬Ê±Ê±¼ä(µ¥Î»: 8 SPI clock) */
-	U32 timeout_erase;			/* ²Á¿é³¬Ê±Ê±¼ä(µ¥Î»: 8 SPI clock) */
+	U32 timeout_read;			/* è¯»å—è¶…æ—¶æ—¶é—´(å•ä½: 8 SPI clock) */
+	U32 timeout_write;			/* å†™å—è¶…æ—¶æ—¶é—´(å•ä½: 8 SPI clock) */
+	U32 timeout_erase;			/* æ“¦å—è¶…æ—¶æ—¶é—´(å•ä½: 8 SPI clock) */
 } SD_STRUCT;
 
 

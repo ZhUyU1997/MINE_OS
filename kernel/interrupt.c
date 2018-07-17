@@ -48,8 +48,8 @@ void irq_init(void) {
 		isr_handle_array[i] = dummy_isr;
 	}
 
-	INTMOD = 0x0;	      //ËùÓÐÖÐ¶Ï¶¼ÉèÎªIRQÄ£Ê½
-	INTMSK = BIT_ALLMSK;  //ÏÈÆÁ±ÎËùÓÐÖÐ¶Ï
+	INTMOD = 0x0;	      //æ‰€æœ‰ä¸­æ–­éƒ½è®¾ä¸ºIRQæ¨¡å¼
+	INTMSK = BIT_ALLMSK;  //å…ˆå±è”½æ‰€æœ‰ä¸­æ–­
 	SRCPND = 0xffffffff;
 	INTPND = 0xffffffff;
 	SUBSRCPND = 0xffffffff;
@@ -93,16 +93,16 @@ void free_irq(enum INT_NUM offset) {
 	clear_pending(offset);
 }
 
-//ÇåÖÐ¶Ï
+//æ¸…ä¸­æ–­
 static void clear_pending(enum INT_NUM offset) {
 	assert((offset >= EINT0) && (offset <= INT_ADC));
-	//TODO:²»Í¨ÓÃ
+	//TODO:ä¸é€šç”¨
 	if (offset == EINT4_7) {
-		//EINT4-7ºÏÓÃIRQ4£¬×¢ÒâEINTPEND[3:0]±£ÁôÎ´ÓÃ£¬ÏòÕâÐ©Î»Ð´Èë1¿ÉÄÜµ¼ÖÂÎ´Öª½á¹û
+		//EINT4-7åˆç”¨IRQ4ï¼Œæ³¨æ„EINTPEND[3:0]ä¿ç•™æœªç”¨ï¼Œå‘è¿™äº›ä½å†™å…¥1å¯èƒ½å¯¼è‡´æœªçŸ¥ç»“æžœ
 		EINTPEND = 1 << EINT7;
 	}
 	if (offset == EINT8_23) {
-		//EINT8_23ºÏÓÃIRQ5
+		//EINT8_23åˆç”¨IRQ5
 		EINTPEND = 1 << 11;
 	}
 	if (offset == INT_ADC) {

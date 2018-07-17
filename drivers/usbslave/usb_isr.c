@@ -3,16 +3,16 @@
 #include <usb/ch9.h>
 #include <usb/2440usb.h>
 
-//TODO:¶Ëµã´¦Àí²»¹»Í¨ÓÃ
+//TODO:ç«¯ç‚¹å¤„ç†ä¸å¤Ÿé€šç”¨
 
 #define DES_TX_COUNT (usb_buf_count(&ub[0])/EP_PKT_SIZE(0))
 #define USB_BUF_INIT(x) usb_buf_init(&ub[0], (x), sizeof(*(x)));ep0State = EP0_STATE_TRANSMIT
-//TODO£º×¢Òâctrlreq->wLength¿ÉÄÜÐ¡ÓÚ·¢ËÍµÄÊý¾Ý
+//TODOï¼šæ³¨æ„ctrlreq->wLengthå¯èƒ½å°äºŽå‘é€çš„æ•°æ®
 #define USB_BUF_INIT_TRUNCATION(x) usb_buf_init(&ub[0], (x), ctrlreq.wLength > sizeof(*(x)) ? sizeof(*(x)) : ctrlreq.wLength);ep0State = EP0_STATE_TRANSMIT
 #define USB_BUF_INIT_SIZE(x,size) usb_buf_init(&ub[0], (x), size);ep0State = EP0_STATE_TRANSMIT
 #define USB_BUF_INIT_TRUNCATION_SIZE(x,size) usb_buf_init(&ub[0], (x), ctrlreq.wLength > (size) ? (size) : ctrlreq.wLength);ep0State = EP0_STATE_TRANSMIT
 
-//TODO:SUSPENDED×´Ì¬Î´´¦Àí
+//TODO:SUSPENDEDçŠ¶æ€æœªå¤„ç†
 enum USB_DEV_STATE usbd_state = USBD_STATE_POWERED;
 
 enum EP0_STATE ep0State = EP0_STATE_INIT;
@@ -50,40 +50,40 @@ struct status g_status = {
 void handle_standard_input(struct usb_ctrlrequest ctrlreq) {
 	switch (ctrlreq.bRequest) {
 		case USB_REQ_GET_STATUS:
-			DbgPrintf("[»ñÈ¡×´Ì¬]");
+			DbgPrintf("[èŽ·å–çŠ¶æ€]");
 			switch (ctrlreq.bRequestType & USB_RECIP_MASK) {
 				case USB_RECIP_DEVICE:
-					DbgPrintf("[Éè±¸]");
+					DbgPrintf("[è®¾å¤‡]");
 					USB_BUF_INIT(&g_status.device);
 					break;
 				case USB_RECIP_INTERFACE:
-					DbgPrintf("[½Ó¿Ú]");
+					DbgPrintf("[æŽ¥å£]");
 					g_status.interface = 0;
 					USB_BUF_INIT(&g_status.interface);
 					break;
 				case USB_RECIP_ENDPOINT:
 					switch (ctrlreq.wIndex & 0xff) {
 						case 0x00:
-							DbgPrintf("[¶Ëµã0]");
+							DbgPrintf("[ç«¯ç‚¹0]");
 							USB_BUF_INIT(&g_status.endpoint[0]);
 							break;
 						case 0x81:
-							DbgPrintf("[¶Ëµã1]");
+							DbgPrintf("[ç«¯ç‚¹1]");
 							assert(usbdev.endpoint_desc[1-1]);
 							USB_BUF_INIT(&g_status.endpoint[1]);
 							break;
 						case 0x82:
-							DbgPrintf("[¶Ëµã2]");
+							DbgPrintf("[ç«¯ç‚¹2]");
 							assert(usbdev.endpoint_desc[2-1]);
 							USB_BUF_INIT(&g_status.endpoint[2]);
 							break;
 						case 0x03:
-							DbgPrintf("[¶Ëµã3]");
+							DbgPrintf("[ç«¯ç‚¹3]");
 							assert(usbdev.endpoint_desc[3-1]);
 							USB_BUF_INIT(&g_status.endpoint[3]);
 							break;
 						default:
-							DbgPrintf("[Î´¶¨Òå¶Ëµã]");
+							DbgPrintf("[æœªå®šä¹‰ç«¯ç‚¹]");
 							break;
 					}
 					break;
@@ -98,7 +98,7 @@ void handle_standard_input(struct usb_ctrlrequest ctrlreq) {
 			CLR_EP0_OUT_PKT_RDY();
 			switch (ctrlreq.wValue >> 8) {
 				case USB_DT_DEVICE:
-					DbgPrintf("[»ñÈ¡Éè±¸ÃèÊö·û]");
+					DbgPrintf("[èŽ·å–è®¾å¤‡æè¿°ç¬¦]");
 					if(usbd_state == USBD_STATE_DEFAULT){
 						ep_tx_fifo(EP0, usbdev.dev_desc, 8);
 						SET_EP0_INPKTRDY_DATAEND();
@@ -107,7 +107,7 @@ void handle_standard_input(struct usb_ctrlrequest ctrlreq) {
 					}
 					break;
 				case USB_DT_CONFIG:
-					DbgPrintf("[»ñÈ¡ÅäÖÃÃèÊö·û]");
+					DbgPrintf("[èŽ·å–é…ç½®æè¿°ç¬¦]");
 					if (ctrlreq.wLength > 0x9) {
 						USB_BUF_INIT_SIZE(usbdev.config_all, usbdev.config_all_size);
 					} else {
@@ -115,7 +115,7 @@ void handle_standard_input(struct usb_ctrlrequest ctrlreq) {
 					}
 					break;
 				case USB_DT_STRING:
-					DbgPrintf("[»ñÈ¡×Ö´®ÃèÊö·û]");
+					DbgPrintf("[èŽ·å–å­—ä¸²æè¿°ç¬¦]");
 					switch (ctrlreq.wValue & 0xff) {
 						case 0:
 						case 1:
@@ -134,12 +134,12 @@ void handle_standard_input(struct usb_ctrlrequest ctrlreq) {
 					}
 					break;
 				case USB_DT_INTERFACE:
-					DbgPrintf("[»ñÈ¡½Ó¿ÚÃèÊö·û]");
+					DbgPrintf("[èŽ·å–æŽ¥å£æè¿°ç¬¦]");
 					USB_BUF_INIT(usbdev.interface_desc);
 					break;
 				case USB_DT_ENDPOINT:
-					DbgPrintf("[»ñÈ¡¶ËµãÃèÊö·û]");
-					//TODO:¿¼ÂÇ·½Ïò
+					DbgPrintf("[èŽ·å–ç«¯ç‚¹æè¿°ç¬¦]");
+					//TODO:è€ƒè™‘æ–¹å‘
 					switch (ctrlreq.wValue & 0xff) {
 						case 0x81:
 							assert(usbdev.endpoint_desc[1-1]);
@@ -154,37 +154,37 @@ void handle_standard_input(struct usb_ctrlrequest ctrlreq) {
 							USB_BUF_INIT(usbdev.endpoint_desc[3-1]);
 							break;
 						default:
-							DbgPrintf("[Î´¶¨Òå¶Ëµã]");
+							DbgPrintf("[æœªå®šä¹‰ç«¯ç‚¹]");
 							break;
 					}
 					break;
 				case USB_DT_RPIPE:
-					DbgPrintf("[»ñÈ¡±¨¸æÃèÊö·û]");
+					DbgPrintf("[èŽ·å–æŠ¥å‘Šæè¿°ç¬¦]");
 					assert(usbdev.report_desc);
 					USB_BUF_INIT_SIZE(usbdev.report_desc, usbdev.report_desc_size);
 					break;
 				default:
-					DbgPrintf("[Î´¶¨ÒåÃèÊö·û]");
+					DbgPrintf("[æœªå®šä¹‰æè¿°ç¬¦]");
 					break;
 			}
 			break;
 		case USB_REQ_GET_CONFIGURATION:
-			DbgPrintf("[»ñÈ¡ÅäÖÃ]");
+			DbgPrintf("[èŽ·å–é…ç½®]");
 			CLR_EP0_OUT_PKT_RDY();
 			USB_BUF_INIT(&g_status.ConfigGet);
 			break;
 		case USB_REQ_GET_INTERFACE:
-			DbgPrintf("[»ñÈ¡½Ó¿Ú]");
+			DbgPrintf("[èŽ·å–æŽ¥å£]");
 			CLR_EP0_OUT_PKT_RDY();
 			USB_BUF_INIT(&g_status.InterfaceGet);
 			break;
 		case USB_REQ_SYNCH_FRAME:
-			DbgPrintf("[Í¬²½Ö¡]");
+			DbgPrintf("[åŒæ­¥å¸§]");
 			CLR_EP0_OUT_PKT_RDY();
 			ep0State = EP0_STATE_INIT;
 			break;
 		default:
-			DbgPrintf("[Î´¶¨ÒåµÄ±ê×¼ÊäÈëÇëÇó SETUP=%x]", ctrlreq.bRequest);
+			DbgPrintf("[æœªå®šä¹‰çš„æ ‡å‡†è¾“å…¥è¯·æ±‚ SETUP=%x]", ctrlreq.bRequest);
 			CLR_EP0_OUTPKTRDY_DATAEND(); //Because of no data control transfers.
 			ep0State = EP0_STATE_INIT;
 			break;
@@ -195,7 +195,7 @@ void handle_standard_output(struct usb_ctrlrequest ctrlreq) {
 	switch (ctrlreq.bRequest) {
 		case USB_REQ_CLEAR_FEATURE:
 			//TODO:
-			DbgPrintf("[Çå³ýÌØÐÔ]");
+			DbgPrintf("[æ¸…é™¤ç‰¹æ€§]");
 			switch (ctrlreq.bRequestType & USB_RECIP_MASK) {
 				case USB_RECIP_DEVICE:
 					if ((ctrlreq.wIndex & 0xff) == 1)
@@ -233,7 +233,7 @@ void handle_standard_output(struct usb_ctrlrequest ctrlreq) {
 			}
 			break;
 		case USB_REQ_SET_FEATURE:
-			DbgPrintf("[ÉèÖÃÌØÐÔ]");
+			DbgPrintf("[è®¾ç½®ç‰¹æ€§]");
 			switch (ctrlreq.bRequestType & USB_RECIP_MASK) {
 				case USB_RECIP_DEVICE:
 					if ((ctrlreq.wValue & 0xff) == 1)
@@ -269,24 +269,24 @@ void handle_standard_output(struct usb_ctrlrequest ctrlreq) {
 			}
 			break;
 		case USB_REQ_SET_ADDRESS:
-			DbgPrintf("[ÉèÖÃµØÖ·:%d]", ctrlreq.wValue & 0xff);
+			DbgPrintf("[è®¾ç½®åœ°å€:%d]", ctrlreq.wValue & 0xff);
 			usbdevregs->FUNC_ADDR_REG = (ctrlreq.wValue & 0xff) | 0x80;
 			usbd_state = USBD_STATE_ADDRESS;
 			break;
 		case USB_REQ_SET_DESCRIPTOR:
-			DbgPrintf("[ÉèÖÃÃèÊö·û]");
+			DbgPrintf("[è®¾ç½®æè¿°ç¬¦]");
 			break;
 		case USB_REQ_SET_CONFIGURATION:
-			DbgPrintf("[ÉèÖÃÅäÖÃ]");
+			DbgPrintf("[è®¾ç½®é…ç½®]");
 			g_status.ConfigGet.ConfigurationValue = ctrlreq.wValue & 0xff;
 			usbd_state = USBD_STATE_CONFIGURED;
 			break;
 		case USB_REQ_SET_INTERFACE:
-			DbgPrintf("[ÉèÖÃ½Ó¿Ú]");
+			DbgPrintf("[è®¾ç½®æŽ¥å£]");
 			g_status.InterfaceGet.AlternateSetting = ctrlreq.wValue & 0xff;
 			break;
 		default:
-			DbgPrintf("[Î´¶¨ÒåµÄ±ê×¼Êä³öÇëÇó SETUP=%x]", ctrlreq.bRequest);
+			DbgPrintf("[æœªå®šä¹‰çš„æ ‡å‡†è¾“å‡ºè¯·æ±‚ SETUP=%x]", ctrlreq.bRequest);
 			break;
 	}
 	CLR_EP0_OUTPKTRDY_DATAEND();
@@ -338,22 +338,22 @@ void Ep0Handler(void) {
 
 	if ((ep0_csr & EP0_OUT_PKT_READY)) {
 		usb_receive_message(EP0, &ctrlreq, sizeof(struct usb_ctrlrequest));
-		//ÅÐ¶ÏÇëÇóÀàÐÍ
+		//åˆ¤æ–­è¯·æ±‚ç±»åž‹
 		if ((ctrlreq.bRequestType & 0x80) == USB_DIR_OUT) {
 			switch ((ctrlreq.bRequestType) & USB_TYPE_MASK) {
 				case USB_TYPE_STANDARD:
 					handle_standard_output(ctrlreq);
 					break;
 				case USB_TYPE_CLASS:
-					DbgPrintf("[ÀàÊä³öÇëÇó]");
+					DbgPrintf("[ç±»è¾“å‡ºè¯·æ±‚]");
 					assert(usbdev.handle_class);
 					usbdev.handle_class(ctrlreq);
 					break;
 				case USB_TYPE_VENDOR:
-					DbgPrintf("[USB³§ÉÌÊä³öÇëÇó]");
+					DbgPrintf("[USBåŽ‚å•†è¾“å‡ºè¯·æ±‚]");
 					break;
 				default:
-					DbgPrintf("[´íÎó£ºÎ´¶¨ÒåµÄÊä³öÇëÇó]");
+					DbgPrintf("[é”™è¯¯ï¼šæœªå®šä¹‰çš„è¾“å‡ºè¯·æ±‚]");
 					break;
 			}
 		} else {
@@ -362,15 +362,15 @@ void Ep0Handler(void) {
 					handle_standard_input(ctrlreq);
 					break;
 				case USB_TYPE_CLASS:
-					DbgPrintf("[ÀàÊäÈëÇëÇó]");
+					DbgPrintf("[ç±»è¾“å…¥è¯·æ±‚]");
 					assert(usbdev.handle_class);
 					usbdev.handle_class(ctrlreq);
 					break;
 				case USB_TYPE_VENDOR:
-					DbgPrintf("[USB³§ÉÌÊäÈëÇëÇó]");
+					DbgPrintf("[USBåŽ‚å•†è¾“å…¥è¯·æ±‚]");
 					break;
 				default:
-					DbgPrintf("[´íÎó£ºÎ´¶¨ÒåµÄÊäÈëÇëÇó]");
+					DbgPrintf("[é”™è¯¯ï¼šæœªå®šä¹‰çš„è¾“å…¥è¯·æ±‚]");
 					break;
 			}
 		}
@@ -379,11 +379,11 @@ void Ep0Handler(void) {
 		case EP0_STATE_INIT:
 			break;
 		case EP0_STATE_TRANSMIT:
-			DbgPrintf("[»ñÈ¡(%d)]", DES_TX_COUNT);
+			DbgPrintf("[èŽ·å–(%d)]", DES_TX_COUNT);
 			usb_send_message(EP0);
 			break;
 		default:
-			DbgPrintf("[Î´¶¨Òå×´Ì¬]");
+			DbgPrintf("[æœªå®šä¹‰çŠ¶æ€]");
 			break;
 	}
 }

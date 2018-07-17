@@ -1,13 +1,13 @@
 /***************************************************
-*		版权声明
+*		鐗堟潈澹版槑
 *
-*	本操作系统名为：MINE
-*	该操作系统未经授权不得以盈利或非盈利为目的进行开发，
-*	只允许个人学习以及公开交流使用
+*	鏈搷浣滅郴缁熷悕涓猴細MINE
+*	璇ユ搷浣滅郴缁熸湭缁忔巿鏉冧笉寰椾互鐩堝埄鎴栭潪鐩堝埄涓虹洰鐨勮繘琛屽紑鍙戯紝
+*	鍙厑璁镐釜浜哄涔犱互鍙婂叕寮�浜ゆ祦浣跨敤
 *
-*	代码最终所有权及解释权归田宇所有；
+*	浠ｇ爜鏈�缁堟墍鏈夋潈鍙婅В閲婃潈褰掔敯瀹囨墍鏈夛紱
 *
-*	本模块作者：	田宇
+*	鏈ā鍧椾綔鑰咃細	鐢板畤
 *	EMail:		345538255@qq.com
 *
 *
@@ -86,9 +86,9 @@ static inline struct List * list_next(struct List * entry) {
 
 
 #define ALIGN(x,a)		(((x) + ((a) - 1)) & (~((a)-1)))
-#define BIT_CLR(x,p)	(((char *)(x))[(p) / (sizeof(char) * 8)] &=~(1<<((p) % (sizeof(char) * 8))))
-#define BIT_SET(x,p)	(((char *)(x))[(p) / (sizeof(char) * 8)] |= (1<<((p) % (sizeof(char) * 8))))
-#define BIT_NOT(x,p)	(((char *)(x))[(p) / (sizeof(char) * 8)] ^= (1<<((p) % (sizeof(char) * 8))))
+#define BIT_CLR(x,p)	(((char *)(x))[(p) / (sizeof(char) * 8)] &= ~(1<<((p) % (sizeof(char) * 8))))
+#define BIT_SET(x,p)	(((char *)(x))[(p) / (sizeof(char) * 8)] |=  (1<<((p) % (sizeof(char) * 8))))
+#define BIT_NOT(x,p)	(((char *)(x))[(p) / (sizeof(char) * 8)] ^=  (1<<((p) % (sizeof(char) * 8))))
 #define ARRAY_SIZE(x)	((sizeof(x)) / (sizeof(x[0])))
 #define LONG_BIT_NUM	(sizeof(long) * 8)
 

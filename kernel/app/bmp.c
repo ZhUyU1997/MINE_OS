@@ -5,49 +5,49 @@
 #include "ff.h"
 
 
-/* Î»Í¼ÎÄ¼şÍ·Ö÷ÒªÊÇ¶ÔÎ»Í¼ÎÄ¼şµÄÒ»Ğ©ÃèÊö Î»Í¼ĞÅÏ¢Í·Ö÷ÒªÊÇ¶ÔÎ»Í¼Í¼Ïñ·½ÃæĞÅÏ¢µÄÃèÊö */
-/*************************** Î»Í¼±ê×¼ĞÅÏ¢(54×Ö½Ú) ******************************************/
-/* Î»Í¼ÎÄ¼şÍ· £¨Î»Í¼Í·µÄ×Ö½ÚÊı = Î»Í¼ÎÄ¼ş×Ö½ÚÊı - Î»Í¼Í¼ÏñÊı¾İ×Ö½ÚÊı£©*/
+/* ä½å›¾æ–‡ä»¶å¤´ä¸»è¦æ˜¯å¯¹ä½å›¾æ–‡ä»¶çš„ä¸€äº›æè¿° ä½å›¾ä¿¡æ¯å¤´ä¸»è¦æ˜¯å¯¹ä½å›¾å›¾åƒæ–¹é¢ä¿¡æ¯çš„æè¿° */
+/*************************** ä½å›¾æ ‡å‡†ä¿¡æ¯(54å­—èŠ‚) ******************************************/
+/* ä½å›¾æ–‡ä»¶å¤´ ï¼ˆä½å›¾å¤´çš„å­—èŠ‚æ•° = ä½å›¾æ–‡ä»¶å­—èŠ‚æ•° - ä½å›¾å›¾åƒæ•°æ®å­—èŠ‚æ•°ï¼‰*/
 typedef struct BMP_FILE_HEADER {
-	U16 bType;			// ÎÄ¼ş±êÊ¶·û
-	U32 bSize;			// ÎÄ¼şµÄ´óĞ¡
-	U16 bReserved1;		// ±£ÁôÖµ,±ØĞëÉèÖÃÎª0
-	U16 bReserved2;		// ±£ÁôÖµ,±ØĞëÉèÖÃÎª0
-	U32 bOffset;		// ÎÄ¼şÍ·µÄ×îºóµ½Í¼ÏñÊı¾İÎ»¿ªÊ¼µÄÆ«ÒÆÁ¿
-} __attribute__((packed)) BMPFILEHEADER;	// 14 ×Ö½Ú
+	U16 bType;			// æ–‡ä»¶æ ‡è¯†ç¬¦
+	U32 bSize;			// æ–‡ä»¶çš„å¤§å°
+	U16 bReserved1;		// ä¿ç•™å€¼,å¿…é¡»è®¾ç½®ä¸º0
+	U16 bReserved2;		// ä¿ç•™å€¼,å¿…é¡»è®¾ç½®ä¸º0
+	U32 bOffset;		// æ–‡ä»¶å¤´çš„æœ€ååˆ°å›¾åƒæ•°æ®ä½å¼€å§‹çš„åç§»é‡
+} __attribute__((packed)) BMPFILEHEADER;	// 14 å­—èŠ‚
 
-/* Î»Í¼ĞÅÏ¢Í· */
+/* ä½å›¾ä¿¡æ¯å¤´ */
 typedef struct BMP_INFO {
-	U32 bInfoSize;			// ĞÅÏ¢Í·µÄ´óĞ¡
-	U32 bWidth;				// Í¼ÏñµÄ¿í¶È
-	U32 bHeight;			// Í¼ÏñµÄ¸ß¶È
-	U16 bPlanes;			// Í¼ÏñµÄÎ»ÃæÊı
-	U16 bBitCount;			// Ã¿¸öÏñËØµÄÎ»Êı
-	U32 bCompression;		// Ñ¹ËõÀàĞÍ
-	U32 bmpImageSize;		// Í¼ÏñµÄ´óĞ¡,ÒÔ×Ö½ÚÎªµ¥Î»
-	U32 bXPelsPerMeter;		// Ë®Æ½·Ö±æÂÊ
-	U32 bYPelsPerMeter;		// ´¹Ö±·Ö±æÂÊ
-	U32 bClrUsed;			// Ê¹ÓÃµÄÉ«²ÊÊı
-	U32 bClrImportant;		// ÖØÒªµÄÑÕÉ«Êı
-} __attribute__((packed)) BMPINF;	// 40 ×Ö½Ú
+	U32 bInfoSize;			// ä¿¡æ¯å¤´çš„å¤§å°
+	U32 bWidth;				// å›¾åƒçš„å®½åº¦
+	U32 bHeight;			// å›¾åƒçš„é«˜åº¦
+	U16 bPlanes;			// å›¾åƒçš„ä½é¢æ•°
+	U16 bBitCount;			// æ¯ä¸ªåƒç´ çš„ä½æ•°
+	U32 bCompression;		// å‹ç¼©ç±»å‹
+	U32 bmpImageSize;		// å›¾åƒçš„å¤§å°,ä»¥å­—èŠ‚ä¸ºå•ä½
+	U32 bXPelsPerMeter;		// æ°´å¹³åˆ†è¾¨ç‡
+	U32 bYPelsPerMeter;		// å‚ç›´åˆ†è¾¨ç‡
+	U32 bClrUsed;			// ä½¿ç”¨çš„è‰²å½©æ•°
+	U32 bClrImportant;		// é‡è¦çš„é¢œè‰²æ•°
+} __attribute__((packed)) BMPINF;	// 40 å­—èŠ‚
 
-/* ²ÊÉ«±í:µ÷É«°å */
+/* å½©è‰²è¡¨:è°ƒè‰²æ¿ */
 typedef struct RGB {
-	U8 b;    // À¶É«Ç¿¶È
-	U8 g;    // ÂÌÉ«Ç¿¶È
-	U8 r;    // ºìÉ«Ç¿¶È
-	U8 rgbReversed; // ±£ÁôÖµ
+	U8 b;    // è“è‰²å¼ºåº¦
+	U8 g;    // ç»¿è‰²å¼ºåº¦
+	U8 r;    // çº¢è‰²å¼ºåº¦
+	U8 rgbReversed; // ä¿ç•™å€¼
 } RGB;
 
 
 int drawImage(char *name) {
-	BMPFILEHEADER bmpFileHeader;  // ¶¨ÒåÒ»¸ö BMP ÎÄ¼şÍ·µÄ½á¹¹Ìå
-	BMPINF bmpInfo;               // ¶¨ÒåÒ»¸ö BMP ÎÄ¼şĞÅÏ¢½á¹¹Ìå
+	BMPFILEHEADER bmpFileHeader;  // å®šä¹‰ä¸€ä¸ª BMP æ–‡ä»¶å¤´çš„ç»“æ„ä½“
+	BMPINF bmpInfo;               // å®šä¹‰ä¸€ä¸ª BMP æ–‡ä»¶ä¿¡æ¯ç»“æ„ä½“
 	FIL f;
 	FRESULT res;
 	UINT br;
 	if ((res = f_open(&f, name, FA_READ)) != FR_OK) {
-		printf("ÔÙ¼û\n");
+		printf("å†è§\n");
 		return 1;
 	}
 
@@ -56,33 +56,33 @@ int drawImage(char *name) {
 	if ((res = f_read(&f, &bmpInfo, sizeof(bmpInfo), &br)) != FR_OK)
 		goto exit;
 	/*
-	// Êä³öBMPÎÄ¼şµÄÎ»Í¼ÎÄ¼şÍ·µÄËùÓĞĞÅÏ¢
-	printf("Î»Í¼ÎÄ¼şÍ·Ö÷ÒªÊÇ¶ÔÎ»Í¼ÎÄ¼şµÄÒ»Ğ©ÃèÊö:BMPFileHeader\n\n");
-	printf("ÎÄ¼ş±êÊ¶·û = %#X\n", bmpFileHeader.bType);
-	printf("BMP ÎÄ¼ş´óĞ¡ = %d ×Ö½Ú\n", bmpFileHeader.bSize);
-	printf("±£ÁôÖµ1 = %d \n", bmpFileHeader.bReserved1);
-	printf("±£ÁôÖµ2 = %d \n", bmpFileHeader.bReserved2);
-	printf("ÎÄ¼şÍ·µÄ×îºóµ½Í¼ÏñÊı¾İÎ»¿ªÊ¼µÄÆ«ÒÆÁ¿ = %d ×Ö½Ú\n", bmpFileHeader.bOffset);
+	// è¾“å‡ºBMPæ–‡ä»¶çš„ä½å›¾æ–‡ä»¶å¤´çš„æ‰€æœ‰ä¿¡æ¯
+	printf("ä½å›¾æ–‡ä»¶å¤´ä¸»è¦æ˜¯å¯¹ä½å›¾æ–‡ä»¶çš„ä¸€äº›æè¿°:BMPFileHeader\n\n");
+	printf("æ–‡ä»¶æ ‡è¯†ç¬¦ = %#X\n", bmpFileHeader.bType);
+	printf("BMP æ–‡ä»¶å¤§å° = %d å­—èŠ‚\n", bmpFileHeader.bSize);
+	printf("ä¿ç•™å€¼1 = %d \n", bmpFileHeader.bReserved1);
+	printf("ä¿ç•™å€¼2 = %d \n", bmpFileHeader.bReserved2);
+	printf("æ–‡ä»¶å¤´çš„æœ€ååˆ°å›¾åƒæ•°æ®ä½å¼€å§‹çš„åç§»é‡ = %d å­—èŠ‚\n", bmpFileHeader.bOffset);
 
-	// Êä³öBMPÎÄ¼şµÄÎ»Í¼ĞÅÏ¢Í·µÄËùÓĞĞÅÏ¢
-	printf("\n\nÎ»Í¼ĞÅÏ¢Í·Ö÷ÒªÊÇ¶ÔÎ»Í¼Í¼Ïñ·½ÃæĞÅÏ¢µÄÃèÊö:BMPInfo\n\n");
-	printf("ĞÅÏ¢Í·µÄ´óĞ¡ = %d ×Ö½Ú\n", bmpInfo.bInfoSize);
-	printf("Î»Í¼µÄ¸ß¶È = %d \n", bmpInfo.bHeight);
-	printf("Î»Í¼µÄ¿í¶È = %d \n", bmpInfo.bWidth);
-	printf("Í¼ÏñµÄÎ»ÃæÊı(Î»ÃæÊıÊÇµ÷É«°åµÄÊıÁ¿,Ä¬ÈÏÎª1¸öµ÷É«°å) = %d \n", bmpInfo.bPlanes);
-	printf("Ã¿¸öÏñËØµÄÎ»Êı = %d Î»\n", bmpInfo.bBitCount);
-	printf("Ñ¹ËõÀàĞÍ = %d \n", bmpInfo.bCompression);
-	printf("Í¼ÏñµÄ´óĞ¡ = %d ×Ö½Ú\n", bmpInfo.bmpImageSize);
-	printf("Ë®Æ½·Ö±æÂÊ = %d \n", bmpInfo.bXPelsPerMeter);
-	printf("´¹Ö±·Ö±æÂÊ = %d \n", bmpInfo.bYPelsPerMeter);
-	printf("Ê¹ÓÃµÄÉ«²ÊÊı = %d \n", bmpInfo.bClrUsed);
-	printf("ÖØÒªµÄÉ«²ÊÊı = %d \n", bmpInfo.bClrImportant);
+	// è¾“å‡ºBMPæ–‡ä»¶çš„ä½å›¾ä¿¡æ¯å¤´çš„æ‰€æœ‰ä¿¡æ¯
+	printf("\n\nä½å›¾ä¿¡æ¯å¤´ä¸»è¦æ˜¯å¯¹ä½å›¾å›¾åƒæ–¹é¢ä¿¡æ¯çš„æè¿°:BMPInfo\n\n");
+	printf("ä¿¡æ¯å¤´çš„å¤§å° = %d å­—èŠ‚\n", bmpInfo.bInfoSize);
+	printf("ä½å›¾çš„é«˜åº¦ = %d \n", bmpInfo.bHeight);
+	printf("ä½å›¾çš„å®½åº¦ = %d \n", bmpInfo.bWidth);
+	printf("å›¾åƒçš„ä½é¢æ•°(ä½é¢æ•°æ˜¯è°ƒè‰²æ¿çš„æ•°é‡,é»˜è®¤ä¸º1ä¸ªè°ƒè‰²æ¿) = %d \n", bmpInfo.bPlanes);
+	printf("æ¯ä¸ªåƒç´ çš„ä½æ•° = %d ä½\n", bmpInfo.bBitCount);
+	printf("å‹ç¼©ç±»å‹ = %d \n", bmpInfo.bCompression);
+	printf("å›¾åƒçš„å¤§å° = %d å­—èŠ‚\n", bmpInfo.bmpImageSize);
+	printf("æ°´å¹³åˆ†è¾¨ç‡ = %d \n", bmpInfo.bXPelsPerMeter);
+	printf("å‚ç›´åˆ†è¾¨ç‡ = %d \n", bmpInfo.bYPelsPerMeter);
+	printf("ä½¿ç”¨çš„è‰²å½©æ•° = %d \n", bmpInfo.bClrUsed);
+	printf("é‡è¦çš„è‰²å½©æ•° = %d \n", bmpInfo.bClrImportant);
 
-	printf("\n\n\nÑ¹ËõËµÃ÷£ºÓĞ0£¨²»Ñ¹Ëõ£©£¬1£¨RLE 8£¬8Î»RLEÑ¹Ëõ£©£¬2£¨RLE 4£¬4Î»RLEÑ¹Ëõ£¬3£¨Bitfields£¬Î»Óò´æ·Å£©");
+	printf("\n\n\nå‹ç¼©è¯´æ˜ï¼šæœ‰0ï¼ˆä¸å‹ç¼©ï¼‰ï¼Œ1ï¼ˆRLE 8ï¼Œ8ä½RLEå‹ç¼©ï¼‰ï¼Œ2ï¼ˆRLE 4ï¼Œ4ä½RLEå‹ç¼©ï¼Œ3ï¼ˆBitfieldsï¼Œä½åŸŸå­˜æ”¾ï¼‰");
 	*/
 	if (bmpInfo.bBitCount != 24)
 		goto exit;
-	int totalSize = (bmpInfo.bWidth * bmpInfo.bBitCount / 8 + 3) / 4 * 4 * bmpInfo.bHeight; //¼ÆËã×Ü×Ö½ÚÊı£¨4×Ö½Ú¶ÔÆë£©
+	int totalSize = (bmpInfo.bWidth * bmpInfo.bBitCount / 8 + 3) / 4 * 4 * bmpInfo.bHeight; //è®¡ç®—æ€»å­—èŠ‚æ•°ï¼ˆ4å­—èŠ‚å¯¹é½ï¼‰
 	RGB rgb;
 	char buf[3 * 480];
 

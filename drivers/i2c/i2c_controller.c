@@ -3,7 +3,7 @@
 
 #define I2C_CONTROLLER_NUM 10
 
-/* ÓĞÒ»¸öi2c_controllerÊı×éÓÃÀ´´æ·Å¸÷ÖÖ²»Í¬Ğ¾Æ¬µÄ²Ù×÷½á¹¹Ìå */
+/* æœ‰ä¸€ä¸ªi2c_controlleræ•°ç»„ç”¨æ¥å­˜æ”¾å„ç§ä¸åŒèŠ¯ç‰‡çš„æ“ä½œç»“æ„ä½“ */
 static p_i2c_controller p_i2c_controllers[I2C_CONTROLLER_NUM];
 static p_i2c_controller p_i2c_con_selected;
 
@@ -18,7 +18,7 @@ void register_i2c_controller(p_i2c_controller *p) {
 	}
 }
 
-/* ¸ù¾İÃû×ÖÀ´Ñ¡ÔñÄ³¿îI2C¿ØÖÆÆ÷ */
+/* æ ¹æ®åå­—æ¥é€‰æ‹©æŸæ¬¾I2Cæ§åˆ¶å™¨ */
 int select_i2c_controller(char *name) {
 	int i;
 	for (i = 0; i < I2C_CONTROLLER_NUM; i++) {
@@ -30,7 +30,7 @@ int select_i2c_controller(char *name) {
 	return -1;
 }
 
-/* ÊµÏÖ i2c_transfer ½Ó¿Úº¯Êı */
+/* å®ç° i2c_transfer æ¥å£å‡½æ•° */
 
 int i2c_transfer(p_i2c_msg msgs, int num) {
 	return p_i2c_con_selected->master_xfer(msgs, num);
@@ -38,13 +38,13 @@ int i2c_transfer(p_i2c_msg msgs, int num) {
 
 
 void i2c_init(void) {
-	/* ×¢²áÏÂÃæµÄI2C¿ØÖÆÆ÷ */
+	/* æ³¨å†Œä¸‹é¢çš„I2Cæ§åˆ¶å™¨ */
 	s3c2440_i2c_con_add();
 
-	/* Ñ¡ÔñÄ³¿îI2C¿ØÖÆÆ÷ */
+	/* é€‰æ‹©æŸæ¬¾I2Cæ§åˆ¶å™¨ */
 	select_i2c_controller("s3c2440");
 
-	/* µ÷ÓÃËüµÄinitº¯Êı */
+	/* è°ƒç”¨å®ƒçš„initå‡½æ•° */
 	p_i2c_con_selected->init();
 }
 

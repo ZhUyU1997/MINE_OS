@@ -264,7 +264,7 @@
 #define GSTATUS1		(*(volatile unsigned long *)0x560000B0)
 
 
-/* 下面内容来自mini2440 bsp 2440addr.h */
+/* 涓嬮潰鍐呭鏉ヨ嚜mini2440 bsp 2440addr.h */
 
 // Memory control 
 #define rBWSCON    (*(volatile unsigned *)0x48000000)	//Bus width & wait status

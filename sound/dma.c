@@ -41,7 +41,7 @@ void set_dma_end_func(int (*f)()) {
 }
 
 void dma_init() {
-	//TODO:µÈ´ýDMA´«ÊäÍê±Ï£¬
+	//TODO:ç­‰å¾…DMAä¼ è¾“å®Œæ¯•ï¼Œ
 	while (!dma_can_run());
 	if (dma_status == DMA_INIT)
 		return;
@@ -64,15 +64,15 @@ void dma_set(unsigned int src, unsigned int len) {
 	assert(src && (len < 0x100000) && (dma_status != DMA_RUN));
 	if (src && (len < 0x100000) && (dma_status != DMA_RUN)) {
 		dma_regs.dstat		= 0;
-		dma_regs.disrc      = src;				/* Ô´µÄÎïÀíµØÖ· */
-		dma_regs.disrcc     = (0 << 1) | (0 << 0);	/* Ô´Î»ÓÚAHB×ÜÏß, Ô´µØÖ·µÝÔö */
-		dma_regs.didst      = 0x55000010;		/* Ä¿µÄµÄÎïÀíµØÖ· */
-		dma_regs.didstc     = (0 << 2) | (1 << 1) | (1 << 0);	/* Ä¿µÄÎ»ÓÚAPB×ÜÏß, Ä¿µÄµØÖ·²»±ä */
-		dma_regs.dcon       = (1 << 31) | (0 << 30) | (1 << 29) | (0 << 28) | (0 << 27) | (0 << 24) | (1 << 23) | (1 << 23) | (1 << 22) | (1 << 20) | (len / 2);	/* Ê¹ÄÜÖÐ¶Ï,µ¥¸ö´«Êä,Ó²¼þ´¥·¢ */
+		dma_regs.disrc      = src;				/* æºçš„ç‰©ç†åœ°å€ */
+		dma_regs.disrcc     = (0 << 1) | (0 << 0);	/* æºä½äºŽAHBæ€»çº¿, æºåœ°å€é€’å¢ž */
+		dma_regs.didst      = 0x55000010;		/* ç›®çš„çš„ç‰©ç†åœ°å€ */
+		dma_regs.didstc     = (0 << 2) | (1 << 1) | (1 << 0);	/* ç›®çš„ä½äºŽAPBæ€»çº¿, ç›®çš„åœ°å€ä¸å˜ */
+		dma_regs.dcon       = (1 << 31) | (0 << 30) | (1 << 29) | (0 << 28) | (0 << 27) | (0 << 24) | (1 << 23) | (1 << 23) | (1 << 22) | (1 << 20) | (len / 2);	/* ä½¿èƒ½ä¸­æ–­,å•ä¸ªä¼ è¾“,ç¡¬ä»¶è§¦å‘ */
 		dma_status = DMA_READY;
 	}
 }
-//ÔÝÊ±²»ÊµÏÖ
+//æš‚æ—¶ä¸å®žçŽ°
 //void dma_stop(void)
 //{
 //}
@@ -81,7 +81,7 @@ void DMA2IntHandle(void) {
 	dma_status = DMA_FINISH;
 	if (dma_end_func) {
 		int ret = dma_end_func();
-		//Èç¹û¼ÌÐøDMAÄÇÃ´²»Ö´ÐÐdma_exit
+		//å¦‚æžœç»§ç»­DMAé‚£ä¹ˆä¸æ‰§è¡Œdma_exit
 		if (ret == 1)
 			return;
 	}

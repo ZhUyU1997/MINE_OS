@@ -146,7 +146,7 @@ void IsrDma2(void) {
 		totalDmaCount += dwWillDMACnt;
 	dwUSBBufWritePtr = ((dwUSBBufWritePtr + dwWillDMACnt - dwUSBBufBase) % dwUSBBufSize) + dwUSBBufBase;
 
-	if (totalDmaCount >= downloadFileSize) {//´«ÊäÍê±Ï
+	if (totalDmaCount >= downloadFileSize) {//ä¼ è¾“å®Œæ¯•
 		totalDmaCount = downloadFileSize;
 		ConfigEp3IntMode();
 		if (out_csr3 & EPO_OUT_PKT_READY) {
@@ -154,7 +154,7 @@ void IsrDma2(void) {
 		}
 		INTMSK_clr(INT_DMA2);
 		INTMSK_set(INT_USBD);
-	} else {//´«ÊäÎ´Íê³É
+	} else {//ä¼ è¾“æœªå®Œæˆ
 		if ((totalDmaCount + 0x80000) < downloadFileSize) {
 			dwWillDMACnt = 0x80000;
 		} else {

@@ -8,7 +8,7 @@
 #define PAGE_TO_BLOCK(page) ((page)>>PAGE_TO_BLOCK_SHIFT)
 #define BLOCK_TO_PAGE(block) ((block)<<BLOCK_TO_PAGE_SHIFT)
 
-/* NAND FLASH¿ØÖÆÆ÷ */
+/* NAND FLASHæŽ§åˆ¶å™¨ */
 #define NFCONF (*((volatile unsigned long *)0x4E000000))
 #define NFCONT (*((volatile unsigned long *)0x4E000004))
 #define NFCMMD (*((volatile unsigned char *)0x4E000008))
@@ -16,18 +16,18 @@
 #define NFDATA (*((volatile unsigned char *)0x4E000010))
 #define NFSTAT (*((volatile unsigned char *)0x4E000020))
 
-#define CMD_READ1	0x00				//Ò³¶ÁÃüÁîÖÜÆÚ1
-#define CMD_READ2	0x30				//Ò³¶ÁÃüÁîÖÜÆÚ2
-#define CMD_READID	0x90				//¶ÁIDÃüÁî
-#define CMD_WRITE1	0x80				//Ò³Ð´ÃüÁîÖÜÆÚ1
-#define CMD_WRITE2	0x10				//Ò³Ð´ÃüÁîÖÜÆÚ2
-#define CMD_ERASE1	0x60				//¿é²Á³ýÃüÁîÖÜÆÚ1
-#define CMD_ERASE2	0xd0				//¿é²Á³ýÃüÁîÖÜÆÚ2
-#define CMD_STATUS	0x70				//¶Á×´Ì¬ÃüÁî
-#define CMD_RESET	0xff				//¸´Î»
-#define CMD_RANDOMREAD1	0x05			//ËæÒâ¶ÁÃüÁîÖÜÆÚ1
-#define CMD_RANDOMREAD2	0xE0			//ËæÒâ¶ÁÃüÁîÖÜÆÚ2
-#define CMD_RANDOMWRITE	0x85			//ËæÒâÐ´ÃüÁî
+#define CMD_READ1	0x00				//é¡µè¯»å‘½ä»¤å‘¨æœŸ1
+#define CMD_READ2	0x30				//é¡µè¯»å‘½ä»¤å‘¨æœŸ2
+#define CMD_READID	0x90				//è¯»IDå‘½ä»¤
+#define CMD_WRITE1	0x80				//é¡µå†™å‘½ä»¤å‘¨æœŸ1
+#define CMD_WRITE2	0x10				//é¡µå†™å‘½ä»¤å‘¨æœŸ2
+#define CMD_ERASE1	0x60				//å—æ“¦é™¤å‘½ä»¤å‘¨æœŸ1
+#define CMD_ERASE2	0xd0				//å—æ“¦é™¤å‘½ä»¤å‘¨æœŸ2
+#define CMD_STATUS	0x70				//è¯»çŠ¶æ€å‘½ä»¤
+#define CMD_RESET	0xff				//å¤ä½
+#define CMD_RANDOMREAD1	0x05			//éšæ„è¯»å‘½ä»¤å‘¨æœŸ1
+#define CMD_RANDOMREAD2	0xE0			//éšæ„è¯»å‘½ä»¤å‘¨æœŸ2
+#define CMD_RANDOMWRITE	0x85			//éšæ„å†™å‘½ä»¤
 
 static void nand_reset(void);
 
@@ -35,9 +35,9 @@ void nand_init_ll(void) {
 #define TACLS   0
 #define TWRPH0  1
 #define TWRPH1  0
-	/* ÉèÖÃÊ±Ðò */
+	/* è®¾ç½®æ—¶åº */
 	NFCONF = (TACLS<<12)|(TWRPH0<<8)|(TWRPH1<<4);
-	/* Ê¹ÄÜNAND Flash¿ØÖÆÆ÷, ³õÊ¼»¯ECC, ½ûÖ¹Æ¬Ñ¡ */
+	/* ä½¿èƒ½NAND FlashæŽ§åˆ¶å™¨, åˆå§‹åŒ–ECC, ç¦æ­¢ç‰‡é€‰ */
 	NFCONT = (1<<4)|(1<<1)|(1<<0);
 	nand_reset();
 }
@@ -101,10 +101,10 @@ static unsigned char nand_read_data(void) {
 	return NFDATA;
 }
 
-/* ¸´Î» */
+/* å¤ä½ */
 static void nand_reset(void) {
 	nand_select();
-	nand_cmd(CMD_RESET);  // ¸´Î»ÃüÁî
+	nand_cmd(CMD_RESET);  // å¤ä½å‘½ä»¤
 	nand_wait_ready();
 	nand_deselect();
 }
@@ -115,21 +115,21 @@ static int nand_is_bad_block(unsigned int block_number) {
 	unsigned char val1,val2;
 
 	
-	nand_select();		/* 1. Ñ¡ÖÐ */
-	nand_cmd(CMD_READ1);		/* 2. ·¢³ö¶ÁÃüÁî00h */
+	nand_select();		/* 1. é€‰ä¸­ */
+	nand_cmd(CMD_READ1);		/* 2. å‘å‡ºè¯»å‘½ä»¤00h */
 
-	/* 3. ·¢³öµØÖ·(·Ö5²½·¢³ö) */
+	/* 3. å‘å‡ºåœ°å€(åˆ†5æ­¥å‘å‡º) */
 	nand_col(col);
 	nand_page(page);
 
 	
-	nand_cmd(CMD_READ2);		/* 4. ·¢³ö¶ÁÃüÁî30h */
-	nand_wait_ready();/* 5. ÅÐ¶Ï×´Ì¬ */
+	nand_cmd(CMD_READ2);		/* 4. å‘å‡ºè¯»å‘½ä»¤30h */
+	nand_wait_ready();/* 5. åˆ¤æ–­çŠ¶æ€ */
 
-	/* 6. ¶ÁÊý¾Ý */
+	/* 6. è¯»æ•°æ® */
 	val1 = nand_read_data();
 	val2 = nand_read_data();
-	/* 7. È¡ÏûÑ¡ÖÐ */
+	/* 7. å–æ¶ˆé€‰ä¸­ */
 	nand_deselect();
 
 	if ((val1 == 0xff)&&(val2 == 0xff))
@@ -144,28 +144,28 @@ void nand_read_ll(unsigned char *buf,unsigned int addr , unsigned int len) {
 	int i = 0;
 
 	while (i < len) {
-		/* Ò»¸öblockÖ»ÅÐ¶ÏÒ»´Î */
-		if (!(addr & 0x1FFFF)) { //¶Áµ½ÐÂµÄblock
+		/* ä¸€ä¸ªblockåªåˆ¤æ–­ä¸€æ¬¡ */
+		if (!(addr & 0x1FFFF)) { //è¯»åˆ°æ–°çš„block
 			if(nand_is_bad_block(addr)){
-				addr += (128*1024);  /* Ìø¹ýµ±Ç°block */
+				addr += (128*1024);  /* è·³è¿‡å½“å‰block */
 				continue;
 			}
 		}
 
-		nand_select();			/* 1. Ñ¡ÖÐ */
-		nand_cmd(CMD_READ1);	/* 2. ·¢³ö¶ÁÃüÁî00h */
-		nand_addr(addr);		/* 3. ·¢³öµØÖ·(·Ö5²½·¢³ö) */
-		nand_cmd(CMD_READ2);	/* 4. ·¢³ö¶ÁÃüÁî30h */
-		nand_wait_ready();		/* 5. ÅÐ¶Ï×´Ì¬ */
+		nand_select();			/* 1. é€‰ä¸­ */
+		nand_cmd(CMD_READ1);	/* 2. å‘å‡ºè¯»å‘½ä»¤00h */
+		nand_addr(addr);		/* 3. å‘å‡ºåœ°å€(åˆ†5æ­¥å‘å‡º) */
+		nand_cmd(CMD_READ2);	/* 4. å‘å‡ºè¯»å‘½ä»¤30h */
+		nand_wait_ready();		/* 5. åˆ¤æ–­çŠ¶æ€ */
 
-		/* 6. ¶ÁÊý¾Ý */
+		/* 6. è¯»æ•°æ® */
 		for (col=0 ; (col < 2048) && (i < len); col++) {
 			buf[i] = nand_read_data();
 			i++;
 			addr++;
 		}
 		
-		nand_deselect();/* 7. È¡ÏûÑ¡ÖÐ */
+		nand_deselect();/* 7. å–æ¶ˆé€‰ä¸­ */
 
 	}
 }

@@ -3,15 +3,15 @@
 #include <interrupt.h>
 #include <timer.h>
 /*
- * ÏÈÐ´TCNTBn,TCMPBn£¬ÔÚÆô¶¯ÊÖ¶¯¸üÐÂ£¬¶ø²»ÊÇÆô¶¯ÊÖ¶¯¸üÐÂ£¬ÔÙÐ´¼Ä´æÆ÷
+ * å…ˆå†™TCNTBn,TCMPBnï¼Œåœ¨å¯åŠ¨æ‰‹åŠ¨æ›´æ–°ï¼Œè€Œä¸æ˜¯å¯åŠ¨æ‰‹åŠ¨æ›´æ–°ï¼Œå†å†™å¯„å­˜å™¨
  */
 
 void timer_init() {
 	TCFG0 = 0;
 	TCFG1 = 0;
 	TCON  = 0;
-	TCFG0 |= (124);		//¶¨Ê±Æ÷ 0£¬1 µÄÔ¤·ÖÆµÖµ
-	TCFG0 |= (24 << 8);	//¶¨Ê±Æ÷ 2£¬3 ºÍ 4 µÄÔ¤·ÖÆµÖµ
+	TCFG0 |= (124);		//å®šæ—¶å™¨ 0ï¼Œ1 çš„é¢„åˆ†é¢‘å€¼
+	TCFG0 |= (24 << 8);	//å®šæ—¶å™¨ 2ï¼Œ3 å’Œ 4 çš„é¢„åˆ†é¢‘å€¼
 }
 
 static void tick_irq_hander();
@@ -19,21 +19,21 @@ static unsigned int delta_time = 0;
 
 void init_tick(unsigned int time, void (*handle)()) {
 	assert(time <= 0xffff);
-	//TCON:¶¨Ê±Æ÷¿ØÖÆ¼Ä´æÆ÷
-	TCON &= ~(1 << 20);		//Æô¶¯
+	//TCON:å®šæ—¶å™¨æŽ§åˆ¶å¯„å­˜å™¨
+	TCON &= ~(1 << 20);		//å¯åŠ¨
 	free_irq(INT_TIMER4);
-	TCON &= ~(7 << 20);	//Çå¿Õ20~21Î»
-	TCON |= (1 << 22);		//¶¨Ê±Æ÷4¼äÏ¶Ä£Ê½/×Ô¶¯ÖØÔØ
-	//TCONB4:¶¨Ê±Æ÷4¼ÆÊý»º³å¼Ä´æÆ÷
+	TCON &= ~(7 << 20);	//æ¸…ç©º20~21ä½
+	TCON |= (1 << 22);		//å®šæ—¶å™¨4é—´éš™æ¨¡å¼/è‡ªåŠ¨é‡è½½
+	//TCONB4:å®šæ—¶å™¨4è®¡æ•°ç¼“å†²å¯„å­˜å™¨
 
 	TCNTB4 = delta_time = time;
-	TCON |= (1 << 21);		//¶¨Ê±Æ÷4ÊÖ¶¯¸üÐÂTCNTB4
-	TCON &= ~(1 << 21);		//¶¨Ê±Æ÷4È¡ÏûÊÖ¶¯¸üÐÂ
+	TCON |= (1 << 21);		//å®šæ—¶å™¨4æ‰‹åŠ¨æ›´æ–°TCNTB4
+	TCON &= ~(1 << 21);		//å®šæ—¶å™¨4å–æ¶ˆæ‰‹åŠ¨æ›´æ–°
 	if (handle)
 		request_irq(INT_TIMER4, handle);
 	else
 		request_irq(INT_TIMER4, tick_irq_hander);
-	TCON |= (1 << 20);		//Æô¶¯
+	TCON |= (1 << 20);		//å¯åŠ¨
 }
 
 static volatile unsigned long long tick = 0;
@@ -57,7 +57,7 @@ static void tick_irq_hander() {
 static void (*timer_handle)() = 0;
 
 static void timer_handler() {
-	TCON &= ~(1 << 8); //¹Ø±Õ
+	TCON &= ~(1 << 8); //å…³é—­
 	free_irq(INT_TIMER1);
 	if (timer_handle)
 		timer_handle();
@@ -67,62 +67,62 @@ void set_timer(unsigned int time, void (*handle)()) {
 	assert((100 * time <= 0xffff) && handle);
 	if (!handle)
 		return;
-	TCON &= ~(1 << 8); //¹Ø±Õ
+	TCON &= ~(1 << 8); //å…³é—­
 	free_irq(INT_TIMER1);
-	//TCON:¶¨Ê±Æ÷¿ØÖÆ¼Ä´æÆ÷
+	//TCON:å®šæ—¶å™¨æŽ§åˆ¶å¯„å­˜å™¨
 	TCFG1 &= ~(15 << 4);
 	TCFG1 |= 1 << 4;
-	TCON &= ~(15 << 8);	//Çå¿Õ8~11Î»
-	TCON &= ~(1 << 11);		//¶¨Ê±Æ÷1µ¥ÎÈÌ¬
+	TCON &= ~(15 << 8);	//æ¸…ç©º8~11ä½
+	TCON &= ~(1 << 11);		//å®šæ—¶å™¨1å•ç¨³æ€
 
-	//TCONB1:¶¨Ê±Æ÷1¼ÆÊý»º³å¼Ä´æÆ÷
+	//TCONB1:å®šæ—¶å™¨1è®¡æ•°ç¼“å†²å¯„å­˜å™¨
 	TCNTB1 = 100 * time;
 	TCMPB1 = 0;
-	TCON |= (1 << 9);		//¶¨Ê±Æ÷1ÊÖ¶¯¸üÐÂTCNTB1ºÍTCMPB1
-	TCON &= ~(1 << 9);		//¶¨Ê±Æ÷1È¡ÏûÊÖ¶¯¸üÐÂ
+	TCON |= (1 << 9);		//å®šæ—¶å™¨1æ‰‹åŠ¨æ›´æ–°TCNTB1å’ŒTCMPB1
+	TCON &= ~(1 << 9);		//å®šæ—¶å™¨1å–æ¶ˆæ‰‹åŠ¨æ›´æ–°
 	timer_handle = handle;
 	request_irq(INT_TIMER1, timer_handler);
-	TCON |= (1 << 8);		//Æô¶¯
+	TCON |= (1 << 8);		//å¯åŠ¨
 }
 
 void close_timer() {
-	TCON &= ~(1 << 8); //¹Ø±Õ
+	TCON &= ~(1 << 8); //å…³é—­
 	free_irq(INT_TIMER1);
 }
 
 static volatile int delay_end = 0;
 static void delay_irq_hander() {
-	TCON &= ~(1 << 12); //¶¨Ê±Æ÷¹Ø±Õ
+	TCON &= ~(1 << 12); //å®šæ—¶å™¨å…³é—­
 	free_irq(INT_TIMER2);
 	delay_end = 1;
 }
 void delay_u(unsigned int delay_time) {
 	assert(delay_time <= 0xffff);
-	TCON &= ~(1 << 12); //¹Ø±Õ
+	TCON &= ~(1 << 12); //å…³é—­
 	free_irq(INT_TIMER2);
 
 	if (delay_time > 0xffff)
 		delay_time = 0xffff;
 
 
-	//TCON:¶¨Ê±Æ÷¿ØÖÆ¼Ä´æÆ÷
-	TCON &= ~(0x0f << 12);	//Çå¿Õ12~11Î»
-	TCON &= ~(1 << 15);		//¶¨Ê±Æ÷2µ¥ÎÈÌ¬
+	//TCON:å®šæ—¶å™¨æŽ§åˆ¶å¯„å­˜å™¨
+	TCON &= ~(0x0f << 12);	//æ¸…ç©º12~11ä½
+	TCON &= ~(1 << 15);		//å®šæ—¶å™¨2å•ç¨³æ€
 
-	//TCONB2:¶¨Ê±Æ÷2¼ÆÊý»º³å¼Ä´æÆ÷
+	//TCONB2:å®šæ—¶å™¨2è®¡æ•°ç¼“å†²å¯„å­˜å™¨
 	TCNTB2 = delay_time;
 	TCMPB3 = 0;
-	TCON |= (1 << 13);		//¶¨Ê±Æ÷2ÊÖ¶¯¸üÐÂTCNTB2ºÍTCMPB2
-	TCON &= ~(1 << 13);		//¶¨Ê±Æ÷2È¡ÏûÊÖ¶¯¸üÐÂ
+	TCON |= (1 << 13);		//å®šæ—¶å™¨2æ‰‹åŠ¨æ›´æ–°TCNTB2å’ŒTCMPB2
+	TCON &= ~(1 << 13);		//å®šæ—¶å™¨2å–æ¶ˆæ‰‹åŠ¨æ›´æ–°
 #if 1
 	request_irq(INT_TIMER2, delay_irq_hander);
 	delay_end = 0;
-	TCON |= (1 << 12);		//Æô¶¯
+	TCON |= (1 << 12);		//å¯åŠ¨
 	while (!delay_end);
 #else
-	//Ö®ËùÒÔÌá¹©ÎÞÖÐ¶Ï°æ±¾£¬ÊÇ·ÀÖ¹ÖÐ¶ÏÆÁ±ÎµÈÇé¿ö£¬·½±ã²âÊÔ
-	TCON |= (1 << 12);		//Æô¶¯
-	//ÓÐÊ±Æô¶¯ºóTCNTO2ÎÞ·¨Á¢¼´¸üÐÂ£¬ËùÒÔ1usÑÓ³Ù
+	//ä¹‹æ‰€ä»¥æä¾›æ— ä¸­æ–­ç‰ˆæœ¬ï¼Œæ˜¯é˜²æ­¢ä¸­æ–­å±è”½ç­‰æƒ…å†µï¼Œæ–¹ä¾¿æµ‹è¯•
+	TCON |= (1 << 12);		//å¯åŠ¨
+	//æœ‰æ—¶å¯åŠ¨åŽTCNTO2æ— æ³•ç«‹å³æ›´æ–°ï¼Œæ‰€ä»¥1uså»¶è¿Ÿ
 	udelay(1);
 	while (TCNTO2);
 #endif

@@ -1,8 +1,8 @@
 #include "irda_raw.h"
 
 /*
- * ´Ó»·ĞÍ»º³åÇøÖĞ»ñµÃÂö³åÊı¾İ,
- * ½âÎöµÃ³öaddress, data
+ * ä»ç¯å‹ç¼“å†²åŒºä¸­è·å¾—è„‰å†²æ•°æ®,
+ * è§£æå¾—å‡ºaddress, data
  */
 
 #define DURATION_BASE  563
@@ -24,7 +24,7 @@ static int duration_in_margin(int duration, int us) {
 }
 
 /*
- * ·µ»ØÖµ: 0-µÃµ½Êı¾İ, 1-µÃµ½ÖØ¸´Âë, -1 : Ê§°Ü
+ * è¿”å›å€¼: 0-å¾—åˆ°æ•°æ®, 1-å¾—åˆ°é‡å¤ç , -1 : å¤±è´¥
  */
 int irda_nec_read(int *address, int *data) {
 	irda_raw_event event;
@@ -34,34 +34,34 @@ int irda_nec_read(int *address, int *data) {
 
 	if (ir_event_get(&event))
 		return -1;
-	/* ½âÎöÊı¾İ */
-	/* 1. ÅĞ¶ÏÊÇ·ñÎª9MSµÄµÍÂö³å */
+	/* è§£ææ•°æ® */
+	/* 1. åˆ¤æ–­æ˜¯å¦ä¸º9MSçš„ä½è„‰å†² */
 	if (!(event.pol == 0 && duration_in_margin(event.duration, DURATION_HEAD_LOW)))
-		return -1; /* ÓĞĞ§Êı¾İÎ´¿ªÊ¼ */
-	/* 2. ¶ÁÏÂÒ»¸ö¸ßÂö³åÊı¾İ */
+		return -1; /* æœ‰æ•ˆæ•°æ®æœªå¼€å§‹ */
+	/* 2. è¯»ä¸‹ä¸€ä¸ªé«˜è„‰å†²æ•°æ® */
 	if (ir_event_get_timeout(&event, 10000))
 		return -1;
-	/* 3. ÅĞ¶ÏËüÊÇ·ñ4.5msµÄ¸ßÂö³å»òÕß 2.25msµÄ¸ßÂö³å */
-	if (event.pol == 1 && duration_in_margin(event.duration, DURATION_REPEAT_HIGH)) {/* 2.25msµÄ¸ßÂö³å */
+	/* 3. åˆ¤æ–­å®ƒæ˜¯å¦4.5msçš„é«˜è„‰å†²æˆ–è€… 2.25msçš„é«˜è„‰å†² */
+	if (event.pol == 1 && duration_in_margin(event.duration, DURATION_REPEAT_HIGH)) {/* 2.25msçš„é«˜è„‰å†² */
 		if (ir_event_get_timeout(&event, 1000))
 			return -1;
-		/* ½áÊøÂö³å */
+		/* ç»“æŸè„‰å†² */
 		if (!(event.pol == 0 && duration_in_margin(event.duration, DURATION_END_LOW)))
 			return -1;  
-		return 1;  /* ÖØ¸´Âë */
+		return 1;  /* é‡å¤ç  */
 	}else if (!(event.pol == 1 && duration_in_margin(event.duration, DURATION_HEAD_HIGH))) {
 		return -1;
 	}
 
-	/* 4.5msµÄ¸ßÂö³å */
-	/* 4. ÖØ¸´½âÎö32Î»Êı¾İ */
+	/* 4.5msçš„é«˜è„‰å†² */
+	/* 4. é‡å¤è§£æ32ä½æ•°æ® */
 	for (int i = 0; i < 32; i++) {
-		/* 5. ¶Á0.56msµÄµÍÂö³å */
+		/* 5. è¯»0.56msçš„ä½è„‰å†² */
 		if (ir_event_get_timeout(&event, 10000))
 			return -1;
 		if (!(event.pol == 0 && duration_in_margin(event.duration, DURATION_DATA_LOW)))
 			return -1;
-		/* 6. ¶ÁÏÂÒ»¸öÊı¾İ, ÅĞ¶ÏËüÊÇ 0.56ms/1.68msµÄ¸ßÂö³å */
+		/* 6. è¯»ä¸‹ä¸€ä¸ªæ•°æ®, åˆ¤æ–­å®ƒæ˜¯ 0.56ms/1.68msçš„é«˜è„‰å†² */
 		if (ir_event_get_timeout(&event, 10000))
 			return -1;
 		if (event.pol == 1 && duration_in_margin(event.duration, DURATION_DATA1_HIGH)) {
@@ -74,16 +74,16 @@ int irda_nec_read(int *address, int *data) {
 	}
 	if (ir_event_get_timeout(&event, 1000))
 		return -1;
-	/* ½áÊøÂö³å */
+	/* ç»“æŸè„‰å†² */
 	if (!(event.pol == 0 && duration_in_margin(event.duration, DURATION_END_LOW)))
 		return -1; 
-	/* 7. µÃµ½ÁË32Î»Êı¾İ, ÅĞ¶ÏÊı¾İÊÇ·ñÕıÈ· */
+	/* 7. å¾—åˆ°äº†32ä½æ•°æ®, åˆ¤æ–­æ•°æ®æ˜¯å¦æ­£ç¡® */
 	*(unsigned int *)&byte = val;
 	byte[1] = ~byte[1];
 	byte[3] = ~byte[3];
 
 	if (byte[0] != byte[1]) {
-		/* ÓĞĞ©Ò£¿ØÆ÷²»ÍêÈ«×ñÊØNEC¹æ·¶ */
+		/* æœ‰äº›é¥æ§å™¨ä¸å®Œå…¨éµå®ˆNECè§„èŒƒ */
 		//return -1;
 	}
 	if (byte[2] != byte[3])

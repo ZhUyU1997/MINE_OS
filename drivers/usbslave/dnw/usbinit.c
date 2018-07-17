@@ -32,7 +32,7 @@ extern void Timer_InitEx(void);
 extern void Timer_StartEx(void);
 extern unsigned int Timer_StopEx(void);
 */
-//TODO:¼ÆÊ±¹¦ÄÜ´ýÊµÏÖ
+//TODO:è®¡æ—¶åŠŸèƒ½å¾…å®žçŽ°
 #define Timer_InitEx()
 #define Timer_StartEx()
 #define Timer_StopEx() (60)
@@ -67,7 +67,7 @@ extern unsigned int Timer_StopEx(void);
 // }
 
 char awaitkey(unsigned long delay, int* error_p) {
-	//TODO:¿ÉÄÜ»áÔì³ÉËÀÑ­»·
+	//TODO:å¯èƒ½ä¼šé€ æˆæ­»å¾ªçŽ¯
 	return getc();
 }
 #define CTRL(x)   ((x) & 0x1f)
@@ -127,7 +127,7 @@ void Port_Init(void) {
 	//Binary :	00 		00		00		01		00		01			01		01		01		01			01
 	gpioregs->GPBCON = 0x004555;
 	gpioregs->GPBUP  = 0x7ff;     // The pull up function is disabled GPB[10:0]
-	gpioregs->GPBDAT &= ~(1 << 0);	/* ½ûÖ¹·äÃùÆ÷ */
+	gpioregs->GPBDAT &= ~(1 << 0);	/* ç¦æ­¢èœ‚é¸£å™¨ */
 
 	//*** PORT C GROUP
 	//Ports  :	GPC15	GPC14	GPC13	GPC12	GPC11	GPC10	GPC9	GPC8	GPC7	GPC6	GPC5	GPC4	GPC3	GPC2	GPC1	GPC0
@@ -274,7 +274,7 @@ U32 usb_receive(char *buf, size_t len, U32 wait) {
 			printf("USB host is connected. Waiting a download.\n");
 			first = 0;
 		}
-		//TODO:ÓÉÓÚawaitkeyÃ»ÓÐÍêÉÆ£¬Õ¹Ê¾È¥³ýÈ¡ÏûÏÂÔØµÄ¹¦ÄÜ
+		//TODO:ç”±äºŽawaitkeyæ²¡æœ‰å®Œå–„ï¼Œå±•ç¤ºåŽ»é™¤å–æ¶ˆä¸‹è½½çš„åŠŸèƒ½
 		/*
 		char c = awaitkey(1, 0);
 		if ((c & 0x7f) == INTR) {

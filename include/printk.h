@@ -1,13 +1,13 @@
 /***************************************************
-*		°æÈ¨ÉùÃ÷
+*		ç‰ˆæƒå£°æ˜Ž
 *
-*	±¾²Ù×÷ÏµÍ³ÃûÎª£ºMINE
-*	¸Ã²Ù×÷ÏµÍ³Î´¾­ÊÚÈ¨²»µÃÒÔÓ¯Àû»ò·ÇÓ¯ÀûÎªÄ¿µÄ½øÐÐ¿ª·¢£¬
-*	Ö»ÔÊÐí¸öÈËÑ§Ï°ÒÔ¼°¹«¿ª½»Á÷Ê¹ÓÃ
+*	æœ¬æ“ä½œç³»ç»Ÿåä¸ºï¼šMINE
+*	è¯¥æ“ä½œç³»ç»Ÿæœªç»æŽˆæƒä¸å¾—ä»¥ç›ˆåˆ©æˆ–éžç›ˆåˆ©ä¸ºç›®çš„è¿›è¡Œå¼€å‘ï¼Œ
+*	åªå…è®¸ä¸ªäººå­¦ä¹ ä»¥åŠå…¬å¼€äº¤æµä½¿ç”¨
 *
-*	´úÂë×îÖÕËùÓÐÈ¨¼°½âÊÍÈ¨¹éÌïÓîËùÓÐ£»
+*	ä»£ç æœ€ç»ˆæ‰€æœ‰æƒåŠè§£é‡Šæƒå½’ç”°å®‡æ‰€æœ‰ï¼›
 *
-*	±¾Ä£¿é×÷Õß£º	ÌïÓî
+*	æœ¬æ¨¡å—ä½œè€…ï¼š	ç”°å®‡
 *	EMail:		345538255@qq.com
 *
 *
@@ -26,18 +26,29 @@
 #define SMALL	64		/* use 'abcdef' instead of 'ABCDEF' */
 
 #define is_digit(c)	((c) >= '0' && (c) <= '9')
+#if 0
+#define WHITE	0x00ffffff		//ç™½
+#define BLACK	0x00000000		//é»‘
+#define RED		0x00ff0000		//çº¢
+#define ORANGE	0x00ff8000		//æ©™
+#define YELLOW	0x00ffff00		//é»„
+#define GREEN	0x0000ff00		//ç»¿
+#define BLUE	0x000000ff		//è“
+#define INDIGO	0x0000ffff		//é›
+#define PURPLE	0x008000ff		//ç´«
+#else
+#define WHITE	"255;255;255"	//ç™½
+#define BLACK	"0;0;0"			//é»‘
+#define RED		"255;0;0"		//çº¢
+#define ORANGE	"255;128;0"		//æ©™
+#define YELLOW	"255;255;255"	//é»„
+#define GREEN	"0;255;0"		//ç»¿
+#define BLUE	"0;0;255"		//è“
+#define INDIGO	"0;255;255"		//é›
+#define PURPLE	"128;0;255"		//ç´«
 
-#define WHITE	0x00ffffff		//°×
-#define BLACK	0x00000000		//ºÚ
-#define RED		0x00ff0000		//ºì
-#define ORANGE	0x00ff8000		//³È
-#define YELLOW	0x00ffff00		//»Æ
-#define GREEN	0x0000ff00		//ÂÌ
-#define BLUE	0x000000ff		//À¶
-#define INDIGO	0x0000ffff		//µå
-#define PURPLE	0x008000ff		//×Ï
-
-#define color_printk(a,b,fmt,arg...) printf(fmt,##arg)
+#endif
+#define color_printk(a,b,fmt,arg...) printf("\033[38;2;" a ";48;2;" b "m" fmt "\033[0m",##arg)
 
 #endif
 

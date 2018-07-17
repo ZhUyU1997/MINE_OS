@@ -36,17 +36,17 @@ void ReconfigUsbd(void) {
 //   EP2: not used
 //   EP3: bulk out end point
 //   EP4: not used
-	/* ½ûÖ¹¹ÒÆðÄ£Ê½ */
+	/* ç¦æ­¢æŒ‚èµ·æ¨¡å¼ */
 	usbdevregs->PWR_REG = PWR_REG_DEFAULT_VALUE;	//disable suspend mode
-	/* ¶Ëµã0 */
+	/* ç«¯ç‚¹0 */
 	usbdevregs->INDEX_REG = 0;
-	//×î´ó°ü 8
+	//æœ€å¤§åŒ… 8
 	usbdevregs->MAXP_REG = FIFO_SIZE_8;   	//EP0 max packit size = 8
-	//Çå³ýSETUP_END ßÑOT_PKT_RDY
+	//æ¸…é™¤SETUP_END å“OT_PKT_RDY
 	usbdevregs->EP0_CSR_IN_CSR1_REG = EP0_SERVICED_OUT_PKT_RDY | EP0_SERVICED_SETUP_END;
 	//EP0:clear OUT_PKT_RDY & SETUP_END
 
-	/* ¶Ëµã1 */
+	/* ç«¯ç‚¹1 */
 	usbdevregs->INDEX_REG = 1;
 #if (EP1_PKT_SIZE == 32)
 	usbdevregs->MAXP_REG = FIFO_SIZE_32;	//EP1:max packit size = 32
@@ -57,14 +57,14 @@ void ReconfigUsbd(void) {
 	usbdevregs->IN_CSR2_REG = EPI_MODE_IN | EPI_IN_DMA_INT_MASK | EPI_BULK; //IN mode, IN_DMA_INT=masked
 	usbdevregs->OUT_CSR1_REG = EPO_CDT;
 	usbdevregs->OUT_CSR2_REG = EPO_BULK | EPO_OUT_DMA_INT_MASK;
-	/* ¶Ëµã2 */
+	/* ç«¯ç‚¹2 */
 	usbdevregs->INDEX_REG = 2;
 	usbdevregs->MAXP_REG = FIFO_SIZE_64;	//EP2:max packit size = 64
 	usbdevregs->EP0_CSR_IN_CSR1_REG = EPI_FIFO_FLUSH | EPI_CDT | EPI_BULK;
 	usbdevregs->IN_CSR2_REG = EPI_MODE_IN | EPI_IN_DMA_INT_MASK; //IN mode, IN_DMA_INT=masked
 	usbdevregs->OUT_CSR1_REG = EPO_CDT;
 	usbdevregs->OUT_CSR2_REG = EPO_BULK | EPO_OUT_DMA_INT_MASK;
-	/* ¶Ëµã3 */
+	/* ç«¯ç‚¹3 */
 	usbdevregs->INDEX_REG = 3;
 #if (EP3_PKT_SIZE==32)
 	usbdevregs->MAXP_REG = FIFO_SIZE_32;	//EP3:max packit size = 32
@@ -84,14 +84,14 @@ void ReconfigUsbd(void) {
 	usbdevregs->IN_CSR2_REG = EPI_MODE_OUT | EPI_IN_DMA_INT_MASK; //OUT mode, IN_DMA_INT=masked
 	usbdevregs->OUT_CSR1_REG = EPO_CDT;
 	//clear OUT_PKT_RDY, data_toggle_bit.
-	//ÅúÁ¿Êä³ö¶Ëµã£¬ÆÁ±ÎdmaÖÐ¶Ï
+	//æ‰¹é‡è¾“å‡ºç«¯ç‚¹ï¼Œå±è”½dmaä¸­æ–­
 	//The data toggle bit should be cleared when initialization.
 	usbdevregs->OUT_CSR2_REG = EPO_BULK | EPO_OUT_DMA_INT_MASK;
 
 	usbdevregs->EP_INT_REG = EP0_INT | EP1_INT | EP2_INT | EP3_INT | EP4_INT;
 	usbdevregs->USB_INT_REG = RESET_INT | SUSPEND_INT | RESUME_INT;
 	//Clear all usbd pending bits
-	//Ê¹ÄÜ¶Ëµã0 1 3 ÖÐ¶Ï
+	//ä½¿èƒ½ç«¯ç‚¹0 1 3 ä¸­æ–­
 	//EP0,1,3 & reset interrupt are enabled
 	usbdevregs->EP_INT_EN_REG = EP0_INT | EP1_INT | EP3_INT;
 	usbdevregs->USB_INT_EN_REG = RESET_INT;

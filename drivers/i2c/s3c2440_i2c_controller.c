@@ -7,21 +7,21 @@ static p_i2c_msg p_cur_msg;
 
 int isLastData(void) {
 	if (p_cur_msg->cnt_transferred == p_cur_msg->len - 1)
-		return 1;  /* ÕıÒª¿ªÊ¼´«Êä×îºóÒ»¸öÊı¾İ */
+		return 1;  /* æ­£è¦å¼€å§‹ä¼ è¾“æœ€åä¸€ä¸ªæ•°æ® */
 	else
 		return 0;
 }
 
 void resume_iic_with_ack(void) {
 	unsigned int iiccon = IICCON;
-	iiccon |= (1 << 7); /* »ØÓ¦ACK */
-	iiccon &= ~(1 << 4); /* »Ö¸´IIC²Ù×÷ */
+	iiccon |= (1 << 7); /* å›åº”ACK */
+	iiccon &= ~(1 << 4); /* æ¢å¤IICæ“ä½œ */
 	IICCON =  iiccon;
 }
 
 void resume_iic_without_ack(void) {
 	unsigned int iiccon = IICCON;
-	iiccon &= ~((1 << 7) | (1 << 4)); /* ²»»ØÓ¦ACK, »Ö¸´IIC²Ù×÷ */
+	iiccon &= ~((1 << 7) | (1 << 4)); /* ä¸å›åº”ACK, æ¢å¤IICæ“ä½œ */
 	IICCON =  iiccon;
 }
 
@@ -35,20 +35,20 @@ void i2c_interrupt_func(int irq) {
 
 	p_cur_msg->cnt_transferred++;
 
-	/* Ã¿´«ÊäÍêÒ»¸öÊı¾İ½«²úÉúÒ»¸öÖĞ¶Ï */
+	/* æ¯ä¼ è¾“å®Œä¸€ä¸ªæ•°æ®å°†äº§ç”Ÿä¸€ä¸ªä¸­æ–­ */
 
-	/* ¶ÔÓÚÃ¿´Î´«Êä, µÚ1¸öÖĞ¶ÏÊÇ"ÒÑ¾­·¢³öÁËÉè±¸µØÖ·" */
+	/* å¯¹äºæ¯æ¬¡ä¼ è¾“, ç¬¬1ä¸ªä¸­æ–­æ˜¯"å·²ç»å‘å‡ºäº†è®¾å¤‡åœ°å€" */
 
 	if (p_cur_msg->flags == 0) {	/* write */
-		/* ¶ÔÓÚµÚ1¸öÖĞ¶Ï, ËüÊÇ·¢ËÍ³öÉè±¸µØÖ·ºó²úÉúµÄ
-		 * ĞèÒªÅĞ¶ÏÊÇ·ñÓĞACK
-		 * ÓĞACK : Éè±¸´æÔÚ
-		 * ÎŞACK : ÎŞÉè±¸, ³ö´í, Ö±½Ó½áÊø´«Êä
+		/* å¯¹äºç¬¬1ä¸ªä¸­æ–­, å®ƒæ˜¯å‘é€å‡ºè®¾å¤‡åœ°å€åäº§ç”Ÿçš„
+		 * éœ€è¦åˆ¤æ–­æ˜¯å¦æœ‰ACK
+		 * æœ‰ACK : è®¾å¤‡å­˜åœ¨
+		 * æ— ACK : æ— è®¾å¤‡, å‡ºé”™, ç›´æ¥ç»“æŸä¼ è¾“
 		 */
-		if (p_cur_msg->cnt_transferred == 0) { /* µÚ1´ÎÖĞ¶Ï */
+		if (p_cur_msg->cnt_transferred == 0) { /* ç¬¬1æ¬¡ä¸­æ–­ */
 			if (iicstat & (1 << 0)) {
 				/* no ack */
-				/* Í£Ö¹´«Êä */
+				/* åœæ­¢ä¼ è¾“ */
 				IICSTAT = 0xd0;
 				IICCON &= ~(1 << 4);
 				p_cur_msg->err = -1;
@@ -58,34 +58,34 @@ void i2c_interrupt_func(int irq) {
 		}
 
 		if (p_cur_msg->cnt_transferred < p_cur_msg->len) {
-			/* ¶ÔÓÚÆäËûÖĞ¶Ï, Òª¼ÌĞø·¢ËÍÏÂÒ»¸öÊı¾İ
+			/* å¯¹äºå…¶ä»–ä¸­æ–­, è¦ç»§ç»­å‘é€ä¸‹ä¸€ä¸ªæ•°æ®
 			 */
 			//printf("data = %c\n", p_cur_msg->buf[p_cur_msg->cnt_transferred]);
 			IICDS = p_cur_msg->buf[p_cur_msg->cnt_transferred];
 			IICCON &= ~(1 << 4);
 		} else {
-			/* Í£Ö¹´«Êä */
+			/* åœæ­¢ä¼ è¾“ */
 			IICSTAT = 0xd0;
 			IICCON &= ~(1 << 4);
 		}
 	} else { /* read */
-		/* ¶ÔÓÚµÚ1¸öÖĞ¶Ï, ËüÊÇ·¢ËÍ³öÉè±¸µØÖ·ºó²úÉúµÄ
-		 * ĞèÒªÅĞ¶ÏÊÇ·ñÓĞACK
-		 * ÓĞACK : Éè±¸´æÔÚ, »Ö¸´I2C´«Êä, ÕâÑùÔÚÏÂÒ»¸öÖĞ¶Ï²Å¿ÉÒÔµÃµ½µÚ1¸öÊı¾İ
-		 * ÎŞACK : ÎŞÉè±¸, ³ö´í, Ö±½Ó½áÊø´«Êä
+		/* å¯¹äºç¬¬1ä¸ªä¸­æ–­, å®ƒæ˜¯å‘é€å‡ºè®¾å¤‡åœ°å€åäº§ç”Ÿçš„
+		 * éœ€è¦åˆ¤æ–­æ˜¯å¦æœ‰ACK
+		 * æœ‰ACK : è®¾å¤‡å­˜åœ¨, æ¢å¤I2Cä¼ è¾“, è¿™æ ·åœ¨ä¸‹ä¸€ä¸ªä¸­æ–­æ‰å¯ä»¥å¾—åˆ°ç¬¬1ä¸ªæ•°æ®
+		 * æ— ACK : æ— è®¾å¤‡, å‡ºé”™, ç›´æ¥ç»“æŸä¼ è¾“
 		 */
-		if (p_cur_msg->cnt_transferred == 0) { /* µÚ1´ÎÖĞ¶Ï */
+		if (p_cur_msg->cnt_transferred == 0) { /* ç¬¬1æ¬¡ä¸­æ–­ */
 			if (iicstat & (1 << 0)) {
 				/* no ack */
-				/* Í£Ö¹´«Êä */
+				/* åœæ­¢ä¼ è¾“ */
 				IICSTAT = 0x90;
 				IICCON &= ~(1 << 4);
 				p_cur_msg->err = -1;
 				printf("rx err, no ack\n\r");
 				return;
 			} else { /* ack */
-				/* Èç¹ûÊÇ×îºóÒ»¸öÊı¾İ, Æô¶¯´«ÊäÊ±ÒªÉèÖÃÎª²»»ØÓ¦ACK */
-				/* »Ö¸´I2C´«Êä */
+				/* å¦‚æœæ˜¯æœ€åä¸€ä¸ªæ•°æ®, å¯åŠ¨ä¼ è¾“æ—¶è¦è®¾ç½®ä¸ºä¸å›åº”ACK */
+				/* æ¢å¤I2Cä¼ è¾“ */
 				if (isLastData()) {
 					resume_iic_without_ack();
 				} else {
@@ -95,22 +95,22 @@ void i2c_interrupt_func(int irq) {
 			}
 		}
 
-		/* ·ÇµÚ1¸öÖĞ¶Ï, ±íÊ¾µÃµ½ÁËÒ»¸öĞÂÊı¾İ
-		 * ´ÓIICDS¶Á³ö¡¢±£´æ
+		/* éç¬¬1ä¸ªä¸­æ–­, è¡¨ç¤ºå¾—åˆ°äº†ä¸€ä¸ªæ–°æ•°æ®
+		 * ä»IICDSè¯»å‡ºã€ä¿å­˜
 		 */
 		if (p_cur_msg->cnt_transferred < p_cur_msg->len) {
 			index = p_cur_msg->cnt_transferred - 1;
 			p_cur_msg->buf[index] = IICDS;
 
-			/* Èç¹ûÊÇ×îºóÒ»¸öÊı¾İ, Æô¶¯´«ÊäÊ±ÒªÉèÖÃÎª²»»ØÓ¦ACK */
-			/* »Ö¸´I2C´«Êä */
+			/* å¦‚æœæ˜¯æœ€åä¸€ä¸ªæ•°æ®, å¯åŠ¨ä¼ è¾“æ—¶è¦è®¾ç½®ä¸ºä¸å›åº”ACK */
+			/* æ¢å¤I2Cä¼ è¾“ */
 			if (isLastData()) {
 				resume_iic_without_ack();
 			} else {
 				resume_iic_with_ack();
 			}
 		} else {
-			/* ·¢³öÍ£Ö¹ĞÅºÅ */
+			/* å‘å‡ºåœæ­¢ä¿¡å· */
 			IICSTAT = 0x90;
 			IICCON &= ~(1 << 4);
 		}
@@ -119,21 +119,21 @@ void i2c_interrupt_func(int irq) {
 
 
 void s3c2440_i2c_con_init(void) {
-	/* ÅäÖÃÒı½ÅÓÃÓÚI2C*/
+	/* é…ç½®å¼•è„šç”¨äºI2C*/
 	GPECON &= ~((3 << 28) | (3 << 30));
 	GPECON |= ((2 << 28) | (2 << 30));
 
-	/* ÉèÖÃÊ±ÖÓ */
+	/* è®¾ç½®æ—¶é’Ÿ */
 	/* [7] : IIC-bus acknowledge enable bit, 1-enable in rx mode
-	 * [6] : Ê±ÖÓÔ´, 0: IICCLK = fPCLK /16; 1: IICCLK = fPCLK /512
+	 * [6] : æ—¶é’Ÿæº, 0: IICCLK = fPCLK /16; 1: IICCLK = fPCLK /512
 	 * [5] : 1-enable interrupt
-	 * [4] : ¶Á³öÎª1Ê±±íÊ¾ÖĞ¶Ï·¢ÉúÁË, Ğ´Èë0À´Çå³ı²¢»Ö¸´I2C²Ù×÷
+	 * [4] : è¯»å‡ºä¸º1æ—¶è¡¨ç¤ºä¸­æ–­å‘ç”Ÿäº†, å†™å…¥0æ¥æ¸…é™¤å¹¶æ¢å¤I2Cæ“ä½œ
 	 * [3:0] : Tx clock = IICCLK/(IICCON[3:0]+1).
 	 * Tx Clock = 100khz = 50Mhz/16/(IICCON[3:0]+1)
 	 */
 	IICCON = (1 << 7) | (0 << 6) | (1 << 5) | (30 << 0);
 
-	/* ×¢²áÖĞ¶Ï´¦Àíº¯Êı */
+	/* æ³¨å†Œä¸­æ–­å¤„ç†å‡½æ•° */
 	request_irq(INT_IIC, i2c_interrupt_func);
 }
 
@@ -143,21 +143,21 @@ int do_master_tx(p_i2c_msg msg) {
 	msg->cnt_transferred = -1;
 	msg->err = 0;
 
-	/* ÉèÖÃ¼Ä´æÆ÷Æô¶¯´«Êä */
-	/* 1. ÅäÖÃÎª master tx mode */
-	IICCON |= (1 << 7); /* TX mode, ÔÚACKÖÜÆÚÊÍ·ÅSDA */
+	/* è®¾ç½®å¯„å­˜å™¨å¯åŠ¨ä¼ è¾“ */
+	/* 1. é…ç½®ä¸º master tx mode */
+	IICCON |= (1 << 7); /* TX mode, åœ¨ACKå‘¨æœŸé‡Šæ”¾SDA */
 	IICSTAT = (1 << 4);
 
-	/* 2. °Ñ´ÓÉè±¸µØÖ·Ğ´ÈëIICDS */
+	/* 2. æŠŠä»è®¾å¤‡åœ°å€å†™å…¥IICDS */
 	IICDS = msg->addr << 1;
 
-	/* 3. IICSTAT = 0xf0 , Êı¾İ¼´±»·¢ËÍ³öÈ¥, ½«µ¼ÖÂÖĞ¶Ï²úÉú */
+	/* 3. IICSTAT = 0xf0 , æ•°æ®å³è¢«å‘é€å‡ºå», å°†å¯¼è‡´ä¸­æ–­äº§ç”Ÿ */
 	IICSTAT = 0xf0;
 
 
-	/* ºóĞøµÄ´«ÊäÓÉÖĞ¶ÏÇı¶¯ */
+	/* åç»­çš„ä¼ è¾“ç”±ä¸­æ–­é©±åŠ¨ */
 
-	/* Ñ­»·µÈ´ıÖĞ¶Ï´¦ÀíÍê±Ï */
+	/* å¾ªç¯ç­‰å¾…ä¸­æ–­å¤„ç†å®Œæ¯• */
 	while (!msg->err && msg->cnt_transferred != msg->len);
 	udelay(1000);
 	if (msg->err)
@@ -172,21 +172,21 @@ int do_master_rx(p_i2c_msg msg) {
 	msg->cnt_transferred = -1;
 	msg->err = 0;
 
-	/* ÉèÖÃ¼Ä´æÆ÷Æô¶¯´«Êä */
-	/* 1. ÅäÖÃÎª Master Rx mode */
-	IICCON |= (1 << 7); /* RX mode, ÔÚACKÖÜÆÚ»ØÓ¦ACK */
+	/* è®¾ç½®å¯„å­˜å™¨å¯åŠ¨ä¼ è¾“ */
+	/* 1. é…ç½®ä¸º Master Rx mode */
+	IICCON |= (1 << 7); /* RX mode, åœ¨ACKå‘¨æœŸå›åº”ACK */
 	IICSTAT = (1 << 4);
 
-	/* 2. °Ñ´ÓÉè±¸µØÖ·Ğ´ÈëIICDS */
+	/* 2. æŠŠä»è®¾å¤‡åœ°å€å†™å…¥IICDS */
 	IICDS = (msg->addr << 1) | (1 << 0);
 
-	/* 3. IICSTAT = 0xb0 , ´ÓÉè±¸µØÖ·¼´±»·¢ËÍ³öÈ¥, ½«µ¼ÖÂÖĞ¶Ï²úÉú */
+	/* 3. IICSTAT = 0xb0 , ä»è®¾å¤‡åœ°å€å³è¢«å‘é€å‡ºå», å°†å¯¼è‡´ä¸­æ–­äº§ç”Ÿ */
 	IICSTAT = 0xb0;
 
 
-	/* ºóĞøµÄ´«ÊäÓÉÖĞ¶ÏÇı¶¯ */
+	/* åç»­çš„ä¼ è¾“ç”±ä¸­æ–­é©±åŠ¨ */
 
-	/* Ñ­»·µÈ´ıÖĞ¶Ï´¦ÀíÍê±Ï */
+	/* å¾ªç¯ç­‰å¾…ä¸­æ–­å¤„ç†å®Œæ¯• */
 	while (!msg->err && msg->cnt_transferred != msg->len);
 	udelay(1000);
 	if (msg->err)
@@ -210,7 +210,7 @@ int s3c2440_master_xfer(p_i2c_msg msgs, int num) {
 	return 0;
 }
 
-/* ÊµÏÖi2c_controller
+/* å®ç°i2c_controller
           .init
           .master_xfer
           .name

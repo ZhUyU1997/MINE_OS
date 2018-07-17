@@ -113,13 +113,13 @@ void ts_cal() {
 	get_calibrate_params(a);
 	printf("step 0\n");
 	if ((res = f_open(&f, "cal", FA_WRITE | FA_CREATE_ALWAYS)) != FR_OK) {
-		printf("ÔÙ¼û1, res = %d\n", res);
+		printf("å†è§1, res = %d\n", res);
 		return;
 	}
 	printf("step 1\n");
 	res = f_write(&f, a, sizeof(a), &bw);
 	if (( res!= FR_OK) || bw != sizeof(a)) {
-		printf("ÔÙ¼û2, res = %d\n", res);
+		printf("å†è§2, res = %d\n", res);
 		f_close(&f);
 		return;
 	}
@@ -136,12 +136,12 @@ int ten_test_view() {
 	init_Ts();
 	get_lcd_params(&fb_base, &xres, &yres, &bpp);
 	if ((res = f_open(&f, "cal", FA_READ)) != FR_OK) {
-		printf("calÎÄ¼ş´ò¿ªÊ§°Ü, res = %d\n", res);
+		printf("calæ–‡ä»¶æ‰“å¼€å¤±è´¥, res = %d\n", res);
 		ts_cal();
 	}else{
 		res = f_read(&f, a, sizeof(a), &br);
 		if (( res!= FR_OK) || br != sizeof(a)) {
-			printf("ÎÄ¼ş¶ÁÈ¡Ê§°Ü, res = %d\n", res);
+			printf("æ–‡ä»¶è¯»å–å¤±è´¥, res = %d\n", res);
 			f_close(&f);
 			ts_cal();
 		}else{
@@ -212,7 +212,7 @@ struct Button ret_btn = {
 	.h = 45,
 	.color = 0x888888,
 	.key = 0,
-	.text = "·µ»Ø",
+	.text = "è¿”å›",
 };
 
 struct Button led_btn[4] = {
@@ -224,7 +224,7 @@ struct Button led_btn[4] = {
 		.h = 45,
 		.color = 0x888888,
 		.key = 0,
-		.text = "×ó",
+		.text = "å·¦",
 	},
 	[1] =
 	{
@@ -233,7 +233,7 @@ struct Button led_btn[4] = {
 		.w = 60,
 		.h = 37,
 		.key = 1,
-		.text = "×ó",
+		.text = "å·¦",
 	},
 	[2] =
 	{
@@ -242,7 +242,7 @@ struct Button led_btn[4] = {
 		.w = 60,
 		.h = 37,
 		.key = 2,
-		.text = "ÓÒ",
+		.text = "å³",
 	},
 	[3] =
 	{
@@ -252,7 +252,7 @@ struct Button led_btn[4] = {
 		.h = 37,
 		.color = 0x888888,
 		.key = 3,
-		.text = "ÉÁ",
+		.text = "é—ª",
 	},
 };
 void led_ctl(int n, int s) {
@@ -316,16 +316,16 @@ void led_test_view() {
 void button_test_view() {
 	drawImage("02.bmp");
 	button_create(&ret_btn);
-	/* ÉèÖÃGPFCONÈÃGPF4/5/6ÅäÖÃÎªÊä³öÒı½Å */
+	/* è®¾ç½®GPFCONè®©GPF4/5/6é…ç½®ä¸ºè¾“å‡ºå¼•è„š */
 	GPFCON &= ~((3 << 8) | (3 << 10) | (3 << 12));
 	GPFCON |= ((1 << 8) | (1 << 10) | (1 << 12));
 
-	/* ÅäÖÃ3¸ö°´¼üÒı½ÅÎªÊäÈëÒı½Å:
+	/* é…ç½®3ä¸ªæŒ‰é”®å¼•è„šä¸ºè¾“å…¥å¼•è„š:
 	 * GPF0(S2),GPF2(S3),GPG3(S4)
 	 */
 	GPFCON &= ~((3 << 0) | (3 << 4)); /* gpf0,2 */
 	GPGCON &= ~((3 << 6)); /* gpg3 */
-	/* Ñ­»·µãÁÁ */
+	/* å¾ªç¯ç‚¹äº® */
 	while (!serial_getc_async()) {
 		int val1 = GPFDAT;
 		int val2 = GPGDAT;
@@ -345,7 +345,7 @@ void lcd_test_view(void) {
 	unsigned int fb_base;
 	int xres, yres, bpp;
 	int x, y, pressure;
-	/* »ñµÃLCDµÄ²ÎÊı: fb_base, xres, yres, bpp */
+	/* è·å¾—LCDçš„å‚æ•°: fb_base, xres, yres, bpp */
 	get_lcd_params(&fb_base, &xres, &yres, &bpp);
 
 	ClearScr(0xff0000);
@@ -355,7 +355,7 @@ void lcd_test_view(void) {
 	ClearScr(0x0000ff);
 	mdelay(1000);
 	ClearScr(0x000000);
-	/* »­Ïß */
+	/* ç”»çº¿ */
 	DrawLine(0, 0, xres - 1, 0, 0x23ff77);
 	DrawLine(xres - 1, 0, xres - 1, yres - 1, 0xffff);
 	DrawLine(0, yres - 1, xres - 1, yres - 1, 0xff00aa);
@@ -365,10 +365,10 @@ void lcd_test_view(void) {
 
 	mdelay(1000);
 
-	/* »­Ô² */
+	/* ç”»åœ† */
 	DrawCircle(xres/2, yres/2, yres/4, 0xff);
 
-	/* Êä³öÎÄ×Ö */
+	/* è¾“å‡ºæ–‡å­— */
 	set_text_color(0xff,0x0);
 	lcd_putstr(10, 10, "www.100ask.net\n\r100ask.taobao.com");
 	ts_read_asyn(&x, &y, &pressure);
@@ -456,8 +456,8 @@ void spi_test_view(void) {
 	}
 }
 void photoresistor_test_view(void) {
-	int m; /* ÕûÊı²¿·Ö */
-	int n; /* Ğ¡Êı²¿·Ö */
+	int m; /* æ•´æ•°éƒ¨åˆ† */
+	int n; /* å°æ•°éƒ¨åˆ† */
 	char buf[100];
 
 	drawImage("07.bmp");
@@ -493,8 +493,8 @@ void dht11_test_view(void) {
 	}
 }
 void ds18b20_test_view(void) {
-	int m; /* ÕûÊı²¿·Ö */
-	int n; /* Ğ¡Êı²¿·Ö */
+	int m; /* æ•´æ•°éƒ¨åˆ† */
+	int n; /* å°æ•°éƒ¨åˆ† */
 	char buf[100];
 	double temp;
 	drawImage("09.bmp");
@@ -503,10 +503,10 @@ void ds18b20_test_view(void) {
 	while (!serial_getc_async()) {
 		if (!ds18b20_read_temperature(&temp)) {
 			m = (int)temp;	/* 3.01, m = 3 */
-			temp = temp - m;	/* Ğ¡Êı²¿·Ö: 0.01 */
+			temp = temp - m;	/* å°æ•°éƒ¨åˆ†: 0.01 */
 			n = temp * 10000;  /* 10 */
 
-			/* ÔÚ´®¿ÚÉÏ´òÓ¡ */
+			/* åœ¨ä¸²å£ä¸Šæ‰“å° */
 			sprintf(buf, "%d.%04d    ", m, n);  /* 3.010v */
 			lcd_putstr(247,130,buf);
 		}
