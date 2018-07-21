@@ -3,6 +3,7 @@
 #include <interrupt.h>
 #include <serial.h>
 #include <assert.h>
+#include <printk.h>
 #include "command.h"
 
 //lcd driver
@@ -29,6 +30,7 @@ static void initer(void (*init)(), char *msg){
 
 int main() {
 	irq_init();
+	memcpy(0x33ff0000, 0x30100000, 4096);
 	Port_Init();
 	uart0_init();
 	//uart0_interrupt_init();
@@ -38,8 +40,10 @@ int main() {
 	printf("初始化MMU...\n");
 	mmu_init();
 
-	printf("初始化内存分配...\n");
+	color_printk(RED, BLACK, "memory init \n");
 	init_memory();
+
+	color_printk(RED, BLACK, "slab init \n");
 	slab_init();
 
 	printf("初始化TIMER...\n");

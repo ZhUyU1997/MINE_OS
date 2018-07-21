@@ -1,13 +1,13 @@
 #include <interrupt.h>
 #include <s3c24xx.h>
 /*定义用户中断标志*/
-void RTC_alarm_interrupt(void);
-void RTC_tick_interrupt(void);
+void RTC_alarm_interrupt(unsigned long nr, unsigned long parameter);
+void RTC_tick_interrupt(unsigned long nr, unsigned long parameter);
 
 /*RTC初始化*/
 void RTC_Init(void) {
-	request_irq(INT_TICK, RTC_tick_interrupt); //RTC 时钟滴答中断
-	request_irq(INT_RTC, RTC_alarm_interrupt); //RTC 闹钟中断
+	request_irq(IRQ_TICK, RTC_tick_interrupt); //RTC 时钟滴答中断
+	request_irq(IRQ_RTC, RTC_alarm_interrupt); //RTC 闹钟中断
 }
 
 /*RTC设置*/
@@ -78,12 +78,12 @@ void RTC_Alarm_Set(char year, char mon, char date,
 }
 
 /*RTC 闹钟中断服务*/
-void RTC_alarm_interrupt(void) {
+void RTC_alarm_interrupt(unsigned long nr, unsigned long parameter) {
 
 }
 
 /*RTC tick中断服务*/
-void RTC_tick_interrupt(void) {
+void RTC_tick_interrupt(unsigned long nr, unsigned long parameter) {
 
 }
 

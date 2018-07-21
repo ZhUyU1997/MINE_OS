@@ -17,11 +17,11 @@ void timer_init() {
 static void tick_irq_hander();
 static unsigned int delta_time = 0;
 
-void init_tick(unsigned int time, void (*handle)()) {
+void init_tick(unsigned int time, irq_handler_t handle) {
 	assert(time <= 0xffff);
 	//TCON:定时器控制寄存器
 	TCON &= ~(1 << 20);		//启动
-	free_irq(INT_TIMER4);
+	free_irq(IRQ_TIMER4);
 	TCON &= ~(7 << 20);	//清空20~21位
 	TCON |= (1 << 22);		//定时器4间隙模式/自动重载
 	//TCONB4:定时器4计数缓冲寄存器
@@ -30,9 +30,9 @@ void init_tick(unsigned int time, void (*handle)()) {
 	TCON |= (1 << 21);		//定时器4手动更新TCNTB4
 	TCON &= ~(1 << 21);		//定时器4取消手动更新
 	if (handle)
-		request_irq(INT_TIMER4, handle);
+		request_irq(IRQ_TIMER4, handle);
 	else
-		request_irq(INT_TIMER4, tick_irq_hander);
+		request_irq(IRQ_TIMER4, tick_irq_hander);
 	TCON |= (1 << 20);		//启动
 }
 
@@ -50,15 +50,15 @@ unsigned long long delta_time_us(unsigned long long pre, unsigned long long now)
 	return (now - pre);
 }
 
-static void tick_irq_hander() {
+static void tick_irq_hander(unsigned long nr, unsigned long parameter) {
 	tick++;
 }
 
 static void (*timer_handle)() = 0;
 
-static void timer_handler() {
+static void timer_handler(unsigned long nr, unsigned long parameter) {
 	TCON &= ~(1 << 8); //关闭
-	free_irq(INT_TIMER1);
+	free_irq(IRQ_TIMER1);
 	if (timer_handle)
 		timer_handle();
 }
@@ -68,7 +68,7 @@ void set_timer(unsigned int time, void (*handle)()) {
 	if (!handle)
 		return;
 	TCON &= ~(1 << 8); //关闭
-	free_irq(INT_TIMER1);
+	free_irq(IRQ_TIMER1);
 	//TCON:定时器控制寄存器
 	TCFG1 &= ~(15 << 4);
 	TCFG1 |= 1 << 4;
@@ -81,25 +81,25 @@ void set_timer(unsigned int time, void (*handle)()) {
 	TCON |= (1 << 9);		//定时器1手动更新TCNTB1和TCMPB1
 	TCON &= ~(1 << 9);		//定时器1取消手动更新
 	timer_handle = handle;
-	request_irq(INT_TIMER1, timer_handler);
+	request_irq(IRQ_TIMER1, timer_handler);
 	TCON |= (1 << 8);		//启动
 }
 
 void close_timer() {
 	TCON &= ~(1 << 8); //关闭
-	free_irq(INT_TIMER1);
+	free_irq(IRQ_TIMER1);
 }
 
 static volatile int delay_end = 0;
-static void delay_irq_hander() {
+static void delay_irq_hander(unsigned long nr, unsigned long parameter) {
 	TCON &= ~(1 << 12); //定时器关闭
-	free_irq(INT_TIMER2);
+	free_irq(IRQ_TIMER2);
 	delay_end = 1;
 }
 void delay_u(unsigned int delay_time) {
 	assert(delay_time <= 0xffff);
 	TCON &= ~(1 << 12); //关闭
-	free_irq(INT_TIMER2);
+	free_irq(IRQ_TIMER2);
 
 	if (delay_time > 0xffff)
 		delay_time = 0xffff;
@@ -115,7 +115,7 @@ void delay_u(unsigned int delay_time) {
 	TCON |= (1 << 13);		//定时器2手动更新TCNTB2和TCMPB2
 	TCON &= ~(1 << 13);		//定时器2取消手动更新
 #if 1
-	request_irq(INT_TIMER2, delay_irq_hander);
+	request_irq(IRQ_TIMER2, delay_irq_hander);
 	delay_end = 0;
 	TCON |= (1 << 12);		//启动
 	while (!delay_end);
@@ -126,5 +126,5 @@ void delay_u(unsigned int delay_time) {
 	udelay(1);
 	while (TCNTO2);
 #endif
-	free_irq(INT_TIMER2);
+	free_irq(IRQ_TIMER2);
 }

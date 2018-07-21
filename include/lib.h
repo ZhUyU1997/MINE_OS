@@ -90,7 +90,7 @@ static inline struct List * list_next(struct List * entry) {
 #define BIT_SET(x,p)	(((char *)(x))[(p) / (sizeof(char) * 8)] |=  (1<<((p) % (sizeof(char) * 8))))
 #define BIT_NOT(x,p)	(((char *)(x))[(p) / (sizeof(char) * 8)] ^=  (1<<((p) % (sizeof(char) * 8))))
 #define ARRAY_SIZE(x)	((sizeof(x)) / (sizeof(x[0])))
-#define LONG_BIT_NUM	(sizeof(long) * 8)
+#define BITS_PER_LONG	(sizeof(long) * 8)
 
 #define port_insw(port,buffer,nr)
 

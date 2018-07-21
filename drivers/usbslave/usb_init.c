@@ -30,7 +30,7 @@ void Port_Init(void) {
 	//Binary :	00 		00		00		01		00		01			01		01		01		01			01
 	gpioregs->GPBCON = 0x004555;
 	gpioregs->GPBUP  = 0x7ff;     // The pull up function is disabled GPB[10:0]
-	gpioregs->GPBDAT &= ~(1 << 0);	/* ½ûÖ¹·äÃùÆ÷ */
+	gpioregs->GPBDAT &= ~(1 << 0);	/* ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
 
 	//*** PORT C GROUP
 	//Ports  :	GPC15	GPC14	GPC13	GPC12	GPC11	GPC10	GPC9	GPC8	GPC7	GPC6	GPC5	GPC4	GPC3	GPC2	GPC1	GPC0
@@ -103,14 +103,14 @@ void Port_Init(void) {
 }
 
 
-//ÅäÖÃUPLLCON¼Ä´æÆ÷
+//ï¿½ï¿½ï¿½ï¿½UPLLCONï¿½Ä´ï¿½ï¿½ï¿½
 void ChangeUPllValue(int mdiv, int pdiv, int sdiv) {
 	clk_powerregs->UPLLCON = (mdiv << 12) | (pdiv << 4) | sdiv;
 }
 void usb_init_slave(void) {
 	ChangeUPllValue(0x38, 2, 2);	// UCLK=48Mhz
 	usbdev.reset();
-	request_irq(INT_USBD, IsrUsbd);
+	request_irq(IRQ_USBD, IsrUsbd);
 	udelay(100000);
 	/* enable USB Device */
 	usbd_state = USBD_STATE_POWERED;

@@ -4,4 +4,5 @@ obj-y += except.o
 obj-y += interrupt.o
 obj-y += command.o
 obj-y += backtrace.o
+obj-y += irq.o
 obj-y += app/

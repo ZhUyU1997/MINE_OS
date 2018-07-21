@@ -24,28 +24,22 @@ void uart0_init(void) {
 	UMCON0  = 0x00;     // 不使用流控
 	UBRDIV0 = UART_BRD; // 波特率为115200
 }
-static void UART0_RX(){//接收中断
+static void UART0_RX(unsigned long nr, unsigned long parameter){//接收中断
 	unsigned char buf;
 	buf = URXH0;  //将接收到的字符存放在buf中
 	printf("%02X ", buf&0xff);
 }
-static void UART0_TX(){//清除发送中断
+static void UART0_TX(unsigned long nr, unsigned long parameter){//清除发送中断
 }
-static void UART0_UART0_ISR(){
-	if (get_subsrcpnd() & (1 << INT_RXD0)) {
-		UART0_RX();
-	}
-	if (get_subsrcpnd() & (1 << INT_TXD0)) {
-		UART0_TX();
-	}
+static void UART0_ERR(unsigned long nr, unsigned long parameter){//清除发送中断
 }
 void uart0_interrupt_init(void)
 { 
-	//TODO:INT_ERR0
-	//INTSUBMSK_set(INT_RXD0|INT_TXD0);
-	set_subint(INT_RXD0);
-	request_irq(INT_UART0, UART0_UART0_ISR);
-}  
+	//request_irq(INT_UART0, UART0_UART0_ISR);
+	request_irq(IRQ_S3CUART_RX0, UART0_RX);
+	request_irq(IRQ_S3CUART_TX0, UART0_TX);
+	request_irq(IRQ_S3CUART_ERR0, UART0_ERR);
+}
 
 /*
  * 发送一个字符

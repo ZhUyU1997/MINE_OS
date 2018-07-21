@@ -121,7 +121,6 @@ void init_memory() {
 	mms.end_rodata = (unsigned long)& _erodata;
 	mms.start_brk  = (unsigned long)& _end;
 
-	color_printk(RED, BLACK, "memory init \n");
 	
 	for (i = 0; i < 32; i++) {
 		if (p->type == 1)
@@ -292,7 +291,7 @@ struct Page *alloc_pages(int zone_select, int number, unsigned long page_flags) 
 	int zone_start = 0;
 	int zone_end = 0;
 
-	if (number >= LONG_BIT_NUM || number <= 0) {
+	if (number >= BITS_PER_LONG || number <= 0) {
 		color_printk(RED, BLACK, "alloc_pages() ERROR: number is invalid\n");
 		return NULL;
 	}
@@ -335,10 +334,10 @@ struct Page *alloc_pages(int zone_select, int number, unsigned long page_flags) 
 		end = (z->zone_end_address);
 
 		for (unsigned long j = start; j < end; j++) {
-			unsigned long *p = mms.bits_map + (j / LONG_BIT_NUM);
+			unsigned long *p = mms.bits_map + (j / BITS_PER_LONG);
 			unsigned long num = (1UL << number) - 1;
-			int k = j % LONG_BIT_NUM;
-			if (!((p[0] >> k | p[!!k] << (LONG_BIT_NUM - k)) & num)) {
+			int k = j % BITS_PER_LONG;
+			if (!((p[0] >> k | p[!!k] << (BITS_PER_LONG - k)) & num)) {
 				struct Page *pageptr = mms.pages_struct + j;
 				for (int i = 0; i < number; i++) {
 					BIT_SET(mms.bits_map, PAGE_2M_NUM(pageptr[i].PHY_address));
@@ -373,7 +372,7 @@ void free_pages(struct Page *page, int number) {
 		return ;
 	}
 
-	if (number >= LONG_BIT_NUM || number <= 0) {
+	if (number >= BITS_PER_LONG || number <= 0) {
 		color_printk(RED, BLACK, "free_pages() ERROR: number is invalid\n");
 		return ;
 	}
@@ -430,12 +429,12 @@ void *kmalloc(unsigned long size, unsigned long gfp_flages) {
 	}
 
 	for (int j = 0; j < slab->color_count; j++) {
-		if (slab->color_map[j / LONG_BIT_NUM] == 0xffffffffffffffffUL) {
-			j += LONG_BIT_NUM - 1;
+		if (slab->color_map[j / BITS_PER_LONG] == 0xffffffffffffffffUL) {
+			j += BITS_PER_LONG - 1;
 			continue;
 		}
 
-		if ((slab->color_map[j / LONG_BIT_NUM] & (1UL << (j % LONG_BIT_NUM))) == 0) {
+		if ((slab->color_map[j / BITS_PER_LONG] & (1UL << (j % BITS_PER_LONG))) == 0) {
 			BIT_SET(slab->color_map, j);
 			slab->using_count++;
 			slab->free_count--;
@@ -763,12 +762,12 @@ void *slab_malloc(struct Slab_cache *slab_cache, unsigned long arg) {
 	}
 
 	for (int j = 0; j < slab->color_count; j++) {
-		if (slab->color_map[j / LONG_BIT_NUM] == 0xffffffffffffffffUL) {
-			j += LONG_BIT_NUM - 1;
+		if (slab->color_map[j / BITS_PER_LONG] == 0xffffffffffffffffUL) {
+			j += BITS_PER_LONG - 1;
 			continue;
 		}
 
-		if ((slab->color_map[j / LONG_BIT_NUM] & (1UL << (j % LONG_BIT_NUM))) == 0) {
+		if ((slab->color_map[j / BITS_PER_LONG] & (1UL << (j % BITS_PER_LONG))) == 0) {
 			BIT_SET(slab->color_map, j);
 
 			slab->using_count++;

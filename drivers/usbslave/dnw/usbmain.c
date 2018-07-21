@@ -21,7 +21,7 @@ extern S3C24X0_USB_DEVICE * usbdevregs;
 extern S3C24X0_DMAS * dmaregs;
 extern S3C24X0_CLOCK_POWER * clk_powerregs;
 /**************************[UPLL]*******************************/
-void ChangeUPllValue(int mdiv, int pdiv, int sdiv) { //ÅäÖÃUPLLCON¼Ä´æÆ÷
+void ChangeUPllValue(int mdiv, int pdiv, int sdiv) { //ï¿½ï¿½ï¿½ï¿½UPLLCONï¿½Ä´ï¿½ï¿½ï¿½
 	clk_powerregs->UPLLCON = (mdiv << 12) | (pdiv << 4) | sdiv;
 }
 /**************************
@@ -35,7 +35,7 @@ void UsbdMain(void) {
 	ConfigUsbd();
 	PrepareEp1Fifo();
 }
-void IsrUsbd(void) {
+void IsrUsbd(unsigned long nr, unsigned long parameter) {
 	U8 saveIndexReg = usbdevregs->INDEX_REG;
 	U8 usbdIntpnd	= usbdevregs->USB_INT_REG;
 	U8 epIntpnd		= usbdevregs->EP_INT_REG;

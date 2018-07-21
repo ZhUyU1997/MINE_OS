@@ -26,7 +26,7 @@ void resume_iic_without_ack(void) {
 }
 
 
-void i2c_interrupt_func(int irq) {
+void i2c_interrupt_func(unsigned long nr, unsigned long parameter) {
 	int index;
 	unsigned int iicstat = IICSTAT;
 	unsigned int iiccon;
@@ -134,7 +134,7 @@ void s3c2440_i2c_con_init(void) {
 	IICCON = (1 << 7) | (0 << 6) | (1 << 5) | (30 << 0);
 
 	/* 注册中断处理函数 */
-	request_irq(INT_IIC, i2c_interrupt_func);
+	request_irq(IRQ_IIC, i2c_interrupt_func);
 }
 
 int do_master_tx(p_i2c_msg msg) {

@@ -209,18 +209,6 @@ static void Isr_Adc(void) {
 	}
 }
 
-/*
- * ADC、触摸屏的中断服务程序
- * 对于INT_TC、INT_ADC中断，分别调用它们的处理程序
- */
-void AdcTsIntHandle(void) {
-	if (get_subsrcpnd() & (1 << INT_TC)) {
-		Isr_Tc();
-	}
-	if (get_subsrcpnd() & (1 << INT_ADC_S)) {
-		Isr_Adc();
-	}
-}
 
 /*
  * 初始化触摸屏
@@ -240,14 +228,12 @@ void init_Ts(void) {
 	 *  延时时间 = ADCDLY * 晶振周期 = ADCDLY * 1 / 12000000 = 5ms
 	 */
 	ADCDLY = 60000;
-	set_subint(INT_TC);// 开启INT_TC中断，即触摸屏被按下或松开时产生中断
-	set_subint(INT_ADC_S);// 开启INT_ADC中断，即A/D转换结束时产生中断
-	request_irq(INT_ADC, AdcTsIntHandle); // 设置ADC中断服务程序
+	request_irq(IRQ_TC, Isr_Tc);// 开启IRQ_TC中断，即触摸屏被按下或松开时产生中断
+	request_irq(IRQ_ADC, Isr_Adc);// 开启IRQ_ADC中断，即A/D转换结束时产生中断
 	wait_down_int();    /* 进入"等待中断模式"，等待触摸屏被按下 */
 }
 void close_Ts(void) {
-	clr_subint(INT_TC);
-	clr_subint(INT_ADC_S);
-	free_irq(INT_ADC);
+	free_irq(IRQ_TC);
+	free_irq(IRQ_ADC);
 }
 

@@ -31,7 +31,7 @@ static int irda_data_get(void) {
 		return 0;
 }
 
-void irda_irq(int irq) {
+void irda_irq(unsigned long nr, unsigned long parameter) {
 	/* 在中断处理函数里:
 	  记录中断发生的时间,
 	  跟上次中断的时间比较, 计算出脉冲宽度
@@ -52,11 +52,11 @@ void irda_irq(int irq) {
 /* 注册中断 */
 void irda_init(void) {
 	irda_data_cfg_as_eint();
-	request_irq(EINT1, irda_irq);
+	request_irq(IRQ_EINT1, irda_irq);
 }
 void irda_exit(void) {
 	//TODO
-	free_irq(EINT1);
+	free_irq(IRQ_EINT1);
 }
 void irda_raw_test(void) {
 	irda_raw_event event;
