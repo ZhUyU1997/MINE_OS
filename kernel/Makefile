@@ -5,4 +5,6 @@ obj-y += interrupt.o
 obj-y += command.o
 obj-y += backtrace.o
 obj-y += irq.o
+obj-y += softirq.o
+obj-y += timer.o
 obj-y += app/

@@ -41,6 +41,7 @@
 #define Y_AXIS_MODE     2
 #define WAIT_INT_MODE   3
 
+#define TS_DEBUG(fmt, args...)
 
 /* 设置进入等待中断模式，XP_PU,XP_Dis,XM_Dis,YP_Dis,YM_En
  * (1)对于S3C2410，位[8]只能为0，所以只能使用下面的wait_down_int，
@@ -69,6 +70,7 @@ volatile int g_ts_data_valid = 0;
 static int test_x_array[16];
 static int test_y_array[16];
 
+static struct timer_list ts_timer;
 
 int get_touch_x() {
 	return g_ts_x;
@@ -78,15 +80,12 @@ int get_touch_y() {
 }
 
 void report_ts_xy(int x, int y, int pressure) {
-	//printf("x = %08d, y = %08d\n", x, y);
+	TS_DEBUG("x = %08d, y = %08d\n", x, y);
 	if (g_ts_data_valid == 0) {
 		g_ts_x = x;
 		g_ts_y = y;
 		g_ts_pressure = pressure;
 		g_ts_data_valid = 1;
-		//TODO:
-		//GUI_TOUCH_Exec();
-		//GUI_TOUCH_Exec();
 	}
 }
 
@@ -115,12 +114,12 @@ int ts_read_raw_asyn(int *px, int *py, int *ppressure) {
  */
 static void Isr_Tc(void) {
 	if (ADCDAT0 & 0x8000) {
-		//printf("Stylus Up\n");
-		close_timer();
+		TS_DEBUG("Stylus Up\n");
+		del_timer(&ts_timer);
 		report_ts_xy(-1, -1, 0);
 		wait_down_int();    /* 进入"等待中断模式"，等待触摸屏被按下 */
 	} else {
-		//printf("Stylus Down\n");
+		TS_DEBUG("Stylus Down\n");
 
 		mode_auto_xy();     /* 进入自动(连续) X/Y轴坐标转换模式 */
 
@@ -132,7 +131,7 @@ static void Isr_Tc(void) {
 		ADCCON |= ADC_START;
 	}
 }
-static void timer_handle() {
+static void timer_handle(void * data) {
 	mode_auto_xy();
 	ADCCON |= ADC_START;
 }
@@ -163,7 +162,7 @@ static void Isr_Adc(void) {
 		adc_cnt = 0;
 		adc_x = 0;
 		adc_y = 0;
-		close_timer();
+		del_timer(&ts_timer);
 		report_ts_xy(-1, -1, 0);
 		wait_down_int();
 		return;
@@ -202,7 +201,7 @@ static void Isr_Adc(void) {
 		/* 启动定时器以再次读取数据 */
 		/* 先设置TS进入"等待中断模式" */
 		wait_up_int();
-		set_timer(10, timer_handle);
+		add_timer(&ts_timer);
 	} else {
 		mode_auto_xy();/* 进入"自动测量"模式 */
 		ADCCON |= (1 << 0);/* 启动ADC */
@@ -228,6 +227,9 @@ void init_Ts(void) {
 	 *  延时时间 = ADCDLY * 晶振周期 = ADCDLY * 1 / 12000000 = 5ms
 	 */
 	ADCDLY = 60000;
+
+	init_timer(&ts_timer, timer_handle, NULL, 10);
+
 	request_irq(IRQ_TC, Isr_Tc);// 开启IRQ_TC中断，即触摸屏被按下或松开时产生中断
 	request_irq(IRQ_ADC, Isr_Adc);// 开启IRQ_ADC中断，即A/D转换结束时产生中断
 	wait_down_int();    /* 进入"等待中断模式"，等待触摸屏被按下 */

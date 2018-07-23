@@ -403,15 +403,15 @@ void *kmalloc(unsigned long size, unsigned long gfp_flages) {
 	slab = kmalloc_cache_size[i].cache_pool;
 
 	if (kmalloc_cache_size[i].total_free != 0) {
-		do {
+		while (1) {
 			if (slab->free_count == 0)
 				slab = container_of(list_next(&slab->list), struct Slab, list);
 			else
 				break;
-		} while (slab != kmalloc_cache_size[i].cache_pool);
-		if (slab == kmalloc_cache_size[i].cache_pool) {
-			color_printk(BLUE, BLACK, "kmalloc() ERROR: kmalloc_cache_size[i].total_free != 0\n");
-			return NULL;
+			if (slab == kmalloc_cache_size[i].cache_pool) {
+				color_printk(BLUE, BLACK, "kmalloc() ERROR: kmalloc_cache_size[i].total_free != 0\n");
+				return NULL;
+			}
 		}
 	} else {
 		slab = kmalloc_create(kmalloc_cache_size[i].size);
@@ -748,17 +748,18 @@ void *slab_malloc(struct Slab_cache *slab_cache, unsigned long arg) {
 		slab_cache->total_free  += slab->color_count;
 
 	} else {
-		do {
+		while (1) {
 			if (slab->free_count == 0) {
 				slab = container_of(list_next(&slab->list), struct Slab, list);
 				continue;
 			} else
 				break;
-		} while (slab != slab_cache->cache_pool);
-		if (slab == slab_cache->cache_pool) {
-			color_printk(BLUE, BLACK, "slab_malloc() ERROR: slab_cache->total_free != 0\n");
-			return NULL;
+			if (slab == slab_cache->cache_pool) {
+				color_printk(BLUE, BLACK, "slab_malloc() ERROR: slab_cache->total_free != 0\n");
+				return NULL;
+			}
 		}
+		
 	}
 
 	for (int j = 0; j < slab->color_count; j++) {

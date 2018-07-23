@@ -2,26 +2,22 @@
 #include <s3c24xx.h>
 #include <interrupt.h>
 #include <timer.h>
-/*
- * 先写TCNTBn,TCMPBn，在启动手动更新，而不是启动手动更新，再写寄存器
- */
+#include <lib.h>
+#include <softirq.h>
 
-void timer_init() {
-	TCFG0 = 0;
-	TCFG1 = 0;
-	TCON  = 0;
-	TCFG0 |= (124);		//定时器 0，1 的预分频值
-	TCFG0 |= (24 << 8);	//定时器 2，3 和 4 的预分频值
-}
-
-static void tick_irq_hander();
 static unsigned int delta_time = 0;
 
-void init_tick(unsigned int time, irq_handler_t handle) {
+static void tick_irq_hander(unsigned long nr, unsigned long parameter) {
+	jiffies++;
+	if ((container_of(list_next(&timer_list_head.list), struct timer_list, list)->expire_jiffies <= jiffies))
+		set_softirq_status(TIMER_SIRQ);
+}
+
+void init_tick(unsigned int time) {
 	assert(time <= 0xffff);
 	//TCON:定时器控制寄存器
-	TCON &= ~(1 << 20);		//启动
-	free_irq(IRQ_TIMER4);
+	TCON &= ~(1 << 20);		//关闭
+	//free_irq(IRQ_TIMER4);
 	TCON &= ~(7 << 20);	//清空20~21位
 	TCON |= (1 << 22);		//定时器4间隙模式/自动重载
 	//TCONB4:定时器4计数缓冲寄存器
@@ -29,31 +25,22 @@ void init_tick(unsigned int time, irq_handler_t handle) {
 	TCNTB4 = delta_time = time;
 	TCON |= (1 << 21);		//定时器4手动更新TCNTB4
 	TCON &= ~(1 << 21);		//定时器4取消手动更新
-	if (handle)
-		request_irq(IRQ_TIMER4, handle);
-	else
-		request_irq(IRQ_TIMER4, tick_irq_hander);
+	request_irq(IRQ_TIMER4, tick_irq_hander);
 	TCON |= (1 << 20);		//启动
 }
 
-static volatile unsigned long long tick = 0;
-
 int get_sys_tick() {
-	return tick;
+	return jiffies;
 }
 
 unsigned long long get_system_time_us(void) {
-	return delta_time * tick + (delta_time - TCNTO4);
+	return delta_time * jiffies + (delta_time - TCNTO4);
 }
 
 unsigned long long delta_time_us(unsigned long long pre, unsigned long long now) {
 	return (now - pre);
 }
-
-static void tick_irq_hander(unsigned long nr, unsigned long parameter) {
-	tick++;
-}
-
+/*
 static void (*timer_handle)() = 0;
 
 static void timer_handler(unsigned long nr, unsigned long parameter) {
@@ -63,12 +50,13 @@ static void timer_handler(unsigned long nr, unsigned long parameter) {
 		timer_handle();
 }
 
+
 void set_timer(unsigned int time, void (*handle)()) {
 	assert((100 * time <= 0xffff) && handle);
 	if (!handle)
 		return;
 	TCON &= ~(1 << 8); //关闭
-	free_irq(IRQ_TIMER1);
+	//free_irq(IRQ_TIMER1);
 	//TCON:定时器控制寄存器
 	TCFG1 &= ~(15 << 4);
 	TCFG1 |= 1 << 4;
@@ -87,10 +75,13 @@ void set_timer(unsigned int time, void (*handle)()) {
 
 void close_timer() {
 	TCON &= ~(1 << 8); //关闭
-	free_irq(IRQ_TIMER1);
+	//free_irq(IRQ_TIMER1);
 }
+*/
+
 
 static volatile int delay_end = 0;
+
 static void delay_irq_hander(unsigned long nr, unsigned long parameter) {
 	TCON &= ~(1 << 12); //定时器关闭
 	free_irq(IRQ_TIMER2);
@@ -99,7 +90,7 @@ static void delay_irq_hander(unsigned long nr, unsigned long parameter) {
 void delay_u(unsigned int delay_time) {
 	assert(delay_time <= 0xffff);
 	TCON &= ~(1 << 12); //关闭
-	free_irq(IRQ_TIMER2);
+	//free_irq(IRQ_TIMER2);
 
 	if (delay_time > 0xffff)
 		delay_time = 0xffff;
@@ -126,5 +117,17 @@ void delay_u(unsigned int delay_time) {
 	udelay(1);
 	while (TCNTO2);
 #endif
-	free_irq(IRQ_TIMER2);
+	//free_irq(IRQ_TIMER2);
+}
+
+/*
+ * 先写TCNTBn,TCMPBn，在启动手动更新，而不是启动手动更新，再写寄存器
+ */
+
+void s3c2440_timer_init() {
+	TCFG0 = 0;
+	TCFG1 = 0;
+	TCON  = 0;
+	TCFG0 |= (124);		//定时器 0，1 的预分频值
+	TCFG0 |= (24 << 8);	//定时器 2，3 和 4 的预分频值
 }

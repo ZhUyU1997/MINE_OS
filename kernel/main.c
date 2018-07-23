@@ -30,6 +30,10 @@ static void initer(void (*init)(), char *msg){
 
 int main() {
 	irq_init();
+
+	color_printk(RED, BLACK, "Soft IRQ init \n");
+	softirq_init();
+
 	memcpy(0x33ff0000, 0x30100000, 4096);
 	Port_Init();
 	uart0_init();
@@ -47,10 +51,11 @@ int main() {
 	slab_init();
 
 	printf("初始化TIMER...\n");
+	s3c2440_timer_init();
 	timer_init();
 
 	printf("初始化TICK...\n");
-	init_tick(1000, NULL);
+	init_tick(1000);
 
 	printf("初始化LCD...\n");
 	Lcd_Port_Init();						// 设置LCD引脚

@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <irqs.h>
 #include <bug.h>
-#include "s3c24xx.h"
+#include <s3c24xx.h>
 
 static void dummy_isr(void) {
 	printf("IRQ HANDLE,ERROR!\n");
@@ -53,11 +53,12 @@ void do_irq(void) {
 	int irq = offset + S3C2440_CPUIRQ_OFFSET;
 	assert((irq >= IRQ_EINT0) && (irq <= IRQ_ADCPARENT));
 	generic_handle_irq(irq);
+	do_softirq();
 }
 
 void request_irq(int irq, irq_handler_t handler) {
 	assert((irq >= IRQ_EINT0) && (irq < NR_IRQS) && handler);
-	if (handler)
+	if (handler && interrupt_desc[irq].handler == dummy_isr)
 		interrupt_desc[irq].handler = handler;
 	else
 		assert(0);
