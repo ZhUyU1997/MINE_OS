@@ -17,6 +17,7 @@
 
 #define __MEMORY_H__
 
+#include "tlbflush.h"
 #include "lib.h"
 
 //	8Bytes per cell
@@ -106,33 +107,6 @@
 //7,2,1,0
 #define	PAGE_USER_Page		(PAGE_PS  | PAGE_U_S | PAGE_R_W | PAGE_Present)
 
-/*
-
-*/
-
-typedef struct {
-	unsigned long pml4t;
-} pml4t_t;
-#define	mk_mpl4t(addr,attr)	((unsigned long)(addr) | (unsigned long)(attr))
-#define set_mpl4t(mpl4tptr,mpl4tval)	(*(mpl4tptr) = (mpl4tval))
-
-typedef struct {
-	unsigned long pdpt;
-} pdpt_t;
-#define mk_pdpt(addr,attr)	((unsigned long)(addr) | (unsigned long)(attr))
-#define set_pdpt(pdptptr,pdptval)	(*(pdptptr) = (pdptval))
-
-typedef struct {
-	unsigned long pdt;
-} pdt_t;
-#define mk_pdt(addr,attr)	((unsigned long)(addr) | (unsigned long)(attr))
-#define set_pdt(pdtptr,pdtval)		(*(pdtptr) = (pdtval))
-
-typedef struct {
-	unsigned long pt;
-} pt_t;
-#define mk_pt(addr,attr)	((unsigned long)(addr) | (unsigned long)(attr))
-#define set_pt(ptptr,ptval)		(*(ptptr) = (ptval))
 
 
 struct E820 {
@@ -208,10 +182,6 @@ struct Page {
 
 #define MAX_NR_ZONES	10	//max zone
 
-/*
-
-*/
-
 struct Zone {
 	struct Page * 	pages_group;
 	unsigned long	pages_length;
@@ -230,10 +200,6 @@ struct Zone {
 };
 
 extern struct Global_Memory_Descriptor mms;
-
-/*
-
-*/
 
 struct Slab {
 	struct List list;
@@ -269,54 +235,17 @@ extern struct Slab_cache kmalloc_cache_size[16];
 #define SIZEOF_LONG_ALIGN(size) ((size + sizeof(long) - 1) & ~(sizeof(long) - 1) )
 #define SIZEOF_INT_ALIGN(size) ((size + sizeof(int) - 1) & ~(sizeof(int) - 1) )
 
-/*
 
-*/
+#define	flush_tlb_one(addr) flush_pmd_entry(addr)
+#define flush_tlb() local_flush_tlb_all()
 
-#define	flush_tlb_one(addr)
-/*
-
-*/
-
-#define flush_tlb()
-
-/*
-
-*/
-
-static inline unsigned long * Get_gdt() {
-	unsigned long * tmp;
-	return tmp;
-}
-
-/*
-
-*/
 
 unsigned long page_init(struct Page * page, unsigned long flags);
-
 unsigned long page_clean(struct Page * page);
-
-/*
-
-*/
-
 unsigned long get_page_attribute(struct Page * page);
-
 unsigned long set_page_attribute(struct Page * page, unsigned long flags);
-
-/*
-
-*/
-
 void init_memory();
-
-/*
-
-*/
-
 struct Page * alloc_pages(int zone_select, int number, unsigned long page_flags);
-
 void free_pages(struct Page * page, int number);
 
 /*
@@ -324,55 +253,14 @@ void free_pages(struct Page * page, int number);
 */
 
 void * kmalloc(unsigned long size, unsigned long flags);
-
-/*
-
-*/
-
 struct Slab * kmalloc_create(unsigned long size);
-
-/*
-
-*/
-
 unsigned long kfree(void * address);
-
-/*
-
-*/
-
 struct Slab_cache * slab_create(unsigned long size, void * (* constructor)(void * Vaddress, unsigned long arg), void * (* destructor)(void * Vaddress, unsigned long arg), unsigned long arg);
-
-/*
-
-*/
-
 unsigned long slab_destroy(struct Slab_cache * slab_cache);
-
-/*
-
-*/
-
 void * slab_malloc(struct Slab_cache * slab_cache, unsigned long arg);
-
-/*
-
-*/
-
 unsigned long slab_free(struct Slab_cache * slab_cache, void * address, unsigned long arg);
-
-/*
-
-*/
-
 unsigned long slab_init();
-
-/*
-
-*/
-
 void pagetable_init();
-
 unsigned long do_brk(unsigned long addr, unsigned long len);
 
 #endif

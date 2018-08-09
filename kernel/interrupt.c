@@ -4,6 +4,7 @@
 #include <irqs.h>
 #include <bug.h>
 #include <s3c24xx.h>
+#include <ptrace.h>
 
 static void dummy_isr(void) {
 	printf("IRQ HANDLE,ERROR!\n");
@@ -48,12 +49,13 @@ static void ack_irq(int irq) {
 	interrupt_desc[irq].controller->ack(irq);
 }
 
-void do_irq(void) {
+void do_irq(struct pt_regs *regs) {
 	int offset = INTOFFSET;
 	int irq = offset + S3C2440_CPUIRQ_OFFSET;
 	assert((irq >= IRQ_EINT0) && (irq <= IRQ_ADCPARENT));
 	generic_handle_irq(irq);
 	do_softirq();
+	schedule();
 }
 
 void request_irq(int irq, irq_handler_t handler) {

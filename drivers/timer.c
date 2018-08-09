@@ -4,6 +4,8 @@
 #include <timer.h>
 #include <lib.h>
 #include <softirq.h>
+#include <schedule.h>
+#include <smp.h>
 
 static unsigned int delta_time = 0;
 
@@ -11,6 +13,22 @@ static void tick_irq_hander(unsigned long nr, unsigned long parameter) {
 	jiffies++;
 	if ((container_of(list_next(&timer_list_head.list), struct timer_list, list)->expire_jiffies <= jiffies))
 		set_softirq_status(TIMER_SIRQ);
+	switch(current->priority)
+	{
+		case 0:
+		case 1:
+			task_schedule[SMP_cpu_id()].CPU_exec_task_jiffies--;
+			current->vrun_time += 1;
+			break;
+		case 2:
+		default:
+			task_schedule[SMP_cpu_id()].CPU_exec_task_jiffies -= 2;
+			current->vrun_time += 2;
+			break;
+	}
+
+	if(task_schedule[SMP_cpu_id()].CPU_exec_task_jiffies <= 0)
+		current->flags |= NEED_SCHEDULE;
 }
 
 void init_tick(unsigned int time) {

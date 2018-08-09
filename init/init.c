@@ -3,7 +3,9 @@
  */ 
 
 #include "s3c24xx.h"
- 
+
+int irq_stack[3];
+
 void disable_watch_dog(void);
 void clock_init(void);
 void memsetup(void);

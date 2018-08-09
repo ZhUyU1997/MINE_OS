@@ -4,7 +4,6 @@
 #include <serial.h>
 #include <assert.h>
 #include <printk.h>
-#include "command.h"
 
 //lcd driver
 #include "lcddrv.h"
@@ -50,12 +49,15 @@ int main() {
 	color_printk(RED, BLACK, "slab init \n");
 	slab_init();
 
+	color_printk(RED, BLACK, "schedule init \n");
+	schedule_init();
+
 	printf("初始化TIMER...\n");
 	s3c2440_timer_init();
 	timer_init();
 
 	printf("初始化TICK...\n");
-	init_tick(1000);
+	init_tick(50000);
 
 	printf("初始化LCD...\n");
 	Lcd_Port_Init();						// 设置LCD引脚
@@ -69,6 +71,9 @@ int main() {
 
 	printf("初始化fatfs...\n");
 	f_mount(0,&fatworkarea);
+
+	color_printk(RED, BLACK, "task init \n");
+	task_init();
 
 	printf("使能IRQ...\n");
 	enable_irq();

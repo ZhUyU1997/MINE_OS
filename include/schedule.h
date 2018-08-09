@@ -13,17 +13,22 @@
 *
 ***************************************************/
 
-#ifndef __SCHED_H__
-#define __SCHED_H__
+#ifndef __SCHEDULE_H__
+#define __SCHEDULE_H__
 
-/*
- * cloning flags:
- */
+#include "task.h"
 
+struct schedule {
+	long running_task_count;
+	long CPU_exec_task_jiffies;
+	struct task_struct task_queue;
+};
 
-#define CLONE_VM		(1 << 0)	/* shared Virtual Memory between processes */
-#define CLONE_FS		(1 << 1)	/* shared fs info between processes */
-#define CLONE_SIGNAL	(1 << 2)	/* shared signal between processes */
+extern struct schedule task_schedule[NR_CPUS];
 
+void schedule();
+void schedule_init();
+struct task_struct *get_next_task();
+void insert_task_queue(struct task_struct *tsk);
 
 #endif

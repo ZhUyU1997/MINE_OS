@@ -27,11 +27,8 @@ export AS LD CC CPP AR NM
 export STRIP OBJCOPY OBJDUMP
 export RM
 
-ifeq ($(strip HOSTOS),linux)
-TOPDIR			:= $(shell pwd)
-else
-TOPDIR			:= $(subst /c,c:,$(shell pwd))
-endif
+#CURDIR为内置变量
+TOPDIR			:= $(CURDIR)
 
 
 INCLUDEDIR 		:= $(TOPDIR)/include

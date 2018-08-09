@@ -12,7 +12,7 @@
 *
 *
 ***************************************************/
-
+#include "ldscript.h"
 #include "memory.h"
 #include "printk.h"
 #include "lib.h"
@@ -106,15 +106,7 @@ void init_memory() {
 			.type = 0,
 		},
 	};
-	extern char _text;
-	extern char _etext;
-	extern char _data;
-	extern char _edata;
-	extern char _rodata;
-	extern char _erodata;
-	extern char _bss;
-	extern char _ebss;
-	extern char _end;
+
 	mms.start_code = (unsigned long)& _text;
 	mms.end_code   = (unsigned long)& _etext;
 	mms.end_data   = (unsigned long)& _edata;

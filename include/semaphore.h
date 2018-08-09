@@ -13,17 +13,25 @@
 *
 ***************************************************/
 
-#ifndef __SCHED_H__
-#define __SCHED_H__
+#ifndef __SEMAPHORE_H__
 
-/*
- * cloning flags:
- */
+#define __SEMAPHORE_H__
 
+#include "atomic.h"
+#include "lib.h"
+#include "task.h"
+#include "schedule.h"
+#include "waitqueue.h"
 
-#define CLONE_VM		(1 << 0)	/* shared Virtual Memory between processes */
-#define CLONE_FS		(1 << 1)	/* shared fs info between processes */
-#define CLONE_SIGNAL	(1 << 2)	/* shared signal between processes */
+typedef struct {
+	atomic_T counter;
+	wait_queue_T wait;
+} semaphore_T;
 
+void semaphore_init(semaphore_T * semaphore, unsigned long count);
+
+void semaphore_up(semaphore_T * semaphore);
+
+void semaphore_down(semaphore_T * semaphore);
 
 #endif

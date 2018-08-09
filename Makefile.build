@@ -105,6 +105,6 @@ dep_file = .$@.d
 
 %.o : %.S
 	@echo CC $(CURDIR)/$@
-	@$(CC) $(CFLAGS) $(CPPFLAGS) -Wp,-MD,$(dep_file) -c -o $@ $<
+	@$(CC) $(CFLAGS) $(CPPFLAGS) -D__ASSEMBLY__ -Wp,-MD,$(dep_file) -c -o $@ $<
 	
 .PHONY : $(PHONY)

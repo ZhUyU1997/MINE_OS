@@ -13,17 +13,23 @@
 *
 ***************************************************/
 
-#ifndef __SCHED_H__
-#define __SCHED_H__
+#ifndef __WAITQUEUE_H__
 
-/*
- * cloning flags:
- */
+#define __WAITQUEUE_H__
 
+#include "lib.h"
 
-#define CLONE_VM		(1 << 0)	/* shared Virtual Memory between processes */
-#define CLONE_FS		(1 << 1)	/* shared fs info between processes */
-#define CLONE_SIGNAL	(1 << 2)	/* shared signal between processes */
+typedef struct {
+	struct List wait_list;
+	struct task_struct *tsk;
+} wait_queue_T;
 
+void wait_queue_init(wait_queue_T * wait_queue, struct task_struct *tsk);
+
+void sleep_on(wait_queue_T * wait_queue_head);
+
+void interruptible_sleep_on(wait_queue_T *wait_queue_head);
+
+void wakeup(wait_queue_T * wait_queue_head, long state);
 
 #endif
