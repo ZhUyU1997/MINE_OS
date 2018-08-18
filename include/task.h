@@ -23,6 +23,8 @@
 #include "ptrace.h"
 #include "ldscript.h"
 #include "pgtable.h"
+#include "vfs.h"
+#include "waitqueue.h"
 
 #define CLONE_FS	(1 << 0)
 #define CLONE_FILES	(1 << 1)
@@ -32,7 +34,7 @@
 // stack size 32K
 #define STACK_SIZE 32768
 
-
+extern long global_pid;
 
 
 #define TASK_RUNNING		(1 << 0)
@@ -95,12 +97,21 @@ struct task_struct {
 	long pid;
 	long priority;
 	long vrun_time;
+	
+	long exit_code;
+
+	struct file * file_struct[TASK_FILE_MAX];
+
+	wait_queue_T wait_childexit;
+	struct task_struct *next;
+	struct task_struct *parent;
 };
 
 ///////struct task_struct->flags:
 
-#define PF_KTHREAD	(1UL << 0)
+#define PF_KTHREAD		(1UL << 0)
 #define NEED_SCHEDULE	(1UL << 1)
+#define PF_VFORK		(1UL << 2)
 
 
 union task_union {
@@ -120,10 +131,14 @@ extern struct thread_struct init_thread;
 		.cpu_id = 0,		\
 		.mm = &init_mm,			\
 		.thread = &init_thread,		\
-		.addr_limit = 0xc0000000,	\
+		.addr_limit = 0xffffffff,	\
 		.pid = 0,			\
 		.priority = 2,		\
 		.vrun_time = 0,		\
+		.exit_code = 0,		\
+		.file_struct = {0},	\
+		.next = &tsk,		\
+		.parent = &tsk,		\
 	}
 
 
@@ -147,21 +162,30 @@ extern void __switch_to(struct cpu_context_save *, struct cpu_context_save *);
 		__switch_to(&temp->cpu_context, &next->cpu_context);	\
 	} while (0)
 
+   
+   
+   
+long get_pid();
+struct task_struct *get_task(long pid);
+
+void wakeup_process(struct task_struct *tsk);
+void exit_files(struct task_struct *tsk);
+
 unsigned long do_fork(struct pt_regs * regs, unsigned long clone_flags, unsigned long stack_start, unsigned long stack_size);
+unsigned long do_execve(struct pt_regs *regs, char *name, char *argv[], char *envp[]);
+unsigned long do_exit(unsigned long exit_code);
+
 void task_init();
 
-#define MAX_SYSTEM_CALL_NR 128
+extern void cpu_arm920_switch_mm(pgd_t *pgd, struct mm_struct *mm);
 
-typedef unsigned long (* system_call_t)(struct pt_regs * regs);
-
-unsigned long no_system_call(struct pt_regs * regs);
-
-unsigned long sys_printf(struct pt_regs * regs);
+static inline void switch_mm(struct task_struct *prev, struct task_struct *next) {
+	cpu_arm920_switch_mm(next->mm->pgd, next->mm);
+}
 
 extern void ret_system_call(void);
 extern void system_call(void);
 
-extern system_call_t system_call_table[MAX_SYSTEM_CALL_NR];
 
 
 extern struct task_struct *init_task[NR_CPUS];

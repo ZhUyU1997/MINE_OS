@@ -62,6 +62,8 @@ void schedule()
 {
 	struct task_struct *tsk = NULL;
 	long cpu_id = SMP_cpu_id();
+
+	cli();
 	current->flags &= ~NEED_SCHEDULE;
 	tsk = get_next_task();
 
@@ -80,16 +82,18 @@ void schedule()
 				task_schedule[cpu_id].CPU_exec_task_jiffies = 4/task_schedule[cpu_id].running_task_count*3;
 				break;
 		}
-	if(current->vrun_time >= tsk->vrun_time){
+	if (current->vrun_time >= tsk->vrun_time || current->state != TASK_RUNNING) {
 		if(current->state == TASK_RUNNING)
 			insert_task_queue(current);
 		//printf(">\n");
 		//color_printk(GREEN,BLACK,"pc = %X, sp = %X\n",tsk->cpu_context.pc,tsk->cpu_context.sp);
+		switch_mm(current, tsk);
 		switch_to(current,tsk);	
 		//printf("<\n");
-	}else{
+	} else {
 		insert_task_queue(tsk);
 	}
+	sti();
 }
 
 void schedule_init()
@@ -97,7 +101,7 @@ void schedule_init()
 	int i = 0;
 	memset(&task_schedule,0,sizeof(struct schedule) * NR_CPUS);
 
-	for(i = 0;i<NR_CPUS;i++)
+	for(i = 0; i < NR_CPUS; i++)
 	{
 		list_init(&task_schedule[i].task_queue.list);
 		task_schedule[i].task_queue.vrun_time = 0x7fffffff;

@@ -1,18 +1,28 @@
-#ifndef _SYS_DIRENT_H
-#define _SYS_DIRENT_H
-#include <fs.h>
-#include <sys/types.h>
+/***************************************************
+*		版权声明
+*
+*	本操作系统名为：MINE
+*	该操作系统未经授权不得以盈利或非盈利为目的进行开发，
+*	只允许个人学习以及公开交流使用
+*
+*	代码最终所有权及解释权归田宇所有；
+*
+*	本模块作者：	田宇
+*	EMail:		345538255@qq.com
+*
+*
+***************************************************/
 
-#define MAX_NAME_LEN	255
-//与YAFFS_MAX_NAME_LENGTH一致
-struct inode;
+#ifndef __DIRENT_H__
+
+#define __DIRENT_H__
+
 struct dirent {
-	ino_t			d_ino;       /* inode number */
-	off_t			d_off;       /* offset to the next dirent */
-	unsigned short	d_reclen;    /* length of this record */
-	unsigned char	d_type;      /* type of file; not supported
-								  by all file system types */
-	char			d_name[0]; /* filename */
+	long d_offset;
+	long d_type;
+	long d_namelen;
+	char d_name[];
 };
+
 
 #endif

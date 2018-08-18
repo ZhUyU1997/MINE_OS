@@ -27,17 +27,19 @@
 
 */
 
-#define PAGE_OFFSET	((unsigned long)0)
-#define	TASK_SIZE	((unsigned long)0x00007fffffffffff)
-
-#define PAGE_GDT_SHIFT	39
-#define PAGE_1G_SHIFT	30
+#define PAGE_4K_SHIFT	12
+#define PAGE_8K_SHIFT	13
+#define PAGE_16K_SHIFT	14
+#define PAGE_32K_SHIFT	15
 #define PAGE_2M_SHIFT	21
 #define PAGE_4M_SHIFT	22
-#define PAGE_4K_SHIFT	12
+#define PAGE_1G_SHIFT	30
 
 #define PAGE_2M_SIZE	(1UL << PAGE_2M_SHIFT)
 #define PAGE_4K_SIZE	(1UL << PAGE_4K_SHIFT)
+#define PAGE_8K_SIZE	(1UL << PAGE_8K_SHIFT)
+#define PAGE_16K_SIZE	(1UL << PAGE_16K_SHIFT)
+#define PAGE_32K_SIZE	(1UL << PAGE_32K_SHIFT)
 
 #define PAGE_2M_MASK	(~ (PAGE_2M_SIZE - 1))
 #define PAGE_4K_MASK	(~ (PAGE_4K_SIZE - 1))
@@ -239,6 +241,14 @@ extern struct Slab_cache kmalloc_cache_size[16];
 #define	flush_tlb_one(addr) flush_pmd_entry(addr)
 #define flush_tlb() local_flush_tlb_all()
 
+#define cpu_get_pgd()	\
+	({						\
+		unsigned long pg;			\
+		__asm__("mrc	p15, 0, %0, c2, c0, 0"	\
+				: "=r" (pg) : : "cc");		\
+		pg &= ~0x3fff;				\
+		(pgd_t *)Phy_To_Virt(pg);		\
+	})
 
 unsigned long page_init(struct Page * page, unsigned long flags);
 unsigned long page_clean(struct Page * page);

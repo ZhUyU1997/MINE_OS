@@ -39,4 +39,17 @@ static inline void set_pte_ext(pte_t *ptep, pte_t pte){
 #define mk_pte(page,prot)		pfn_pte(page_to_pfn(page), prot)
 #define pte_clear(mm,addr,ptep)	set_pte_ext(ptep, 0, 0)
 
+#define copy_pmd(pmdpd,pmdps)		\
+	do {				\
+		pmdpd[0] = pmdps[0];	\
+		pmdpd[1] = pmdps[1];	\
+		flush_pmd_entry(pmdpd);	\
+	} while (0)
+
+#define pmd_clear(pmdp)			\
+	do {				\
+		pmdp[0] = 0;	\
+		pmdp[1] = 0;	\
+		clean_pmd_entry(pmdp);	\
+	} while (0)
 #endif

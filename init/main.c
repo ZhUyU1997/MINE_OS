@@ -4,6 +4,7 @@
 #include <serial.h>
 #include <assert.h>
 #include <printk.h>
+#include <fcntl.h>
 
 //lcd driver
 #include "lcddrv.h"
@@ -71,7 +72,8 @@ int main() {
 
 	printf("初始化fatfs...\n");
 	f_mount(0,&fatworkarea);
-
+	DISK1_FAT32_FS_init();
+	color_printk(RED, BLACK, "test sys_open ret = %d\n",sys_open("10.bmp", O_RDONLY));
 	color_printk(RED, BLACK, "task init \n");
 	task_init();
 

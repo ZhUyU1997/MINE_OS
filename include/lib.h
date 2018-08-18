@@ -14,8 +14,10 @@
 ***************************************************/
 
 #ifndef __LIB_H__
-
 #define __LIB_H__
+
+#include <irqflags.h>
+#include <global_config.h>
 
 #define NULL 0
 
@@ -25,14 +27,11 @@
 		(type *)((unsigned long)p - (unsigned long)&(((type *)0)->member));		\
 	})
 
-
-#define sti()
-#define cli()
-#define nop()
-#define io_mfence()
-
-#define hlt()
-#define pause()
+#define sti() local_irq_enable()
+#define cli() local_irq_disable()
+//#define nop()
+//#define hlt()
+//#define pause()
 
 struct List {
 	struct List * prev;
@@ -92,9 +91,43 @@ static inline struct List * list_next(struct List * entry) {
 #define ARRAY_SIZE(x)	((sizeof(x)) / (sizeof(x[0])))
 #define BITS_PER_LONG	(sizeof(long) * 8)
 
-#define port_insw(port,buffer,nr)
+static inline long verify_area(unsigned char* addr, unsigned long size) {
+	if (((unsigned long)addr + size) <= TASK_SIZE)
+		return 1;
+	else
+		return 0;
+}
 
-#define port_outsw(port,buffer,nr)
+static inline long copy_from_user(void * from, void * to, unsigned long size) {
+	unsigned long d0, d1;
+	if (!verify_area(from, size))
+		return 0;
+	memcpy(to, from, size);
+	return size;
+}
 
+static inline long copy_to_user(void * from, void * to, unsigned long size) {
+	unsigned long d0, d1;
+	if (!verify_area(to, size))
+		return 0;
+	memcpy(to, from, size);
+	return size;
+}
+
+static inline long strncpy_from_user(void * from, void * to, unsigned long size) {
+	if (!verify_area(from, size))
+		return 0;
+
+	strncpy(to, from, size);
+	return	size;
+}
+
+static inline long strnlen_user(void * src, unsigned long maxlen) {
+	unsigned long size = strlen(src);
+	if (!verify_area(src, size))
+		return 0;
+
+	return size <= maxlen ? size : maxlen;
+}
 
 #endif

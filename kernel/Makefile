@@ -9,4 +9,7 @@ obj-y += timer.o
 obj-y += context_switch.o
 obj-y += task.o
 obj-y += schedule.o
+obj-y += entry.o
+obj-y += syscalls.o
+obj-y += waitqueue.o
 obj-y += app/

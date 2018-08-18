@@ -13,10 +13,12 @@
 *
 ***************************************************/
 #include "ldscript.h"
+#include "task.h"
 #include "memory.h"
 #include "printk.h"
 #include "lib.h"
 #include "errno.h"
+#include "mmu.h"
 
 struct Global_Memory_Descriptor mms = {{0}, 0};
 
@@ -906,4 +908,29 @@ unsigned long slab_init() {
 	color_printk(ORANGE, BLACK, "start_code:%#010lx,end_code:%#010lx,end_data:%#010lx,start_brk:%#010lx,end_of_struct:%#010lx\n", mms.start_code, mms.end_code, mms.end_data, mms.start_brk, mms.end_of_struct);
 
 	return 1;
+}
+
+
+unsigned long do_brk(unsigned long addr, unsigned long len) {
+	unsigned long * tmp = NULL;
+	unsigned long * virtual = NULL;
+	struct Page * p = NULL;
+	unsigned long i = 0;
+
+	for (i = addr; i < addr + len; i += PAGE_2M_SIZE) {
+		tmp = Phy_To_Virt(pgd_offset(current->mm, addr));
+		if (*tmp == NULL) {
+			p = alloc_pages(ZONE_NORMAL, 1, PG_PTable_Maped);
+			if (p == NULL)
+				return -ENOMEM;
+			pgd_t *pgd = current->mm->pgd;
+			set_pgd(pgd, addr, Virt_To_Phy(p->PHY_address), 1, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
+		}
+	}
+
+	current->mm->end_brk = i;
+
+	flush_tlb();
+
+	return i;
 }

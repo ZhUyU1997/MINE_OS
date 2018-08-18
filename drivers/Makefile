@@ -7,6 +7,7 @@ obj-y += timer.o
 obj-y += sdi.o
 obj-y += adc.o
 obj-y += RTC.o
+obj-y += disk.o
 obj-y += usbslave/
 obj-y += lcd/
 obj-y += i2c/

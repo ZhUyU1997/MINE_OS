@@ -1,101 +1,9 @@
 #include <global_config.h>
 #include <assert.h>
 #include <pgtable.h>
+#include <mmu.h>
 
-#define MMU_FULL_ACCESS     (3)			/* 访问权限 */
-#define MMU_DOMAIN(x)       (x)			/* 属于哪个域 */
-#define MMU_SPECIAL         (1)			/* 必须是1 */
-#define MMU_CACHE_ENABLE    (1)			/* cache enable */
-#define MMU_BUFFER_ENABLE   (1)			/* buffer enable */
-#define MMU_CACHE_DISABLE   (0)			/* cache disable */
-#define MMU_BUFFER_DISABLE  (0)			/* buffer disable */
-
-#define MMU_COARSE_PAGE     (1)         /* 表示这是粗页描述符 */
-#define MMU_SECTION         (2)         /* 表示这是段描述符 */
-#define MMU_FINE_PAGE		(3)         /* 表示这是细页描述符 */
-
-#define MMU_LARGE_PAGE 	    (1)         /* 表示这是大页描述符 */
-#define MMU_SMALL_PAGE		(2)         /* 表示这是小页描述符 */
-#define MMU_TINY_PAGE		(3)         /* 表示这是极小页描述符 */
-
-#define MMU_COARSE_PAGE_SHIFT		(10)
-#define MMU_SECTION_SHIFT			(20)
-#define MMU_FINE_PAGE_SHIFT			(12)
-
-#define MMU_LARGE_PAGE_SHIFT 	    (16)
-#define MMU_SMALL_PAGE_SHIFT		(12)
-#define MMU_TINY_PAGE_SHIFT			(10)
-
-#define MMU_SECTION_SIZE	(1<<MMU_SECTION_SHIFT)
-#define MMU_LARGE_PAGE_SIZE	(1<<MMU_LARGE_PAGE_SHIFT)
-#define MMU_SMALL_PAGE_SIZE	(1<<MMU_SMALL_PAGE_SHIFT)
-#define MMU_TINY_PAGE_SIZE 	(1<<MMU_TINY_PAGE_SHIFT)
-
-
-typedef struct COARSE_PAGE {
-	unsigned int type: 2;
-	unsigned int blank1: 2;
-	unsigned int special: 1;
-	unsigned int domain: 4;
-	unsigned int blank0: 1;
-	unsigned int base_address: 22;
-} COARSE_PAGE;
-
-typedef struct SECTION {
-	unsigned int type: 2;
-	unsigned int B: 1;
-	unsigned int C: 1;
-	unsigned int special: 1;
-	unsigned int domain: 4;
-	unsigned int blank1: 1;
-	unsigned int AP: 2;
-	unsigned int blank0: 8;
-	unsigned int base_address: 12;
-} SECTION;
-
-typedef struct FINE_PAGE {
-	unsigned int type: 2;
-	unsigned int blank1: 2;
-	unsigned int special: 1;
-	unsigned int domain: 4;
-	unsigned int blank0: 3;
-	unsigned int base_address: 20;
-} FINE_PAGE;
-
-typedef struct LARGE_PAGE {
-	unsigned int type: 2;
-	unsigned int B: 1;
-	unsigned int C: 1;
-	unsigned int AP0: 2;
-	unsigned int AP1: 2;
-	unsigned int AP2: 2;
-	unsigned int AP3: 2;
-	unsigned int blank0: 4;
-	unsigned int base_address: 16;
-} LARGE_PAGE;
-
-typedef struct SMALL_PAGE {
-	unsigned int type: 2;
-	unsigned int B: 1;
-	unsigned int C: 1;
-	unsigned int AP0: 2;
-	unsigned int AP1: 2;
-	unsigned int AP2: 2;
-	unsigned int AP3: 2;
-	unsigned int base_address: 20;
-} SMALL_PAGE;
-
-typedef struct TINY_PAGE {
-	unsigned int type: 2;
-	unsigned int B: 1;
-	unsigned int C: 1;
-	unsigned int AP: 2;
-	unsigned int blank0: 4;
-	unsigned int base_address: 22;
-} TINY_PAGE;
-
-void __set_section(unsigned long virtuladdr, unsigned long physicaladdr, unsigned int AP, unsigned int domain, unsigned int C, unsigned int B){
-	volatile SECTION *mmu_tlb_base = (volatile SECTION *)MUM_TLB_BASE_ADDR;
+void set_pmd(pmd_t *pmd, unsigned long virtuladdr, unsigned long physicaladdr, unsigned int AP, unsigned int domain, unsigned int C, unsigned int B){
 	SECTION sec = {
 		.base_address = physicaladdr >> MMU_SECTION_SHIFT,
 		.blank0 = 0,
@@ -107,19 +15,23 @@ void __set_section(unsigned long virtuladdr, unsigned long physicaladdr, unsigne
 		.B = B,
 		.type = MMU_SECTION,
 	};
-	mmu_tlb_base[virtuladdr >> 20] = sec;
+	pmd[0] = *(pmd_t *)&sec;
+	sec.base_address = (physicaladdr + MMU_SECTION_SIZE) >> MMU_SECTION_SHIFT;
+	pmd[1] = *(pmd_t *)&sec;
 }
-void set_section(unsigned long virtuladdr, unsigned long physicaladdr, unsigned long count, unsigned int AP, unsigned int domain, unsigned int C, unsigned int B){
+
+void set_pgd(pgd_t *pgd, unsigned long virtuladdr, unsigned long physicaladdr, unsigned long count, unsigned int AP, unsigned int domain, unsigned int C, unsigned int B){
 	unsigned long vaddr = virtuladdr, paddr = physicaladdr;
-	assert((vaddr&0xfffff)==0);
-	assert((paddr&0xfffff)==0);
+	assert((vaddr&0x1fffff)==0);
+	assert((paddr&0x1fffff)==0);
 	assert(count>0);
 	for (int i = 0; i < count; i++) {
 		assert(vaddr>=virtuladdr);
 		assert(paddr>=physicaladdr);
-		__set_section(vaddr, paddr, AP, domain, C, B);
-		vaddr += MMU_SECTION_SIZE;
-		paddr += MMU_SECTION_SIZE;
+		pmd_t *pmd = pgd + pgd_index(vaddr);
+		set_pmd(pmd, vaddr, paddr, AP, domain, C, B);
+		vaddr += PGDIR_SIZE;
+		paddr += PGDIR_SIZE;
 	}
 }
 
@@ -127,41 +39,42 @@ void set_section(unsigned long virtuladdr, unsigned long physicaladdr, unsigned 
  * 设置页表
  */
 void create_page_table(void) {
-	unsigned long virtuladdr, physicaladdr;
+	pgd_t *pgd = (pgd_t *)MUM_TLB_BASE_ADDR;
+	memset(pgd, 0, 16*1024);
 	/*
 	 * Steppingstone的起始物理地址为0，第一部分程序的起始运行地址也是0，
 	 * 为了在开启MMU后仍能运行第一部分的程序，
 	 * 将0～1M的虚拟地址映射到同样的物理地址
 	 */
 	printf("正在创建Steppingstone页表项\n");
-	set_section(0, 0, 1, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
+	set_pgd(pgd, 0, 0, 1, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
 
 	/*
 	 * 0x48000000是特殊寄存器的起始物理地址，
 	 * 将虚拟地址0x48000000～0x5FFFFFFF映射到物理地址0x48000000～0x5FFFFFFF上，
 	 */
 	printf("正在创建特殊寄存器页表项\n");
-	set_section(VIRTUAL_IO_ADDR, VIRTUAL_IO_ADDR, IO_MAP_SIZE >> MMU_SECTION_SHIFT, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_DISABLE, MMU_BUFFER_DISABLE);
+	set_pgd(pgd, VIRTUAL_IO_ADDR, VIRTUAL_IO_ADDR, IO_MAP_SIZE >> PGDIR_SHIFT, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_DISABLE, MMU_BUFFER_DISABLE);
 	/*
 	 * SDRAM的物理地址范围是0x30000000～0x33FFFFFF，
 	 * 将虚拟地址0x30000000～0x33FFFFFF映射到物理地址0x30000000～0x33FFFFFF上，
 	 * 总共64M，涉及64个段描述符
 	 */
 	printf("正在创建SDRAM页表项\n");
-	set_section(VIRTUAL_MEM_ADDR, PHYSICAL_MEM_ADDR, MEM_MAP_SIZE >> MMU_SECTION_SHIFT, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
+	set_pgd(pgd, VIRTUAL_MEM_ADDR, PHYSICAL_MEM_ADDR, MEM_MAP_SIZE >> PGDIR_SHIFT, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
 	//关闭framebuffer的cache
 	//set_SECTION(0x33c00000, 0x33c00000, 1, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_DISABLE, MMU_BUFFER_DISABLE);
 	//设置BANK4
 	//TODO:不完全
-	set_section(0x20000000, 0x20000000, 1, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_DISABLE, MMU_BUFFER_DISABLE);
-	set_section(0xfff00000, 0x33f00000, 1, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
+	set_pgd(pgd, 0x20000000, 0x20000000, 1, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_DISABLE, MMU_BUFFER_DISABLE);
+	set_pgd(pgd, 0xfff00000, 0x33f00000, 1, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
 }
 
 /*
  * 启动MMU
  */
 void mmu_init(void) {
-	unsigned long ttb = (unsigned long)MUM_TLB_BASE_ADDR;;
+	unsigned long ttb = (unsigned long)MUM_TLB_BASE_ADDR;
 	//创建页表
 	printf("正在创建页表\n");
 	create_page_table();
@@ -237,9 +150,10 @@ void mmu_update(unsigned long ttb){
 }
 
 void mmu_test(){
+	pgd_t *pgd = (pgd_t *)MUM_TLB_BASE_ADDR;
 	int *p = 0x32000000;
 	p[0] = 0x345678;
-	__set_section(0xe2000000, 0x32000000, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
+	set_pgd(pgd, 0xe2000000, 0x32000000, 1, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
 	flush_pmd_entry(0x32000000);
 	p = 0xe2000000;
 	printf("mmu test : %#X", p[0]);
