@@ -30,6 +30,7 @@ export RM
 #CURDIR为内置变量
 TOPDIR			:= $(CURDIR)
 
+TARGET			:= mine
 
 INCLUDEDIR 		:= $(TOPDIR)/include
 #WFLAGS			:= -Wall
@@ -37,12 +38,11 @@ WFLAGS			:= -w
 CFLAGS 			:= -std=gnu99 $(WFLAGS) -O2 -fno-builtin -march=armv4t -mtune=arm920t -nostdlib -msoft-float -fsigned-char -fno-omit-frame-pointer
 CPPFLAGS   		:= -I$(INCLUDEDIR) -I$(TOPDIR)/drivers -I$(TOPDIR)/fs/Fatfs_f8a -nostdinc
 LDFLAGS			:= -L$(shell dirname `$(CC) $(CFLAGS) $(CPPFLAGS) -print-libgcc-file-name`) -lgcc
-LDFLAGS			+= -Tmine.lds
+LDFLAGS			+= -T$(strip $(TARGET)).lds
+
 
 export CFLAGS CPPFLAGS LDFLAGS
 export TOPDIR
-
-TARGET := mine
 
 obj-y += init/
 obj-y += drivers/

@@ -26,7 +26,7 @@
 /*
 
 */
-
+#define PAGE_2K_SHIFT	11
 #define PAGE_4K_SHIFT	12
 #define PAGE_8K_SHIFT	13
 #define PAGE_16K_SHIFT	14
@@ -35,11 +35,12 @@
 #define PAGE_4M_SHIFT	22
 #define PAGE_1G_SHIFT	30
 
-#define PAGE_2M_SIZE	(1UL << PAGE_2M_SHIFT)
+#define PAGE_2K_SIZE	(1UL << PAGE_2K_SHIFT)
 #define PAGE_4K_SIZE	(1UL << PAGE_4K_SHIFT)
 #define PAGE_8K_SIZE	(1UL << PAGE_8K_SHIFT)
 #define PAGE_16K_SIZE	(1UL << PAGE_16K_SHIFT)
 #define PAGE_32K_SIZE	(1UL << PAGE_32K_SHIFT)
+#define PAGE_2M_SIZE	(1UL << PAGE_2M_SHIFT)
 
 #define PAGE_2M_MASK	(~ (PAGE_2M_SIZE - 1))
 #define PAGE_4K_MASK	(~ (PAGE_4K_SIZE - 1))
@@ -238,8 +239,11 @@ extern struct Slab_cache kmalloc_cache_size[16];
 #define SIZEOF_INT_ALIGN(size) ((size + sizeof(int) - 1) & ~(sizeof(int) - 1) )
 
 
-#define	flush_tlb_one(addr) flush_pmd_entry(addr)
+//#define	flush_tlb_one(addr) flush_pmd_entry(addr)
 #define flush_tlb() local_flush_tlb_all()
+
+extern void arm920_flush_kern_cache_all();
+#define flush_cache() arm920_flush_kern_cache_all()
 
 #define cpu_get_pgd()	\
 	({						\

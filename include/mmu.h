@@ -1,21 +1,23 @@
-#ifndef __MMU_H__
+ï»¿#ifndef __MMU_H__
 #define  __MMU_H__
 
-#define MMU_FULL_ACCESS     (3)			/* ·ÃÎÊÈ¨ÏŞ */
-#define MMU_DOMAIN(x)       (x)			/* ÊôÓÚÄÄ¸öÓò */
-#define MMU_SPECIAL         (1)			/* ±ØĞëÊÇ1 */
+#include <sys/types.h>
+
+#define MMU_FULL_ACCESS     (3)			/* è®¿é—®æƒé™ */
+#define MMU_DOMAIN(x)       (x)			/* å±äºå“ªä¸ªåŸŸ */
+#define MMU_SPECIAL         (1)			/* å¿…é¡»æ˜¯1 */
 #define MMU_CACHE_ENABLE    (1)			/* cache enable */
 #define MMU_BUFFER_ENABLE   (1)			/* buffer enable */
 #define MMU_CACHE_DISABLE   (0)			/* cache disable */
 #define MMU_BUFFER_DISABLE  (0)			/* buffer disable */
 
-#define MMU_COARSE_PAGE     (1)         /* ±íÊ¾ÕâÊÇ´ÖÒ³ÃèÊö·û */
-#define MMU_SECTION         (2)         /* ±íÊ¾ÕâÊÇ¶ÎÃèÊö·û */
-#define MMU_FINE_PAGE		(3)         /* ±íÊ¾ÕâÊÇÏ¸Ò³ÃèÊö·û */
+#define MMU_COARSE_PAGE     (1)         /* è¡¨ç¤ºè¿™æ˜¯ç²—é¡µæè¿°ç¬¦ */
+#define MMU_SECTION         (2)         /* è¡¨ç¤ºè¿™æ˜¯æ®µæè¿°ç¬¦ */
+#define MMU_FINE_PAGE		(3)         /* è¡¨ç¤ºè¿™æ˜¯ç»†é¡µæè¿°ç¬¦ */
 
-#define MMU_LARGE_PAGE 	    (1)         /* ±íÊ¾ÕâÊÇ´óÒ³ÃèÊö·û */
-#define MMU_SMALL_PAGE		(2)         /* ±íÊ¾ÕâÊÇĞ¡Ò³ÃèÊö·û */
-#define MMU_TINY_PAGE		(3)         /* ±íÊ¾ÕâÊÇ¼«Ğ¡Ò³ÃèÊö·û */
+#define MMU_LARGE_PAGE 	    (1)         /* è¡¨ç¤ºè¿™æ˜¯å¤§é¡µæè¿°ç¬¦ */
+#define MMU_SMALL_PAGE		(2)         /* è¡¨ç¤ºè¿™æ˜¯å°é¡µæè¿°ç¬¦ */
+#define MMU_TINY_PAGE		(3)         /* è¡¨ç¤ºè¿™æ˜¯æå°é¡µæè¿°ç¬¦ */
 
 #define MMU_COARSE_PAGE_SHIFT		(10)
 #define MMU_SECTION_SHIFT			(20)
@@ -92,5 +94,9 @@ typedef struct TINY_PAGE {
 	unsigned int blank0: 4;
 	unsigned int base_address: 22;
 } TINY_PAGE;
+
+void set_pmd(pmd_t *pmd, U32 physicaladdr, U32 AP, U32 domain, U32 C, U32 B);
+void set_pgd(pgd_t *pgd, U32 physicaladdr, U32 AP, U32 domain, U32 C, U32 B);
+void mmu_init(void);
 
 #endif

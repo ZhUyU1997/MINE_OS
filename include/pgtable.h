@@ -34,6 +34,7 @@ static inline void set_pte_ext(pte_t *ptep, pte_t pte){
 /* to find an entry in a page-table-directory */
 #define pgd_index(addr)			((addr) >> PGDIR_SHIFT)
 #define pgd_offset(mm, addr)	((mm)->pgd + pgd_index(addr))
+#define mk_pgd(page,prot)		pfn_pte(page_to_pfn(page), prot)
 
 #define pte_index(addr)			(((addr) >> PAGE_SHIFT) & (PTRS_PER_PTE - 1))
 #define mk_pte(page,prot)		pfn_pte(page_to_pfn(page), prot)

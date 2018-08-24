@@ -34,7 +34,6 @@ int main() {
 	color_printk(RED, BLACK, "Soft IRQ init \n");
 	softirq_init();
 
-	memcpy(0x33ff0000, 0x30100000, 4096);
 	Port_Init();
 	uart0_init();
 	//uart0_interrupt_init();
@@ -50,6 +49,7 @@ int main() {
 	color_printk(RED, BLACK, "slab init \n");
 	slab_init();
 
+	set_vector_map();
 	color_printk(RED, BLACK, "schedule init \n");
 	schedule_init();
 
@@ -72,9 +72,7 @@ int main() {
 
 	printf("初始化fatfs...\n");
 	f_mount(0,&fatworkarea);
-	DISK1_FAT32_FS_init();
-	color_printk(RED, BLACK, "test sys_open ret = %d\n",sys_open("10.bmp", O_RDONLY));
-	color_printk(RED, BLACK, "task init \n");
+
 	task_init();
 
 	printf("使能IRQ...\n");

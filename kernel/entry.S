@@ -67,7 +67,7 @@ ENTRY(vector_swi)
 	stmia	sp, {r0 - r12}			@ Calling r0 - r12
 	add	r8, sp, #S_PC
 	add r9, sp, #S_FRAME_SIZE
-	//ËäÈ»²»Ó°ÏìÔËĞĞ£¬µ«Ô­Ê¼µÄlrÖµÒÑ¶ªÊ§
+	//è™½ç„¶ä¸å½±å“è¿è¡Œï¼Œä½†åŸå§‹çš„lrå€¼å·²ä¸¢å¤±
 	stmdb	r8, {r9, lr}			@ Calling sp, lr
 	mrs	r8, spsr			@ called from non-FIQ mode, so ok.
 	str	lr, [sp, #S_PC]			@ Save calling PC
@@ -75,15 +75,18 @@ ENTRY(vector_swi)
 	str	r0, [sp, #S_OLD_R0]		@ Save OLD_R0
 
 	mov fp, #0
-	//TODO:°²È«¼ì²é
+	//TODO:å®‰å…¨æ£€æŸ¥
 	stmdb	sp!, {r4, r5}
 	ldr r9, = system_call_table
 	mov lr, pc
 	ldr pc, [r9, r7, lsl #2]
 	ldmia	sp!, {r4, r5}
 	msr	spsr_cxsf, r8
+	ldmia	sp, {r0 - pc}^			@ load r0 - pc, cpsr
 
 ENTRY(ret_system_call)
+	ldr r8, [sp, #S_PSR]
+	msr	spsr_cxsf, r8
 	ldmia	sp, {r0 - pc}^			@ load r0 - pc, cpsr
 
 ENTRY(sys_fork_wrapper)

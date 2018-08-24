@@ -163,6 +163,35 @@ CMD_DEFINE(wr_at24xx, "wr_at24xx", "wr_at24xx") {
 		printf("[error]\n");
 	return 0;
 }
+
+void view_hex(char *data, int len){
+	for (int i = 0; i < (len + 15) / 16; i++) {
+		/* 每行打印16个数据 */
+		for (int j = 0; j < 16; j++) {
+			/* 先打印数值 */
+			unsigned char c = data[i * 16 + j];
+			if ((i * 16 + j) < len)
+				printf("%02x ", c);
+			else
+				printf("   ");
+		}
+
+		printf("   ; ");
+
+		for (int j = 0; j < 16; j++) {
+			/* 后打印字符 */
+			unsigned char c = data[i * 16 + j];
+			if ((i * 16 + j) < len){
+				if (c < 0x20 || c > 0x7e)  /* 不可视字符 */
+					putchar('.');
+				else
+					putchar(c);
+			}
+				
+		}
+		printf("\n");
+	}
+}
 CMD_DEFINE(rd_at24xx, "rd_at24xx", "rd_at24xx addr len") {
 	unsigned char data[100];
 	unsigned char str[16];
@@ -185,30 +214,7 @@ CMD_DEFINE(rd_at24xx, "rd_at24xx", "rd_at24xx addr len") {
 	if (err)
 		printf("[error]\n");
 	printf("[data view]\n");
-
-	for (int i = 0; i < (len + 15) / 16; i++) {
-		/* 每行打印16个数据 */
-		for (int j = 0; j < 16; j++) {
-			/* 先打印数值 */
-			unsigned char c = data[cnt++];
-			str[j] = c;
-			if (j < len - i * 16)
-				printf("%02x ", c);
-			else
-				printf("   ");
-		}
-
-		printf("   ; ");
-
-		for (int j = 0; j < len - i * 16; j++) {
-			/* 后打印字符 */
-			if (str[j] < 0x20 || str[j] > 0x7e)  /* 不可视字符 */
-				putchar('.');
-			else
-				putchar(str[j]);
-		}
-		printf("\n");
-	}
+	view_hex(data, len);
 	return 0;
 }
 CMD_DEFINE(i2c_init, "i2c_init", "i2c_init") {

@@ -13,6 +13,7 @@
 *
 ***************************************************/
 #include "ldscript.h"
+#include "assert.h"
 #include "task.h"
 #include "memory.h"
 #include "printk.h"
@@ -287,7 +288,7 @@ struct Page *alloc_pages(int zone_select, int number, unsigned long page_flags) 
 
 	if (number >= BITS_PER_LONG || number <= 0) {
 		color_printk(RED, BLACK, "alloc_pages() ERROR: number is invalid\n");
-		return NULL;
+		goto ret_null;
 	}
 
 	switch (zone_select) {
@@ -311,7 +312,7 @@ struct Page *alloc_pages(int zone_select, int number, unsigned long page_flags) 
 
 		default:
 			color_printk(RED, BLACK, "alloc_pages() ERROR: zone_select index is invalid\n");
-			return NULL;
+			goto ret_null;
 			break;
 	}
 
@@ -346,6 +347,8 @@ struct Page *alloc_pages(int zone_select, int number, unsigned long page_flags) 
 	}
 
 	color_printk(RED, BLACK, "alloc_pages() ERROR: no page can alloc\n");
+ret_null:
+	assert(0);
 	return NULL;
 
 find_free_pages:
@@ -389,7 +392,7 @@ void *kmalloc(unsigned long size, unsigned long gfp_flages) {
 	struct Slab *slab = NULL;
 	if (size > 1048576) {
 		color_printk(RED, BLACK, "kmalloc() ERROR: kmalloc size too long:%08d\n", size);
-		return NULL;
+		goto ret_null;
 	}
 	for (i = 0; i < ARRAY_SIZE(kmalloc_cache_size); i++)
 		if (kmalloc_cache_size[i].size >= size)
@@ -404,7 +407,7 @@ void *kmalloc(unsigned long size, unsigned long gfp_flages) {
 				break;
 			if (slab == kmalloc_cache_size[i].cache_pool) {
 				color_printk(BLUE, BLACK, "kmalloc() ERROR: kmalloc_cache_size[i].total_free != 0\n");
-				return NULL;
+				goto ret_null;
 			}
 		}
 	} else {
@@ -412,7 +415,7 @@ void *kmalloc(unsigned long size, unsigned long gfp_flages) {
 
 		if (slab == NULL) {
 			color_printk(BLUE, BLACK, "kmalloc()->kmalloc_create()=>slab == NULL\n");
-			return NULL;
+			goto ret_null;
 		}
 
 		kmalloc_cache_size[i].total_free += slab->color_count;
@@ -441,6 +444,8 @@ void *kmalloc(unsigned long size, unsigned long gfp_flages) {
 	}
 
 	color_printk(BLUE, BLACK, "kmalloc() ERROR: no memory can alloc\n");
+ret_null:
+	assert(0);
 	return NULL;
 }
 
@@ -923,8 +928,8 @@ unsigned long do_brk(unsigned long addr, unsigned long len) {
 			p = alloc_pages(ZONE_NORMAL, 1, PG_PTable_Maped);
 			if (p == NULL)
 				return -ENOMEM;
-			pgd_t *pgd = current->mm->pgd;
-			set_pgd(pgd, addr, Virt_To_Phy(p->PHY_address), 1, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
+			pgd_t *pgd = pgd_offset(current->mm, addr);
+			set_pgd(pgd, p->PHY_address, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
 		}
 	}
 

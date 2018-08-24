@@ -5,6 +5,7 @@
 #include <bug.h>
 #include <s3c24xx.h>
 #include <ptrace.h>
+#include <preempt.h>
 
 static void dummy_isr(void) {
 	printf("IRQ HANDLE,ERROR!\n");
@@ -55,7 +56,9 @@ void do_irq(struct pt_regs *regs) {
 	assert((irq >= IRQ_EINT0) && (irq <= IRQ_ADCPARENT));
 	generic_handle_irq(irq);
 	do_softirq();
-	schedule();
+	assert(preempt_count()>=0);
+	if(!preempt_count())
+		schedule();
 }
 
 void request_irq(int irq, irq_handler_t handler) {

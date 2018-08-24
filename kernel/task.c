@@ -13,6 +13,7 @@
 *
 ***************************************************/
 #include "ldscript.h"
+#include "sys/err.h"
 #include "global_config.h"
 #include "assert.h"
 #include "pgtable.h"
@@ -101,15 +102,15 @@ unsigned long do_execve(struct pt_regs *regs, char *name, char *argv[], char *en
 		memcpy(current->mm->pgd + 384, init_task[SMP_cpu_id()]->mm->pgd + 384, (4096 - 768)*4);	//copy kernel space
 	}
 
-	pgd_t *pgd = current->mm->pgd;
-	assert(!(((unsigned long )pgd) & ( PAGE_16K_SIZE - 1)));
+	assert(!(((unsigned long )current->mm->pgd) & ( PAGE_16K_SIZE - 1)));
 	p = alloc_pages(ZONE_NORMAL, 1, PG_PTable_Maped);
-	set_pgd(pgd, 0x800000, Virt_To_Phy(p->PHY_address), 1, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
+	pgd_t *pgd = pgd_offset(current->mm, code_start_addr);
+	set_pgd(pgd, p->PHY_address, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
 
-	//__asm__ __volatile__("movq	%0,	%%cr3	\n\t"::"r"(current->mm->pgd):"memory");
+	cpu_switch_mm(current->mm->pgd, current->mm);
 
 	filp = open_exec_file(name);
-	if ((unsigned long)filp > -0x1000UL)
+	if (IS_ERR(filp))
 		return (unsigned long)filp;
 
 	if (!(current->flags & PF_KTHREAD))
@@ -156,6 +157,7 @@ unsigned long do_execve(struct pt_regs *regs, char *name, char *argv[], char *en
 
 	regs->ARM_pc = code_start_addr;
 	regs->ARM_sp = stack_start_addr;
+	regs->ARM_cpsr = SVC_MODE | PSR_ENDSTATE | PSR_ISETSTATE;
 	//regs->ARM_r0 = 1;
 
 	color_printk(RED, BLACK, "do_execve task is running\n");
@@ -168,17 +170,19 @@ unsigned long init(unsigned long arg) {
 
 	color_printk(RED, BLACK, "init task is running,arg:%#018lx\n", arg);
 
-	current->cpu_context.pc = (unsigned long)ret_system_call;
-	current->cpu_context.sp = (unsigned long)current + STACK_SIZE - sizeof(struct pt_regs);
+	struct pt_regs *regs = (unsigned long)current + STACK_SIZE - sizeof(struct pt_regs);
 	current->flags &= ~PF_KTHREAD;
 
-	do_execve(current->cpu_context.sp, "/init.bin", NULL, NULL);
+	if(IS_ERR(do_execve(regs, "/init.bin", NULL, NULL))){
+		color_printk(RED, BLACK, "do_execve error\n");
+		return 1;
+	}
 
 	//TODO:考虑CPSR
 	__asm__	__volatile__("mov	sp, %0		\n\t"
-						 "ldmia	sp, {r0 - pc}			@ load r0 - pc\n\t"
+						 "b		ret_system_call\n\t"
 						 :
-						 :"r"(current->cpu_context.sp)
+						 :"r"(regs)
 						 :"memory"
 						);
 	return 1;
@@ -270,20 +274,22 @@ unsigned long copy_mm(unsigned long clone_flags, struct task_struct *tsk) {
 	memcpy(newmm, current->mm, sizeof(struct mm_struct));
 
 	newmm->pgd = (pgd_t *)kmalloc(PAGE_16K_SIZE, 0);
+	assert(!(((unsigned long)newmm->pgd) & ( PAGE_16K_SIZE - 1)));
 	memcpy(newmm->pgd + 384, init_task[SMP_cpu_id()]->mm->pgd + 384, (4096 - 768)*4);	//copy kernel space
 	memset(newmm->pgd, 0, (768)*4);	//copy user code & data & bss space
 
-	pgd_t *pgd = newmm->pgd;
-	assert(!(((unsigned long)pgd) & ( PAGE_16K_SIZE - 1)));
-	p = alloc_pages(ZONE_NORMAL, 1, PG_PTable_Maped);
-	set_pgd(pgd, 0x800000, Virt_To_Phy(p->PHY_address), 1, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
-
-	memcpy(Phy_To_Virt(p->PHY_address), code_start_addr, stack_start_addr - code_start_addr);
+	if (current->mm->start_stack - current->mm->start_code != 0) {
+		p = alloc_pages(ZONE_NORMAL, 1, PG_PTable_Maped);
+		pgd_t *pgd = pgd_offset(newmm, code_start_addr);
+		set_pgd(pgd, p->PHY_address, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
+		memcpy(Phy_To_Virt(p->PHY_address), code_start_addr, stack_start_addr - code_start_addr);
+	}
 
 	////copy user brk space
 	if (current->mm->end_brk - current->mm->start_brk != 0) {
 		p = alloc_pages(ZONE_NORMAL, 1, PG_PTable_Maped);
-		set_pgd(pgd, brk_start_addr, Virt_To_Phy(p->PHY_address), 1, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
+		pgd_t *pgd = pgd_offset(newmm, brk_start_addr);
+		set_pgd(pgd, Virt_To_Phy(p->PHY_address), MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
 		memcpy(Phy_To_Virt(p->PHY_address), (void *)brk_start_addr, PAGE_2M_SIZE);
 	}
 
@@ -299,7 +305,7 @@ void exit_mm(struct task_struct *tsk) {
 		return;
 
 	if (tsk->mm->pgd != NULL) {
-		tmp = Phy_To_Virt(tsk->mm->pgd[code_start_addr >> PGDIR_SHIFT][0] & (MMU_SECTION_SIZE - 1));
+		tmp = Phy_To_Virt(tsk->mm->pgd[code_start_addr >> PGDIR_SHIFT][0] & ~(MMU_SECTION_SIZE - 1));
 		free_pages(Phy_to_2M_Page(tmp), 1);
 		kfree(Phy_To_Virt(tsk->mm->pgd));
 	}
@@ -318,7 +324,7 @@ unsigned long copy_thread(unsigned long clone_flags, unsigned long stack_start, 
 
 	memcpy(childregs, regs, sizeof(struct pt_regs));
 	childregs->ARM_r0 = 0;
-	childregs->ARM_sp = stack_start;
+	childregs->ARM_sp = childregs;
 
 	tsk->cpu_context.sp = (unsigned long)childregs;
 
@@ -366,19 +372,16 @@ unsigned long do_fork(struct pt_regs *regs, unsigned long clone_flags, unsigned 
 	wait_queue_init(&tsk->wait_childexit, NULL);
 
 	retval = -ENOMEM;
-//	copy flags
+
 	if (copy_flags(clone_flags, tsk))
 		goto copy_flags_fail;
 
-//	copy mm struct
 	if (copy_mm(clone_flags, tsk))
 		goto copy_mm_fail;
 
-//	copy file struct
 	if (copy_files(clone_flags, tsk))
 		goto copy_files_fail;
 
-//	copy thread struct
 	if (copy_thread(clone_flags, stack_start, stack_size, tsk, regs))
 		goto copy_thread_fail;
 
@@ -421,10 +424,10 @@ do_exit_again:
 	exit_thread(tsk);
 	exit_files(tsk);
 	sti();
-
+	
 	exit_notify();
 	schedule();
-
+	
 	goto do_exit_again;
 	return 0;
 }
@@ -440,22 +443,23 @@ int kernel_thread(unsigned long(* fn)(unsigned long), unsigned long arg, unsigne
 	regs.ARM_pc = (unsigned long)kernel_thread_helper;
 	regs.ARM_cpsr = regs.ARM_r7 | PSR_I_BIT;
 
-	return do_fork(&regs, flags, 0, 0);
+	return do_fork(&regs, flags | CLONE_VM, 0, 0);
 }
 
 void task_init() {
 	init_mm.pgd = (pgd_t *)MUM_TLB_BASE_ADDR;
-	init_mm.start_code = mms.start_code;
-	init_mm.end_code = mms.end_code;
-	init_mm.start_data = (unsigned long)&_data;
-	init_mm.end_data = mms.end_data;
-	init_mm.start_rodata = (unsigned long)&_rodata;
-	init_mm.end_rodata = (unsigned long)&_erodata;
-	init_mm.start_bss = (unsigned long)&_bss;
-	init_mm.end_bss = (unsigned long)&_ebss;
-	init_mm.start_brk = mms.start_brk;
-	init_mm.end_brk = current->addr_limit;
-	init_mm.start_stack = 0;
+	//init_mm.start_code = mms.start_code;
+	//init_mm.end_code = mms.end_code;
+	//init_mm.start_data = (unsigned long)&_data;
+	//init_mm.end_data = mms.end_data;
+	//init_mm.start_rodata = (unsigned long)&_rodata;
+	//init_mm.end_rodata = (unsigned long)&_erodata;
+	//init_mm.start_bss = (unsigned long)&_bss;
+	//init_mm.end_bss = (unsigned long)&_ebss;
+	//init_mm.start_brk = mms.start_brk;
+	//init_mm.end_brk = current->addr_limit;
+	//init_mm.start_stack = 0;
+	wait_queue_init(&init_task_union.task.wait_childexit, NULL);
 
 	list_init(&init_task_union.task.list);
 

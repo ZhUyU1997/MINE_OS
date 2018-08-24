@@ -16,6 +16,7 @@
 #include "waitqueue.h"
 #include "task.h"
 #include "lib.h"
+#include "assert.h"
 
 void wait_queue_init(wait_queue_T * wait_queue, struct task_struct *tsk) {
 	list_init(&wait_queue->wait_list);
