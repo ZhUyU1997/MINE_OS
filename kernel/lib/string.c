@@ -26,7 +26,7 @@ unsigned char serial_getc(void);
 void putc(unsigned char c)
 {
     serial_putc(c);
-	//lcd_putc(c);
+	lcd_putc(c);
 }
 
 unsigned char getc(void)

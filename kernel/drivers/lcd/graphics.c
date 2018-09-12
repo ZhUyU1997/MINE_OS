@@ -233,13 +233,20 @@ void set_text_color(U32 frcolor, U32 bgcolor) {
 	text_color = frcolor;
 	background_color = bgcolor;
 }
+U32 get_text_bgcolor() {
+	return background_color;
+}
 
 void lcd_putc(U8 c) {
+	//TODO:
+	if((!SCREEN_X) && (!SCREEN_Y))
+		return;
 	if (isgraph(c)) {
 		put_font(x, y, c);
 		x = (x + FONT_W) % SCREEN_X;
 		if (x == 0) {
 			y = (y + FONT_H) % SCREEN_Y;
+			if (y == 0) ClearScr(background_color);
 		}
 	} else if (iscntrl(c) || isspace(c)) {
 		switch (c) {
@@ -247,24 +254,27 @@ void lcd_putc(U8 c) {
 				x = 0;
 				break;
 			case '\b':
-				//if(x<=0) x=480-8;
-				//else x = (x - 8)%480;
-				//x=(480+(x/8-1)*8)%480;
-				//x=(480+x-8)%480;
-				//x=(472+x)%480;
 				//TODO:跨屏问题，暂不支持滚屏
+
 				if (x == 0) {
-					y = (y + SCREEN_Y - FONT_H) % SCREEN_Y;
+					if (y > 0){
+						x = (SCREEN_X + x - FONT_W) % SCREEN_X;
+						y = (y + SCREEN_Y - FONT_H) % SCREEN_Y;
+					}	
+					else
+						y = 0;
+				} else {
+					x = (x - FONT_W) % SCREEN_X;
 				}
-				x = (SCREEN_X + x) % SCREEN_X;
 				put_font(x, y, ' ');
 				break;
 			case '\t':
-				for (int i = 0; i < 4 - (x % FONT_W) % 4; i++) {
+				for (int i = 0; i < (x % FONT_W + 4 - 1) & (4 - 1); i++) {
 					put_font(x, y, ' ');
 					x = (x + FONT_W) % SCREEN_X;
 					if (x == 0) {
 						y = (y + FONT_H) % SCREEN_Y;
+						if (y == 0) ClearScr(background_color);
 						break;
 					}
 				}
@@ -272,12 +282,14 @@ void lcd_putc(U8 c) {
 			case '\n':
 				x = 0;
 				y = (y + FONT_H) % SCREEN_Y;
+				if (y == 0) ClearScr(background_color);
 				break;
 			case ' ':
 				put_font(x, y, ' ');
 				x = (x + FONT_W) % SCREEN_X;
 				if (x == 0) {
 					y = (y + FONT_H) % SCREEN_Y;
+					if (y == 0) ClearScr(background_color);
 				}
 				break;
 			default:

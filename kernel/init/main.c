@@ -65,7 +65,7 @@ int main() {
 	Tft_Lcd_Init(MODE_TFT_16BIT_480272);	// 初始化LCD控制
 	Lcd_PowerEnable(0, 1);					// 设置LCD_PWREN有效，它用于打开LCD的电源
 	Lcd_EnvidOnOff(1);						// 使能LCD控制器输出信号
-	ClearScr(0x0);							// 清屏
+	ClearScr(get_text_bgcolor());			// 清屏
 
 	printf("初始化SD控制器...\n");
 	SDI_init();

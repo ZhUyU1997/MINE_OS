@@ -9,6 +9,9 @@ else
 HOSTOS		:= windows
 endif
 
+#CURDIR为内置变量
+TOPDIR			:= $(CURDIR)
+
 
 AS				= $(CROSS_COMPILE)as
 LD				= $(CROSS_COMPILE)ld
@@ -26,64 +29,23 @@ RM				= rm
 export AS LD CC CPP AR NM
 export STRIP OBJCOPY OBJDUMP
 export RM
+export HOSTOS TOPDIR
 
-#CURDIR为内置变量
-TOPDIR			:= $(CURDIR)
-
-TARGET			:= mine
-
-INCLUDEDIR 		:= $(TOPDIR)/include
-#WFLAGS			:= -Wall
-WFLAGS			:= -w
-CFLAGS 			:= -std=gnu99 $(WFLAGS) -O2 -fno-builtin -march=armv4t -mtune=arm920t -nostdlib -msoft-float -fsigned-char -fno-omit-frame-pointer
-CPPFLAGS   		:= -I$(INCLUDEDIR) -I$(TOPDIR)/drivers -I$(TOPDIR)/fs/Fatfs_f8a -nostdinc
-LDFLAGS			:= -L$(shell dirname `$(CC) $(CFLAGS) $(CPPFLAGS) -print-libgcc-file-name`) -lgcc
-LDFLAGS			+= -T$(strip $(TARGET)).lds
-
-
-export CFLAGS CPPFLAGS LDFLAGS
-export TOPDIR
-
-obj-y += init/
-obj-y += drivers/
-obj-y += kernel/
-obj-y += lib/
-obj-y += mm/
-obj-y += fs/
-obj-y += sound/
-
-.PHONY : all dis download clean distclean
+.PHONY : all dis dnw clean distclean
 all:
-	@echo $(shell pwd):
-	@make -s -C ./ -f $(TOPDIR)/Makefile.build
-	@$(LD) -o system_temp built-in.o $(LDFLAGS)
-	@gcc -o kallsyms $(TOPDIR)/scripts/kallsyms.c
-	@nm -n system_temp | ./kallsyms > kallsyms.S
-	@$(CC) $(CFLAGS) $(CPPFLAGS) -c -o kallsyms.o kallsyms.S
-	@echo LD system
-	@$(LD) -o system built-in.o kallsyms.o $(LDFLAGS)
-	@echo OBJCOPY $(TARGET).bin
-	@$(OBJCOPY) -O binary -S system $(TARGET).bin
+	@make -s -C ./kernel all
+	@make -s -C ./user all
 
 dis:system
-	@echo OBJDUMP $(TARGET).dis
-	@$(OBJDUMP) -D -m arm system > $(TARGET).dis
+	@make -s -C ./kernel dis
 
-dnw:$(TARGET).bin
-	dnw $(TARGET).bin
+dnw:
+	@make -s -C ./kernel dnw
 
 clean:
-	rm -f $(shell find -name "*.o")
-	rm -f $(TARGET)
+	@make -s -C ./kernel clean
+	@make -s -C ./user clean
 
 distclean:
-	rm -f $(shell find -name "*.o")
-	rm -f $(shell find -name "*.d")
-	rm -f $(shell find -name "*.a")
-	rm -f $(shell find -name "*.mac")
-	rm -f $(TARGET) $(TARGET).dis $(TARGET).bin system system_temp kallsyms.S
-ifeq ($(strip HOSTOS),linux)
-	rm -f kallsyms
-else
-	rm -f kallsyms.exe
-endif
+	@make -s -C ./kernel distclean
+	@make -s -C ./user distclean
