@@ -28,10 +28,10 @@ int lookup_kallsyms(unsigned long address) {
 		if (address > kallsyms_addresses[index] && address <= kallsyms_addresses[index + 1])
 			break;
 	if (index < kallsyms_syms_num) {
-		printf("\033[31;40mbacktrace address:%#08lx (+) %04d\tbacktrace function:%s(%#08lx)\033[0m\n", address, address - kallsyms_addresses[index], &string[kallsyms_index[index]], kallsyms_addresses[index]);
+		printf("\e[31;40mbacktrace address:%#08lx (+) %04d\tbacktrace function:%s(%#08lx)\e[0m\n", address, address - kallsyms_addresses[index], &string[kallsyms_index[index]], kallsyms_addresses[index]);
 		return 0;
 	} else {
-		printf("\033[31;40mbacktrace address:%#08lx,未找到符号\033[0m\n", address);
+		printf("\e[31;40mbacktrace address:%#08lx,No symbol found\e[0m\n", address);
 		return 1;
 	}
 }
@@ -42,7 +42,7 @@ void backtrace(unsigned long regs) {
 
 	for (int i = 0; i < 10; i++) {
 		if (rbp >= SWI_STACK_BASE_ADDR) {
-			printf("\033[31;40m到达栈顶\033[0m\n");
+			printf("\e[31;40mreach the top\e[0m\n");
 			break;
 		}
 
@@ -51,7 +51,30 @@ void backtrace(unsigned long regs) {
 			break;
 		rbp = (unsigned long *) * (rbp - 1);
 	}
+	while(1);
 }
 
+void panic() {
+	unsigned long *rbp;
+	unsigned long ret_address;
+
+	asm volatile(
+		"mov %0, fp"
+		: "=r"(rbp) : :
+	);
+
+	for (int i = 0; i < 10; i++) {
+		if (rbp >= SWI_STACK_BASE_ADDR) {
+			printf("\e[31;40mreach the top\e[0m\n");
+			break;
+		}
+
+		ret_address = *(rbp);
+		if (lookup_kallsyms(ret_address))
+			break;
+		rbp = (unsigned long *) * (rbp - 1);
+	}
+	while(1);
+}
 
 

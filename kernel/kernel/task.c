@@ -91,6 +91,10 @@ unsigned long do_execve(struct pt_regs *regs, char *name, char *argv[], char *en
 	struct file * filp = NULL;
 	unsigned long retval = 0;
 	long pos = 0;
+	
+	//TODO:释放旧页表
+	unsigned long flags;
+	raw_local_irq_save(flags);
 
 	if (current->flags & PF_VFORK) {
 		current->mm = (struct mm_struct *)kmalloc(sizeof(struct mm_struct), 0);
@@ -106,6 +110,8 @@ unsigned long do_execve(struct pt_regs *regs, char *name, char *argv[], char *en
 	p = alloc_pages(ZONE_NORMAL, 1, PG_PTable_Maped);
 	pgd_t *pgd = pgd_offset(current->mm, code_start_addr);
 	set_pgd(pgd, p->PHY_address, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
+
+	raw_local_irq_restore(flags);
 
 	cpu_switch_mm(current->mm->pgd, current->mm);
 

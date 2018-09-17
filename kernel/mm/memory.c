@@ -544,56 +544,52 @@ unsigned long kfree(void *address) {
 	for (int i = 0; i < ARRAY_SIZE(kmalloc_cache_size); i++) {
 		slab = kmalloc_cache_size[i].cache_pool;
 		do {
-			if (slab->Vaddress == page_base_address)
-				break;
-			slab = container_of(list_next(&slab->list), struct Slab, list);
-		} while (slab != kmalloc_cache_size[i].cache_pool);
+			if (slab->Vaddress == page_base_address) {
+				int index = (address - slab->Vaddress) / kmalloc_cache_size[i].size;
+				BIT_NOT(slab->color_map, index);
 
-		int index = (address - slab->Vaddress) / kmalloc_cache_size[i].size;
+				slab->free_count++;
+				slab->using_count--;
 
-		BIT_NOT(slab->color_map, index);
+				kmalloc_cache_size[i].total_free++;
+				kmalloc_cache_size[i].total_using--;
 
-		slab->free_count++;
-		slab->using_count--;
+				if ((slab->using_count == 0) && (kmalloc_cache_size[i].total_free >= slab->color_count * 3 / 2) && (kmalloc_cache_size[i].cache_pool != slab)) {
+					switch (kmalloc_cache_size[i].size) {
+						////////////////////slab + map in 2M page
 
-		kmalloc_cache_size[i].total_free++;
-		kmalloc_cache_size[i].total_using--;
+						case 32:
+						case 64:
+						case 128:
+						case 256:
+						case 512:
+							list_del(&slab->list);
+							kmalloc_cache_size[i].total_free -= slab->color_count;
 
-		if ((slab->using_count == 0) && (kmalloc_cache_size[i].total_free >= slab->color_count * 3 / 2) && (kmalloc_cache_size[i].cache_pool != slab)) {
-			switch (kmalloc_cache_size[i].size) {
-					////////////////////slab + map in 2M page
+							page_clean(slab->page);
+							free_pages(slab->page, 1);
+							break;
 
-				case 32:
-				case 64:
-				case 128:
-				case 256:
-				case 512:
-					list_del(&slab->list);
-					kmalloc_cache_size[i].total_free -= slab->color_count;
+						default:
+							list_del(&slab->list);
+							kmalloc_cache_size[i].total_free -= slab->color_count;
 
-					page_clean(slab->page);
-					free_pages(slab->page, 1);
-					break;
+							kfree(slab->color_map);
 
-				default:
-					list_del(&slab->list);
-					kmalloc_cache_size[i].total_free -= slab->color_count;
+							page_clean(slab->page);
+							free_pages(slab->page, 1);
+							kfree(slab);
+							break;
+					}
 
-					kfree(slab->color_map);
-
-					page_clean(slab->page);
-					free_pages(slab->page, 1);
-					kfree(slab);
-					break;
-			}
-
-		}
-
-		return 1;
+				}
+				return 1;
+			} else
+				slab = container_of(list_next(&slab->list), struct Slab, list);
+		} while(slab != kmalloc_cache_size[i].cache_pool);
 	}
 
 	color_printk(RED, BLACK, "kfree() ERROR: can`t free memory\n");
-
 	return 0;
 }
 /*

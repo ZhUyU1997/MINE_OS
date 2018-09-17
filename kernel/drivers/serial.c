@@ -20,7 +20,8 @@ void uart0_init(void) {
 
 	ULCON0  = 0x03;     // 8N1(8个数据位，无较验，1个停止位)
 	UCON0   = 0x05;     // 查询方式，UART时钟源为PCLK
-	UFCON0  = 0x00;     // 不使用FIFO
+	//UFCON0  = 0x00;     // 不使用FIFO
+	UFCON0  = 0x31;     // 使用FIFO
 	UMCON0  = 0x00;     // 不使用流控
 	UBRDIV0 = UART_BRD; // 波特率为115200
 }

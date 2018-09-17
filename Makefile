@@ -31,12 +31,16 @@ export STRIP OBJCOPY OBJDUMP
 export RM
 export HOSTOS TOPDIR
 
-.PHONY : all dis dnw clean distclean
-all:
+.PHONY : all kernel user dis dnw clean distclean
+all:kernel
+
+kernel:
 	@make -s -C ./kernel all
+
+user:
 	@make -s -C ./user all
 
-dis:system
+dis:
 	@make -s -C ./kernel dis
 
 dnw:

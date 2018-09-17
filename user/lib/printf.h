@@ -33,24 +33,19 @@
 
 */
 
-#define do_div(n,base) ({ \
-int __res; \
-__asm__("divq %%rcx":"=a" (n),"=d" (__res):"0" (n),"1" (0),"c" (base)); \
-__res; })
+#include "div64.h"
 
-inline int strlen(char * String)
+/**
+ * strlen - Find the length of a string
+ * @s: The string to be sized
+ */
+static inline int strlen(const char * s)
 {
-	register int __res;
-	__asm__	__volatile__	(	"cld	\n\t"
-					"repne	\n\t"
-					"scasb	\n\t"
-					"notl	%0	\n\t"
-					"decl	%0	\n\t"
-					:"=c"(__res)
-					:"D"(String),"a"(0),"0"(0xffffffff)
-					:
-				);
-	return __res;
+	const char *sc;
+
+	for (sc = s; *sc != '\0'; ++sc)
+		/* nothing */;
+	return sc - s;
 }
 
 

@@ -28,6 +28,10 @@ static void initer(void (*init)(), char *msg){
 	}
 }
 
+static void vt100_response(char *str){
+	printf(str);
+}
+
 int main() {
 	irq_init();
 

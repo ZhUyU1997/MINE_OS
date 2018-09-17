@@ -260,8 +260,7 @@ void lcd_putc(U8 c) {
 					if (y > 0){
 						x = (SCREEN_X + x - FONT_W) % SCREEN_X;
 						y = (y + SCREEN_Y - FONT_H) % SCREEN_Y;
-					}	
-					else
+					} else
 						y = 0;
 				} else {
 					x = (x - FONT_W) % SCREEN_X;

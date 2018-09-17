@@ -13,7 +13,7 @@ export CFLAGS CPPFLAGS LDFLAGS
 
 obj-y += init/
 obj-y += src/
-#obj-y += lib/
+obj-y += lib/
 
 .PHONY : all dis clean distclean
 all:

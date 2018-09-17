@@ -373,7 +373,55 @@ CMD_DEFINE(usbslave,
 	return 0;
 }
 CMD_DEFINE(mmtest, "mmtest", "mmtest") {
+	UINT16 *data,data2;
+	data = kmalloc(7680, 0);
+	printf("kamlloc size = %d addr = %X\n", 7680, data);
+	kfree(data);
+	data2 = kmalloc(7680, 0);
+	printf("kamlloc size = %d addr = %X\n", 7680, data2);
+	kfree(data);
 	
+	return 0;
+}
+CMD_DEFINE(analyse_keycode, "analyse_keycode", "analyse_keycode") {
+	while(1){
+		unsigned int c1 = getc();
+		//unsigned int c2 = serial_getc_async();
+		printf("%02X ", c1);
+		//if(c2!=0){
+		//	printf("%02X ", c2);
+		//}
+		//	
+	}
+	return 0;
+}
+static void vt100_response(char *str){
+	printf(str);
+}
+CMD_DEFINE(vt100, "vt100", "vt100") {
+	ili9340_init();
+	ili9340_setRotation(0);
+	vt100_init(vt100_response);
+	ili9340_fillRect(0, 0, 480, 272, 0);
+	vt100_puts("\e[?7l");
+	while(1){
+		unsigned int data = getc();
+		if(data == 'T'){ // ´ key on my kb
+			test_colors();
+			mdelay(2000); 
+			test_cursor();
+			mdelay(2000);
+			test_edit();
+			mdelay(2000);
+			test_scroll();
+			mdelay(2000);
+		}else
+			vt100_putc(data);
+	}
+	return 0;
+}
+CMD_DEFINE(panic, "panic", "panic") {
+	panic();
 	return 0;
 }
 CMD_DEFINE(help, "help", "help") {
@@ -411,6 +459,9 @@ cmd_table *ct_list[] = {
 	CMD_ENTRY(bmp_test),
 	CMD_ENTRY(backtrace),
 	CMD_ENTRY(mmtest),
+	CMD_ENTRY(analyse_keycode),
+	CMD_ENTRY(vt100),
+	CMD_ENTRY(panic),
 	NULL
 };
 cmd_table *search_cmd(char *name) {

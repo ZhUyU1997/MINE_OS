@@ -15,16 +15,20 @@
 
 #include "syscall.h"
 
-
-#define SYSFUNC_DEF(name)	_SYSFUNC_DEF_(name,__NR_##name)
+#define PP_HELP(x) #x
+#define SYSFUNC_DEF(name) extern int name (int x, ...); \
+	_SYSFUNC_DEF_(name,__NR_##name)
 #define _SYSFUNC_DEF_(name,nr)	__SYSFUNC_DEF__(name,nr)
 #define __SYSFUNC_DEF__(name,nr)	\
-	extern int name ()
 	__asm__	(		\
-		".global "#name"	\n\t"	\
-		".type	"#name",	@function \n\t"	\
-		#name":		\n\t"	\
-		"b   syscall	\n\t"	\
+		".global " #name "	\n\t"	\
+	  ".type	" #name ",	#function \n\t"	\
+		#name ":		\n\t"	\
+		"ldmia   sp, { r4-r5 }	\n\t"	\
+		"mov   r7, #" PP_HELP(nr)	"\n\t"	\
+		"stmdb	sp!, { lr }	\n\t"	\
+		"swi		#0	\n\t"	\
+		"ldmia	sp!, { pc }	\n\t"	\
 	);
 
 

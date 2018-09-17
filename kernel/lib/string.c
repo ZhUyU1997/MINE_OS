@@ -22,11 +22,10 @@
 
 void serial_putc(unsigned char c);
 unsigned char serial_getc(void);
-
+extern unsigned int xsize;
 void putc(unsigned char c)
 {
     serial_putc(c);
-	lcd_putc(c);
 }
 
 unsigned char getc(void)
