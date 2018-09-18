@@ -105,11 +105,9 @@ int drawImage(char *name) {
 				PutPixel(x + i, bmpInfo.bHeight - y - 1, convert888_565(*(U32 *)&rgb));
 			}
 		}
-		if (bmpInfo.bWidth % 4 > 0) {
-			res = f_read(&f, &rgb, 4 - bmpInfo.bWidth % 4, &br);
-			if ((res != FR_OK) || (br == 0))
-				goto exit;
-		}
+		res = f_read(&f, &rgb, (bmpInfo.bWidth + 3) & 3, &br);
+		if ((res != FR_OK) || (br == 0))
+			goto exit;
 	}
 
 exit:

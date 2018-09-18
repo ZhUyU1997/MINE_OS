@@ -13,3 +13,4 @@ obj-y += lcd/
 obj-y += i2c/
 obj-y += spi/
 obj-y += sensors/
+obj-y += tty/
