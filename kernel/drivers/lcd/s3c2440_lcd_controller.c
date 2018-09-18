@@ -40,6 +40,7 @@ void s3c2440_lcd_controller_init(p_lcd_params plcdparams)
 	 * [4:1]: bpp mode
 	 * [0]  : LCD video output and the logic enable/disable
 	 */
+	//TODO:计算不准确，可能会导致问题
 	int clkval = HCLK / plcdparams->time_seq.vclk / 2 - 1;
 	
 	//int clkval = 5;
