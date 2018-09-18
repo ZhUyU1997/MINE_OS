@@ -1,4 +1,4 @@
-#include <s3c24x0.h>
+﻿#include <s3c24x0.h>
 #include <interrupt.h>
 #include <timer.h>
 #include <usb/2440usb.h>
@@ -7,7 +7,7 @@ S3C24X0_USB_DEVICE  *usbdevregs = S3C24X0_GetBase_USB_DEVICE();
 S3C24X0_GPIO *gpioregs = S3C24X0_GetBase_GPIO();
 S3C24X0_CLOCK_POWER *clk_powerregs = S3C24X0_GetBase_CLOCK_POWER();
 //***************************[ PORTS ]****************************************************
-void Port_Init(void) {
+void port_init(void) {
 	//CAUTION:Follow the configuration order for setting the ports.
 	// 1) setting value(GPnDAT)
 	// 2) setting control register  (GPnCON)
@@ -30,7 +30,7 @@ void Port_Init(void) {
 	//Binary :	00 		00		00		01		00		01			01		01		01		01			01
 	gpioregs->GPBCON = 0x004555;
 	gpioregs->GPBUP  = 0x7ff;     // The pull up function is disabled GPB[10:0]
-	gpioregs->GPBDAT &= ~(1 << 0);	/* ��ֹ������ */
+	gpioregs->GPBDAT &= ~(1 << 0);	/* 禁止蜂鸣器 */
 
 	//*** PORT C GROUP
 	//Ports  :	GPC15	GPC14	GPC13	GPC12	GPC11	GPC10	GPC9	GPC8	GPC7	GPC6	GPC5	GPC4	GPC3	GPC2	GPC1	GPC0
@@ -103,7 +103,7 @@ void Port_Init(void) {
 }
 
 
-//����UPLLCON�Ĵ���
+//配置UPLLCON寄存器
 void ChangeUPllValue(int mdiv, int pdiv, int sdiv) {
 	clk_powerregs->UPLLCON = (mdiv << 12) | (pdiv << 4) | sdiv;
 }

@@ -12,4 +12,3 @@ obj-y += schedule.o
 obj-y += entry.o
 obj-y += syscalls.o
 obj-y += waitqueue.o
-obj-y += app/

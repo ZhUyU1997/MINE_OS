@@ -1,6 +1,7 @@
 #include <stdio.h>
-#include "ff.h"
+
 typedef unsigned short WORD;
+typedef unsigned int DWORD;
 struct RIFF_BLOCK {
 	char riff[4];
 	DWORD riffSize;
@@ -35,6 +36,7 @@ struct FILE_HEADER {
 static short buf[BUF_SIZE / 2];
 static short sbuf[2][BUF_SIZE];
 int read_wav_file(const char *filename) {
+#if 0
 	FIL fp;
 	struct FILE_HEADER file_header;
 	UINT br;
@@ -123,6 +125,7 @@ exit:
 	while (!dma_can_run());
 	close_sound();
 	f_close(&fp);
+#endif
 	return 0;
 }
 

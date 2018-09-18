@@ -30,8 +30,8 @@ typedef signed short int16_t;
 typedef unsigned int uint32_t;
 typedef signed int int32_t;
 
-#define VT100_SCREEN_WIDTH ili9340_width()
-#define VT100_SCREEN_HEIGHT ili9340_height()
+#define VT100_SCREEN_WIDTH terminal_width()
+#define VT100_SCREEN_HEIGHT terminal_height()
 #define VT100_CHAR_WIDTH 6
 #define VT100_CHAR_HEIGHT 8
 #define VT100_HEIGHT (VT100_SCREEN_HEIGHT / VT100_CHAR_HEIGHT)

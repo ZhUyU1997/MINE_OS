@@ -2,65 +2,13 @@
 #include <assert.h>
 #include <timer.h>
 #include <usb/2440usb.h>
-#include "command.h"
 #include <memory.h>
-#include "ff.h"
+#include "command.h"
 
 #define CMD_MAX_CMD_NUM 50
 #define CMD_MAXARGS 10
 extern cmd_table *ct_list[];
 
-DIR  dirobj;               // current work dir fof cd
-void FileAttr(BYTE attr, char *p) {
-	if ((attr & 0x10) == 0x10) {
-		sprintf(p, "%5s", "dir :");
-	} else {
-		sprintf(p, "%5s", "file:");
-	}
-
-}
-CMD_DEFINE(ls, "ls", "ls") {
-	char p_cmd[16], p_arg[32];
-	char *p_path, *pfname;
-	FRESULT read_res, dir_res;
-	DIR  tempdir;
-	FILINFO tempfinfo;
-	char fdesp[8];
-	FRESULT res1 = f_opendir(&dirobj, "/");
-
-	if (res1 == FR_OK)
-		if (argc == 1) {
-			p_path = "/";
-		} else if (argc == 2) {
-			p_path = argv[1];
-		} else {
-			return 1;
-		}
-	dir_res = f_opendir(&tempdir, p_path);
-	if (dir_res != FR_OK) {
-		printf("f_opendir failed,path:%s does not exist\n\r", p_path);
-		return 1;
-	}
-	for (;;) {
-		read_res = f_readdir(&tempdir, &tempfinfo);
-		if ((read_res != FR_OK) || (tempfinfo.fname[0] == 0)) {
-			break;
-		} else if (tempfinfo.fname[0] == '.') {
-			continue;
-		} else {
-			pfname = tempfinfo.fname;
-			FileAttr((tempfinfo.fattrib), fdesp);
-			printf("%s   %-15s  %8dbyte\n\r", fdesp, pfname, tempfinfo.fsize);
-		}
-	}
-	return 0;
-}
-CMD_DEFINE(wav, "wav", "wav") {
-	if (argc != 2)
-		return 1;
-	read_wav_file(argv[1]);
-	return 0;
-}
 CMD_DEFINE(usbdebug, "usbdebug", "usbdebug") {
 #if USB_DEBUG == 1
 	DbgPrintf("show");
@@ -78,18 +26,6 @@ CMD_DEFINE(backtrace, "backtrace", "backtrace") {
 	for (int i = 0; i < 128 / 3; i++) {
 		*(volatile int *)(s + 3 * i) = 0;
 	}
-	return 0;
-}
-CMD_DEFINE(ts_test, "ts_test", "ts_test") {
-	ts_test_view();
-	return 0;
-}
-CMD_DEFINE(test, "test", "test") {
-	ten_test_view();
-	return 0;
-}
-CMD_DEFINE(lcd_test, "lcd_test", "lcd_test") {
-	lcd_putstr(0, 0, "11113145623vdfhigaeruirh4uifthv89y9q3ry478h7f@#$%^^!@#$%^&*((*)_+-=\":>?<{}|;'][]\./,./");
 	return 0;
 }
 CMD_DEFINE(usbmouse, "usbmouse", "usbmouse") {
@@ -225,41 +161,6 @@ CMD_DEFINE(i2c_test, "i2c_test", "i2c_test") {
 	run_command("i2c_init");
 	run_command("wr_at24xx 0 helloworld!");
 	run_command("rd_at24xx 0 20");
-	return 0;
-}
-CMD_DEFINE(adc_test, "adc_test", "adc_test") {
-	int vol0, vol1;
-	int t0, t1;
-	printf("Measuring the voltage of AIN0 and AIN1, press any key to exit\n");
-	while (!serial_getc_async()) {  // 串口无输入，则不断测试
-		get_adc(&vol0, &t0, 0);
-		get_adc(&vol1, &t1, 2);
-		printf("AIN0 = %d.%-3dV    AIN2 = %d.%-3dV\r", (int)vol0, t0, (int)vol1, t1);
-	}
-	return 0;
-}
-CMD_DEFINE(res_test, "res_test", "res_test") {
-	photoresistor_test();
-	return 0;
-}
-CMD_DEFINE(dh_test, "dh_test", "dh_test") {
-	dht11_test();
-	return 0;
-}
-CMD_DEFINE(ds_test, "ds_test", "ds_test") {
-	ds18b20_test();
-	return 0;
-}
-CMD_DEFINE(irda_raw, "irda_raw", "irda_raw") {
-	irda_raw_test();
-	return 0;
-}
-CMD_DEFINE(irda_nec, "irda_nec", "irda_nec") {
-	irda_nec_test();
-	return 0;
-}
-CMD_DEFINE(bmp_test, "bmp_test", "bmp_test") {
-	drawImage("xx01.bmp");
 	return 0;
 }
 CMD_DEFINE(RTC, "RTC", "RTC") {
@@ -399,10 +300,10 @@ static void vt100_response(char *str){
 	printf(str);
 }
 CMD_DEFINE(vt100, "vt100", "vt100") {
-	ili9340_init();
-	ili9340_setRotation(0);
+	terminal_init();
+	setRotation(0);
 	vt100_init(vt100_response);
-	ili9340_fillRect(0, 0, 480, 272, 0);
+	fillRect(0, 0, 480, 272, 0);
 	vt100_puts("\e[?7l");
 	while(1){
 		unsigned int data = getc();
@@ -433,30 +334,17 @@ CMD_DEFINE(help, "help", "help") {
 #define CMD_ENTRY(x) & ct_##x
 cmd_table *ct_list[] = {
 	CMD_ENTRY(help),
-	CMD_ENTRY(ls),
-	CMD_ENTRY(wav),
 	CMD_ENTRY(usbslave),
 	CMD_ENTRY(delay_u),
 	CMD_ENTRY(udelay),
 	CMD_ENTRY(usbdebug),
 	CMD_ENTRY(usbmouse),
 	CMD_ENTRY(usbtest),
-	CMD_ENTRY(ts_test),
-	CMD_ENTRY(test),
-	CMD_ENTRY(lcd_test),
 	CMD_ENTRY(wr_at24xx),
 	CMD_ENTRY(rd_at24xx),
 	CMD_ENTRY(i2c_init),
 	CMD_ENTRY(i2c_test),
-	CMD_ENTRY(adc_test),
-	CMD_ENTRY(spi_test),
-	CMD_ENTRY(res_test),
-	CMD_ENTRY(dh_test),
-	CMD_ENTRY(ds_test),
 	CMD_ENTRY(RTC),
-	CMD_ENTRY(irda_raw),
-	CMD_ENTRY(irda_nec),
-	CMD_ENTRY(bmp_test),
 	CMD_ENTRY(backtrace),
 	CMD_ENTRY(mmtest),
 	CMD_ENTRY(analyse_keycode),

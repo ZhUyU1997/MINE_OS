@@ -103,7 +103,7 @@ volatile U32 dwUSBBufSize;
 
 
 //***************************[ PORTS ]****************************************************
-void Port_Init(void) {
+void port_init(void) {
 	gpioregs = S3C24X0_GetBase_GPIO();
 	//CAUTION:Follow the configuration order for setting the ports.
 	// 1) setting value(GPnDAT)

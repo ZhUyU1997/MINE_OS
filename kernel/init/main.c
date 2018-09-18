@@ -6,13 +6,7 @@
 #include <printk.h>
 #include <fcntl.h>
 
-//lcd driver
-#include "lcddrv.h"
 #include "framebuffer.h"
-
-//fs
-#include "ff.h"
-FATFS fatworkarea;         // Work area (file system object) for logical drives 
 
 void show_bss_info(){
 	extern char __bss_start, __bss_end;
@@ -38,7 +32,7 @@ int main() {
 	color_printk(RED, BLACK, "Soft IRQ init \n");
 	softirq_init();
 
-	Port_Init();
+	port_init();
 	uart0_init();
 	//uart0_interrupt_init();
 	printf("\n\n************************************************\n");
@@ -65,17 +59,13 @@ int main() {
 	init_tick(50000);
 
 	printf("初始化LCD...\n");
-	Lcd_Port_Init();						// 设置LCD引脚
-	Tft_Lcd_Init(MODE_TFT_16BIT_480272);	// 初始化LCD控制
-	Lcd_PowerEnable(0, 1);					// 设置LCD_PWREN有效，它用于打开LCD的电源
-	Lcd_EnvidOnOff(1);						// 使能LCD控制器输出信号
-	ClearScr(get_text_bgcolor());			// 清屏
+	lcd_init();
+	lcd_enable();
+	fb_get_lcd_params();
+	ClearScreen(0);
 
 	printf("初始化SD控制器...\n");
 	SDI_init();
-
-	printf("初始化fatfs...\n");
-	f_mount(0,&fatworkarea);
 
 	task_init();
 

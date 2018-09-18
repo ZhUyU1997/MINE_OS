@@ -27,49 +27,32 @@ typedef signed short int16_t;
 typedef unsigned int uint32_t;
 typedef signed int int32_t;
 
-#define ILI9340_TFTWIDTH  480
-#define ILI9340_TFTHEIGHT 272
-
-/*
-#define ILI9340_PWCTR6  0xFC
-
-*/
-
-// Color definitions
-#define	ILI9340_BLACK   0x0000
-#define	ILI9340_BLUE    0x001F
-#define	ILI9340_RED     0xF800
-#define	ILI9340_GREEN   0x07E0
-#define ILI9340_CYAN    0x07FF
-#define ILI9340_MAGENTA 0xF81F
-
-
-#define ILI9340_YELLOW  0xFFE0
-#define ILI9340_WHITE   0xFFFF
+#define TFTWIDTH  480
+#define TFTHEIGHT 272
 
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void ili9340_init(void);
-void ili9340_drawFastVLine(int16_t x, int16_t y, int16_t h,
+void terminal_init(void);
+void drawFastVLine(int16_t x, int16_t y, int16_t h,
 						   uint16_t color);
-void ili9340_drawFastHLine(int16_t x, int16_t y, int16_t h,
+void drawFastHLine(int16_t x, int16_t y, int16_t h,
 						   uint16_t color);
-void ili9340_setRotation(uint8_t m) ;
-void ili9340_drawString(uint16_t x, uint16_t y, const char *text);
-void ili9340_drawChar(uint16_t x, uint16_t y, uint8_t c);
-void ili9340_setBackColor(uint16_t col);
-void ili9340_setFrontColor(uint16_t col);
-void ili9340_fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h,
+void setRotation(uint8_t m) ;
+void drawString(uint16_t x, uint16_t y, const char *text);
+void drawChar(uint16_t x, uint16_t y, uint8_t c);
+void setBackColor(uint16_t col);
+void setFrontColor(uint16_t col);
+void fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h,
 					  uint16_t color);
 
-void ili9340_setScrollStart(uint16_t start);
-void ili9340_setScrollMargins(uint16_t top, uint16_t bottom);
+void setScrollStart(uint16_t start);
+void setScrollMargins(uint16_t top, uint16_t bottom);
 
-uint16_t ili9340_width(void);
-uint16_t ili9340_height(void);
+uint16_t terminal_width(void);
+uint16_t terminal_height(void);
 
 #ifdef __cplusplus
 }

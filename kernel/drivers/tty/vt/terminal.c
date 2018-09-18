@@ -286,7 +286,7 @@ static const unsigned char font[] = {
 	0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-//static uint16_t _width = TFTWIDTH, _height  = TFTHEIGHT;
+//static uint16_t _width = TFTWIDTH, _height  = FTHEIGHT;
 
 static struct Terminal {
 	uint16_t screen_width, screen_height;
@@ -309,6 +309,7 @@ uint16_t PIXEL_Y(uint16_t a) {
 			a += term.top - term.scroll_start;
 		else
 			a += term.bottom - term.scroll_start;
+		//a = (term.bottom - term.top + a - term.scroll_start) % (term.bottom - term.top) + term.top
 	}
 	return a;
 }
@@ -339,6 +340,13 @@ void setScrollMargins(uint16_t top, uint16_t bottom) {
 }
 
 void setAddrWindow(int16_t x0, int16_t y0, int16_t x1, int16_t y1) {
+	/*y0 = (y0 - term.scroll_start);
+	y1 = (y1 - term.scroll_start);
+	if(y0 < 0) y0 = term.screen_height - y0;
+	if(y1 < 0) y1 = term.screen_height - y0; */
+	//y0 = (y0 + term.scroll_start) % term.screen_height;
+	//y1 = (y1 + term.scroll_start) % term.screen_height;
+
 }
 
 void pushColor(uint16_t color) {
@@ -371,13 +379,16 @@ void fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color) {
 }
 
 void setBackColor(uint16_t col) {
+	//uint8_t r, uint8_t g, uint8_t b
 	struct Terminal *t = &term;
 	t->back_color = col;
+	//t->back_color = (uint16_t)r << 8 | (uint16_t)g << 4 | b;
 }
 
 void setFrontColor(uint16_t col) {
 	struct Terminal *t = &term;
 	t->front_color = col;
+	//t->front_color = (uint16_t)r << 8 | (uint16_t)g << 4 | b;
 }
 
 void drawChar(uint16_t x, uint16_t y, uint8_t ch) {
