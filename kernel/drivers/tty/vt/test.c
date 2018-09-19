@@ -13,7 +13,7 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <timer.h>
-#include "ili9340.h"
+#include "terminal.h"
 #include "vt100.h"
 
 /**

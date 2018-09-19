@@ -20,7 +20,7 @@
 #include <ctype.h>
 
 #include "vt100.h"
-#include "ili9340.h"
+#include "terminal.h"
 
 #define KEY_ESC 0x1b
 #define KEY_DEL 0x7f
