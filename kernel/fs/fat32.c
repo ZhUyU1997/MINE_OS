@@ -598,7 +598,6 @@ find_lookup_success:
 long FAT32_mkdir(struct index_node * inode, struct dir_entry * dentry, int mode) {
 }
 
-
 long FAT32_rmdir(struct index_node * inode, struct dir_entry * dentry) {
 }
 

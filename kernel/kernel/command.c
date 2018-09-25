@@ -4,11 +4,49 @@
 #include <usb/2440usb.h>
 #include <memory.h>
 #include "command.h"
-
+#include "fcntl.h"
+#include "sys/dirent.h"
+#include "vfs.h"
 #define CMD_MAX_CMD_NUM 50
 #define CMD_MAXARGS 10
 extern cmd_table *ct_list[];
+CMD_DEFINE(ls, "ls", "ls") {
+	struct dirent *dir;
+	int len = 0;
+	int fd = sys_open("/",O_DIRECTORY);
 
+	if(fd >= 0)
+		dir = kmalloc(256, 0);
+	else
+		return 1;
+	
+	while(1){
+		memset(dir,0,256);
+		len = sys_getdents(fd,dir,256);
+		if(len <= 0)
+			break;
+		printf("%s\n", dir->d_name);
+	}
+
+	sys_close(fd);
+	return 0;
+}
+void show_dentry(struct dir_entry *dir,int deep){
+	struct List *i;
+	list_for_each(i,&dir->subdirs_list){
+		for(int i=0;i<deep;i++){printf("-");}
+		printf(">");
+		struct dir_entry *temp = container_of(i,struct dir_entry,child_node);
+		printf("%s\n", temp->name);
+		mdelay(1000);
+		show_dentry(temp,deep+1);
+	}
+}
+CMD_DEFINE(lsdentry, "ls", "ls") {
+	struct dir_entry *dir = root_sb->root;
+	show_dentry(dir,0);
+	return 0;
+}
 CMD_DEFINE(usbdebug, "usbdebug", "usbdebug") {
 #if USB_DEBUG == 1
 	DbgPrintf("show");
@@ -334,6 +372,8 @@ CMD_DEFINE(help, "help", "help") {
 #define CMD_ENTRY(x) & ct_##x
 cmd_table *ct_list[] = {
 	CMD_ENTRY(help),
+	CMD_ENTRY(ls),
+	CMD_ENTRY(lsdentry),
 	CMD_ENTRY(usbslave),
 	CMD_ENTRY(delay_u),
 	CMD_ENTRY(udelay),

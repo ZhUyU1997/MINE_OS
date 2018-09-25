@@ -21,11 +21,6 @@
 
 #define NULL 0
 
-#define container_of(ptr,type,member)							\
-	({											\
-		typeof(((type *)0)->member) * p = (ptr);					\
-		(type *)((unsigned long)p - (unsigned long)&(((type *)0)->member));		\
-	})
 
 #define sti() local_irq_enable()
 #define cli() local_irq_disable()
@@ -83,6 +78,16 @@ static inline struct List * list_next(struct List * entry) {
 		return NULL;
 }
 
+#define offsetof(TYPE, MEMBER) ((unsigned int) &((TYPE *)0)->MEMBER)
+#define container_of(ptr,type,member)	({	\
+	const typeof(((type *)0)->member) * p = (ptr);					\
+		(type *)((unsigned long)p - offsetof(type,member));})
+
+#define list_entry(ptr,type,member)	\
+	container_of(ptr, type, member)
+
+#define list_for_each(pos, head) \
+	for (pos = (head)->next; pos != (head); pos = pos->next)
 
 #define ALIGN(x,a)		(((x) + ((a) - 1)) & (~((a)-1)))
 #define BIT_CLR(x,p)	(((char *)(x))[(p) / (sizeof(char) * 8)] &= ~(1<<((p) % (sizeof(char) * 8))))
@@ -92,10 +97,15 @@ static inline struct List * list_next(struct List * entry) {
 #define BITS_PER_LONG	(sizeof(long) * 8)
 
 static inline long verify_area(unsigned char* addr, unsigned long size) {
+	//TODO:由于内核命令行需要测试系统调用，所以暂时统一返回1
+#if 0
 	if (((unsigned long)addr + size) <= TASK_SIZE)
 		return 1;
 	else
 		return 0;
+#else
+	return 1;
+#endif
 }
 
 static inline long copy_from_user(void * from, void * to, unsigned long size) {

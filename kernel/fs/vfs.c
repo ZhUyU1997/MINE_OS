@@ -19,7 +19,37 @@
 #include "sys/dirent.h"
 #include "errno.h"
 #include "memory.h"
+struct dir_entry *d_alloc(struct dir_entry * parent, const char *name, int len)
+{
+	struct dir_entry *path = (struct dir_entry *)kmalloc(sizeof(struct dir_entry), 0);
+	if(!path) return NULL;
 
+	memset(path, 0, sizeof(struct dir_entry));
+	
+	char *temp_name = kmalloc(len + 1, 0);
+	if(!temp_name){
+		kfree(path);
+		return NULL;
+	}
+	memset(temp_name, 0, len + 1);
+	memcpy(temp_name, name, len);
+
+	path->parent = parent;
+	path->name = temp_name;
+	path->name_length = len;
+	return path;
+}
+
+struct dir_entry * d_lookup(struct dir_entry * parent, char *name, int len){
+	struct List *i;
+	list_for_each(i,&parent->subdirs_list){
+		struct dir_entry *temp = container_of(i,struct dir_entry,child_node);
+		if(!strncmp(name, temp->name, len)){
+			return temp;
+		}
+	}
+	return NULL;
+}
 struct dir_entry * path_walk(char * name, unsigned long flags) {
 	char * tmpname = NULL;
 	int tmpnamelen = 0;
@@ -39,13 +69,14 @@ struct dir_entry * path_walk(char * name, unsigned long flags) {
 			name++;
 		tmpnamelen = name - tmpname;
 
-		path = (struct dir_entry *)kmalloc(sizeof(struct dir_entry), 0);
-		memset(path, 0, sizeof(struct dir_entry));
+		path = d_lookup(parent, tmpname, tmpnamelen);
 
-		path->name = kmalloc(tmpnamelen + 1, 0);
-		memset(path->name, 0, tmpnamelen + 1);
-		memcpy(path->name, tmpname, tmpnamelen);
-		path->name_length = tmpnamelen;
+		if (path == NULL) {
+			path = d_alloc(parent, tmpname, tmpnamelen);
+			if (path == NULL)
+				return NULL;
+		}
+		
 
 		if (parent->dir_inode->inode_ops->lookup(parent->dir_inode, path) == NULL) {
 			color_printk(RED, WHITE, "can not find file or dir:%s\n", path->name);
@@ -56,7 +87,6 @@ struct dir_entry * path_walk(char * name, unsigned long flags) {
 
 		list_init(&path->child_node);
 		list_init(&path->subdirs_list);
-		path->parent = parent;
 		list_add_to_behind(&parent->subdirs_list, &path->child_node);
 
 		if (!*name)
