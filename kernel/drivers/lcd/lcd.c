@@ -1,4 +1,4 @@
-﻿#include "lcd.h"
+#include "lcd.h"
 #include "lcd_controller.h"
 
 #define LCD_NUM 10

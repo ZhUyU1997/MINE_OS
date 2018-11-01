@@ -1,4 +1,4 @@
-﻿#ifndef __MMU_H__
+#ifndef __MMU_H__
 #define  __MMU_H__
 
 #include <sys/types.h>

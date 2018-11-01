@@ -60,8 +60,7 @@ void panic() {
 
 	asm volatile(
 		"mov %0, fp"
-		: "=r"(rbp) : :
-	);
+		: "=r"(rbp));
 
 	for (int i = 0; i < 10; i++) {
 		if (rbp >= SWI_STACK_BASE_ADDR) {

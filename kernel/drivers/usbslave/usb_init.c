@@ -1,4 +1,4 @@
-﻿#include <s3c24x0.h>
+#include <s3c24x0.h>
 #include <interrupt.h>
 #include <timer.h>
 #include <usb/2440usb.h>

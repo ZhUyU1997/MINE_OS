@@ -23,12 +23,7 @@
 extern "C" {
 #endif
 
-typedef unsigned char uint8_t;
-typedef signed char int8_t;
-typedef unsigned short uint16_t;
-typedef signed short int16_t;
-typedef unsigned int uint32_t;
-typedef signed int int32_t;
+#include <sys/types.h>
 
 #define VT100_SCREEN_WIDTH terminal_width()
 #define VT100_SCREEN_HEIGHT terminal_height()

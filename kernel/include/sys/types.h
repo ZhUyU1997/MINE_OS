@@ -23,6 +23,14 @@ typedef unsigned short			U16;
 #ifndef U32
 typedef unsigned int			U32;
 #endif
+
+typedef unsigned char			uint8_t;
+typedef signed char				int8_t;
+typedef unsigned short			uint16_t;
+typedef signed short			int16_t;
+typedef unsigned int			uint32_t;
+typedef signed int				int32_t;
+
 typedef unsigned char			uchar;
 typedef volatile unsigned long	vu_long;
 typedef volatile unsigned short	vu_short;

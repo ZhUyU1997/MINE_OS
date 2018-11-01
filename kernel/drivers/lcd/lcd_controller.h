@@ -1,4 +1,4 @@
-﻿
+
 #ifndef _LCD_CONTROLLER_H
 #define _LCD_CONTROLLER_H
 
