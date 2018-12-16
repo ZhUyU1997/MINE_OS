@@ -638,8 +638,8 @@ struct Slab_cache *slab_create(unsigned long size, void * (* constructor)(void *
 
 	page_init(slab_cache->cache_pool->page, PG_Kernel);
 
-	slab_cache->cache_pool->using_count = PAGE_2M_SIZE / slab_cache->size;
-	slab_cache->cache_pool->free_count = slab_cache->cache_pool->using_count;
+	slab_cache->cache_pool->using_count = 0;
+	slab_cache->cache_pool->free_count = PAGE_2M_SIZE / slab_cache->size;
 	slab_cache->total_free = slab_cache->cache_pool->free_count;
 	slab_cache->cache_pool->Vaddress = Phy_To_Virt(slab_cache->cache_pool->page->PHY_address);
 	slab_cache->cache_pool->color_count = slab_cache->cache_pool->free_count;
@@ -722,8 +722,8 @@ void *slab_malloc(struct Slab_cache *slab_cache, unsigned long arg) {
 
 		page_init(slab->page, PG_Kernel);
 
-		slab->using_count = PAGE_2M_SIZE / slab_cache->size;
-		slab->free_count = slab->using_count;
+		slab->using_count = 0;
+		slab->free_count = PAGE_2M_SIZE / slab_cache->size;
 		slab->Vaddress = Phy_To_Virt(slab->page->PHY_address);
 
 		slab->color_count = slab->free_count;
