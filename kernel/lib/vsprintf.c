@@ -18,12 +18,12 @@
 
 //#include <stdarg.h>
 //#include <linux/module.h>
-#include "sys/types.h"
-#include "kernel.h"
+#include <sys/types.h>
+#include <kernel.h>
+#include <div64.h>
+#include <ctype.h>
+#include <string.h>
 
-#include "ctype.h"
-#include "string.h"
-#include "div64.h"
 #include "vsprintf.h"
 
 #define unlikely(x) __builtin_expect(!!(x), 0)

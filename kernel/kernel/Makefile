@@ -1,14 +1,7 @@
-obj-y += complaints.o
-obj-y += except.o
 obj-y += interrupt.o
 obj-y += command.o
-obj-y += backtrace.o
-obj-y += irq.o
 obj-y += softirq.o
 obj-y += timer.o
-obj-y += context_switch.o
 obj-y += task.o
 obj-y += schedule.o
-obj-y += entry.o
-obj-y += syscalls.o
 obj-y += waitqueue.o
