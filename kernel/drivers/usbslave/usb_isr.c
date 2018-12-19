@@ -17,6 +17,8 @@ enum USB_DEV_STATE usbd_state = USBD_STATE_POWERED;
 
 enum EP0_STATE ep0State = EP0_STATE_INIT;
 
+#define SELF_POWERED	(1 << 0)
+#define REMOTE_WAKEUP	(1 << 1)
 struct status {
 	struct USB_CONFIGURATION_GET {
 		U8 ConfigurationValue;
@@ -25,21 +27,12 @@ struct status {
 		U8 AlternateSetting;
 	} InterfaceGet;
 
-	union {
-		struct {
-			U8 self_powered: 1;
-			U8 remote_wakeup: 1;
-		};
-		U16 device;
-	};
-
+	U16 device;
 	U16 interface;
 	U16 endpoint[4];
 };
 struct status g_status = {
-	.remote_wakeup = 1,
-	.self_powered = 1,
-	.device = 3,
+	.device = SELF_POWERED | REMOTE_WAKEUP,
 	.interface = 0,
 	.endpoint[0] = 0,
 	.endpoint[1] = 0,
@@ -199,7 +192,7 @@ void handle_standard_output(struct usb_ctrlrequest ctrlreq) {
 			switch (ctrlreq.bRequestType & USB_RECIP_MASK) {
 				case USB_RECIP_DEVICE:
 					if ((ctrlreq.wIndex & 0xff) == 1)
-						g_status.remote_wakeup = FALSE;
+						g_status.device &= ~ REMOTE_WAKEUP;
 					break;
 				case USB_RECIP_ENDPOINT:
 					if ((ctrlreq.wValue & 0xff) == 0) {
@@ -237,7 +230,7 @@ void handle_standard_output(struct usb_ctrlrequest ctrlreq) {
 			switch (ctrlreq.bRequestType & USB_RECIP_MASK) {
 				case USB_RECIP_DEVICE:
 					if ((ctrlreq.wValue & 0xff) == 1)
-						g_status.remote_wakeup = TRUE;
+						g_status.device |= REMOTE_WAKEUP;
 					break;
 				case USB_RECIP_ENDPOINT:
 					if ((ctrlreq.wValue & 0xff) == 0) {

@@ -1,0 +1,10 @@
+MCFLAGS		:= -w -fno-builtin -std=gnu99 -O2 \
+				-march=armv4t -mtune=arm920t \
+				-nostdinc -msoft-float -fsigned-char \
+				-fno-omit-frame-pointer
+
+MASFLAGS	:= -D__ASSEMBLY__
+MLDFLAGS	:= -nostdlib
+
+LIBDIRS		:= -L $(dir $(shell $(CC) -march=armv4t -mtune=arm920t -print-libgcc-file-name))
+LIBS		:= -lgcc

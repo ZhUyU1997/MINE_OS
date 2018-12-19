@@ -343,20 +343,23 @@ CMD_DEFINE(vt100, "vt100", "vt100") {
 	vt100_init(vt100_response);
 	fillRect(0, 0, 480, 272, 0);
 	vt100_puts("\e[?7l");
+	test_colors();
+	mdelay(2000); 
+	test_cursor();
+	mdelay(2000);
+	test_edit();
+	mdelay(2000);
+	test_scroll();
+	mdelay(2000);
+#if 0
 	while(1){
 		unsigned int data = getc();
 		if(data == 'T'){ // ´ key on my kb
-			test_colors();
-			mdelay(2000); 
-			test_cursor();
-			mdelay(2000);
-			test_edit();
-			mdelay(2000);
-			test_scroll();
-			mdelay(2000);
-		}else
-			vt100_putc(data);
+			break;
+		}
+		vt100_putc(data);
 	}
+#endif
 	return 0;
 }
 CMD_DEFINE(panic, "panic", "panic") {
