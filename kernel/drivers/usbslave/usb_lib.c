@@ -4,7 +4,8 @@
 #include <interrupt.h>
 #include <timer.h>
 #include <usb/2440usb.h>
-struct usb_buf ub[4] = {0};
+
+struct usb_buf ub[4];
 
 int check_fifo_size(enum ENDPOINT ep, U32 size) {
 	switch (ep) {
@@ -86,6 +87,7 @@ U32 get_ep_fifo_size(enum ENDPOINT ep) {
 		default:
 			assert(0);
 	}
+	return 0;
 }
 void print_pkt(U8 *buf, U32 size) {
 	DbgPrintf("[RCV:%d]\n", size);

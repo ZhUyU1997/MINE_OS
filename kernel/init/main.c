@@ -5,6 +5,9 @@
 #include <assert.h>
 #include <printk.h>
 #include <fcntl.h>
+#include <softirq.h>
+#include <schedule.h>
+#include <irqflags.h>
 
 #include "framebuffer.h"
 
@@ -20,10 +23,6 @@ static void initer(void (*init)(), char *msg){
 			printf(msg);
 		init();
 	}
-}
-
-static void vt100_response(char *str){
-	printf(str);
 }
 
 int main() {
@@ -70,7 +69,7 @@ int main() {
 	task_init();
 
 	printf("使能IRQ...\n");
-	enable_irq();
+	local_irq_enable();
 
 	cmd_loop();
 	while (1);

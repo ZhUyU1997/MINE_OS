@@ -6,8 +6,10 @@
 #include <s3c24xx.h>
 #include <ptrace.h>
 #include <preempt.h>
+#include <softirq.h>
+#include <schedule.h>
 
-static void dummy_isr(void) {
+static void dummy_isr(unsigned long nr, unsigned long parameter) {
 	printf("IRQ HANDLE,ERROR!\n");
 	assert(0);
 }
@@ -18,23 +20,6 @@ struct irq_desc interrupt_desc[NR_IRQS] = {
 		.handler = dummy_isr,
 	}
 };
-
-void enable_irq(void) {
-	__asm__ volatile(
-		"mrs r0,cpsr\n"
-		"bic r0,r0,#0xc0\n"
-		"msr cpsr_c,r0\n"
-		:::"r0"
-	);
-}
-void disable_irq(void) {
-	__asm__ volatile(
-		"mrs r0,cpsr\n"
-		"orr r0,r0,#0xc0\n"
-		"msr cpsr_c,r0\n"
-		:::"r0"
-	);
-}
 
 static void unmask_irq(int irq) {
 	assert(interrupt_desc[irq].controller&&interrupt_desc[irq].controller->unmask);
@@ -50,10 +35,7 @@ static void ack_irq(int irq) {
 	interrupt_desc[irq].controller->ack(irq);
 }
 
-void do_irq(struct pt_regs *regs) {
-	int offset = INTOFFSET;
-	int irq = offset + S3C2440_CPUIRQ_OFFSET;
-	assert((irq >= IRQ_EINT0) && (irq <= IRQ_ADCPARENT));
+void handle_IRQ(unsigned int irq, struct pt_regs *regs) {
 	generic_handle_irq(irq);
 	do_softirq();
 	assert(preempt_count()>=0);
@@ -61,9 +43,16 @@ void do_irq(struct pt_regs *regs) {
 		schedule();
 }
 
+void do_irq(struct pt_regs *regs) {
+	int offset = INTOFFSET;
+	unsigned int irq = offset + S3C2440_CPUIRQ_OFFSET;
+	assert((irq >= IRQ_EINT0) && (irq <= IRQ_ADCPARENT));
+	handle_IRQ(irq, regs);
+}
+
 void request_irq(int irq, irq_handler_t handler) {
 	assert((irq >= IRQ_EINT0) && (irq < NR_IRQS) && handler);
-	if (handler && interrupt_desc[irq].handler == dummy_isr)
+	if (handler && (interrupt_desc[irq].handler == dummy_isr))
 		interrupt_desc[irq].handler = handler;
 	else
 		assert(0);

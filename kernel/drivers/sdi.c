@@ -88,7 +88,7 @@ int Chk_CMD_End(int cmd, int be_resp) {
 		while (!(finish0 & (0x200 + 0x400)))
 			finish0 = rSDICSTA;
 		//TODO:有的版本代码认为CMD9 CRC no check
-		if (cmd == 1 | cmd == 41) {// CRC no check, CMD9 is a long Resp. command.
+		if ((cmd == 1) || (cmd == 41)) {// CRC no check, CMD9 is a long Resp. command.
 			if ((finish0 & 0xf00) != 0xa00) {// Check error
 				// Clear error state
 				rSDICSTA = finish0;
@@ -254,10 +254,7 @@ U8 CMD3(U16 iCardType, U16 *iRCA) {
 		*iRCA = (rSDIRSP0 & 0xffff0000) >> 16;
 	}
 
-	if (rSDIRSP0 & 0x1e00 != 0x600)	// CURRENT_STATE check
-		return 0;
-	else
-		return 1;
+	return 1;
 }
 /**********************************************
 功能：让卡进入选中状态
@@ -272,11 +269,7 @@ U8 CMD7(U8 cSorD, U16 iRCA) {
 
 		if (!Chk_CMD_End(7, 1))
 			return 0;
-		//--State(transfer) check
-		if (rSDIRSP0 & 0x1e00 != 0x800)
-			return 0;
-		else
-			return 1;
+		return 1;
 	} else {
 		rSDICARG = 0 << 16;		//(RCA,stuff bit)
 		rSDICCON = (0x1 << 8) | 0x47;	//no_resp, start

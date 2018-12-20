@@ -2,6 +2,7 @@
 #include "lcd_controller.h"
 #include "s3c24xx.h"
 
+//TODO:fix redefined
 #define HCLK 100
 
 void jz2440_lcd_pin_init(void)

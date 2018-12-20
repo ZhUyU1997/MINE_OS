@@ -17,10 +17,12 @@
 #define __LIB_H__
 
 #include <irqflags.h>
+#include <string.h>
 #include <global_config.h>
 
-#define NULL 0
-
+#ifndef NULL
+#define NULL					((void*)0)
+#endif
 
 #define sti() local_irq_enable()
 #define cli() local_irq_disable()
@@ -109,7 +111,6 @@ static inline long verify_area(unsigned char* addr, unsigned long size) {
 }
 
 static inline long copy_from_user(void * from, void * to, unsigned long size) {
-	unsigned long d0, d1;
 	if (!verify_area(from, size))
 		return 0;
 	memcpy(to, from, size);
@@ -117,7 +118,6 @@ static inline long copy_from_user(void * from, void * to, unsigned long size) {
 }
 
 static inline long copy_to_user(void * from, void * to, unsigned long size) {
-	unsigned long d0, d1;
 	if (!verify_area(to, size))
 		return 0;
 	memcpy(to, from, size);

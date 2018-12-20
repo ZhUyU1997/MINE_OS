@@ -47,33 +47,33 @@ void handle_standard_input(struct usb_ctrlrequest ctrlreq) {
 			switch (ctrlreq.bRequestType & USB_RECIP_MASK) {
 				case USB_RECIP_DEVICE:
 					DbgPrintf("[设备]");
-					USB_BUF_INIT(&g_status.device);
+					USB_BUF_INIT((U8 *)&g_status.device);
 					break;
 				case USB_RECIP_INTERFACE:
 					DbgPrintf("[接口]");
 					g_status.interface = 0;
-					USB_BUF_INIT(&g_status.interface);
+					USB_BUF_INIT((U8 *)&g_status.interface);
 					break;
 				case USB_RECIP_ENDPOINT:
 					switch (ctrlreq.wIndex & 0xff) {
 						case 0x00:
 							DbgPrintf("[端点0]");
-							USB_BUF_INIT(&g_status.endpoint[0]);
+							USB_BUF_INIT((U8 *)&g_status.endpoint[0]);
 							break;
 						case 0x81:
 							DbgPrintf("[端点1]");
 							assert(usbdev.endpoint_desc[1-1]);
-							USB_BUF_INIT(&g_status.endpoint[1]);
+							USB_BUF_INIT((U8 *)&g_status.endpoint[1]);
 							break;
 						case 0x82:
 							DbgPrintf("[端点2]");
 							assert(usbdev.endpoint_desc[2-1]);
-							USB_BUF_INIT(&g_status.endpoint[2]);
+							USB_BUF_INIT((U8 *)&g_status.endpoint[2]);
 							break;
 						case 0x03:
 							DbgPrintf("[端点3]");
 							assert(usbdev.endpoint_desc[3-1]);
-							USB_BUF_INIT(&g_status.endpoint[3]);
+							USB_BUF_INIT((U8 *)&g_status.endpoint[3]);
 							break;
 						default:
 							DbgPrintf("[未定义端点]");
@@ -93,10 +93,10 @@ void handle_standard_input(struct usb_ctrlrequest ctrlreq) {
 				case USB_DT_DEVICE:
 					DbgPrintf("[获取设备描述符]");
 					if(usbd_state == USBD_STATE_DEFAULT){
-						ep_tx_fifo(EP0, usbdev.dev_desc, 8);
+						ep_tx_fifo(EP0, (U8 *)usbdev.dev_desc, 8);
 						SET_EP0_INPKTRDY_DATAEND();
 					}else{
-						USB_BUF_INIT(usbdev.dev_desc);
+						USB_BUF_INIT((U8 *)usbdev.dev_desc);
 					}
 					break;
 				case USB_DT_CONFIG:
@@ -104,7 +104,7 @@ void handle_standard_input(struct usb_ctrlrequest ctrlreq) {
 					if (ctrlreq.wLength > 0x9) {
 						USB_BUF_INIT_SIZE(usbdev.config_all, usbdev.config_all_size);
 					} else {
-						USB_BUF_INIT(usbdev.config_desc);
+						USB_BUF_INIT((U8 *)usbdev.config_desc);
 					}
 					break;
 				case USB_DT_STRING:
@@ -117,7 +117,7 @@ void handle_standard_input(struct usb_ctrlrequest ctrlreq) {
 						{
 							int index = ctrlreq.wValue & 0xff;
 							assert(usbdev.string_desc[index]);
-							USB_BUF_INIT_TRUNCATION_SIZE(usbdev.string_desc[index],usbdev.string_desc_size[index]);
+							USB_BUF_INIT_TRUNCATION_SIZE((U8 *)usbdev.string_desc[index], usbdev.string_desc_size[index]);
 							break;
 						}
 						default:
@@ -128,7 +128,7 @@ void handle_standard_input(struct usb_ctrlrequest ctrlreq) {
 					break;
 				case USB_DT_INTERFACE:
 					DbgPrintf("[获取接口描述符]");
-					USB_BUF_INIT(usbdev.interface_desc);
+					USB_BUF_INIT((U8 *)usbdev.interface_desc);
 					break;
 				case USB_DT_ENDPOINT:
 					DbgPrintf("[获取端点描述符]");
@@ -136,15 +136,15 @@ void handle_standard_input(struct usb_ctrlrequest ctrlreq) {
 					switch (ctrlreq.wValue & 0xff) {
 						case 0x81:
 							assert(usbdev.endpoint_desc[1-1]);
-							USB_BUF_INIT(usbdev.endpoint_desc[1-1]);
+							USB_BUF_INIT((U8 *)usbdev.endpoint_desc[1-1]);
 							break;
 						case 0x82:
 							assert(usbdev.endpoint_desc[2-1]);
-							USB_BUF_INIT(usbdev.endpoint_desc[2-1]);
+							USB_BUF_INIT((U8 *)usbdev.endpoint_desc[2-1]);
 							break;
 						case 0x03:
 							assert(usbdev.endpoint_desc[3-1]);
-							USB_BUF_INIT(usbdev.endpoint_desc[3-1]);
+							USB_BUF_INIT((U8 *)usbdev.endpoint_desc[3-1]);
 							break;
 						default:
 							DbgPrintf("[未定义端点]");
@@ -164,12 +164,12 @@ void handle_standard_input(struct usb_ctrlrequest ctrlreq) {
 		case USB_REQ_GET_CONFIGURATION:
 			DbgPrintf("[获取配置]");
 			CLR_EP0_OUT_PKT_RDY();
-			USB_BUF_INIT(&g_status.ConfigGet);
+			USB_BUF_INIT((U8 *)&g_status.ConfigGet);
 			break;
 		case USB_REQ_GET_INTERFACE:
 			DbgPrintf("[获取接口]");
 			CLR_EP0_OUT_PKT_RDY();
-			USB_BUF_INIT(&g_status.InterfaceGet);
+			USB_BUF_INIT((U8 *)&g_status.InterfaceGet);
 			break;
 		case USB_REQ_SYNCH_FRAME:
 			DbgPrintf("[同步帧]");
@@ -330,7 +330,7 @@ void Ep0Handler(void) {
 	}
 
 	if ((ep0_csr & EP0_OUT_PKT_READY)) {
-		usb_receive_message(EP0, &ctrlreq, sizeof(struct usb_ctrlrequest));
+		usb_receive_message(EP0, (U8 *)&ctrlreq, sizeof(struct usb_ctrlrequest));
 		//判断请求类型
 		if ((ctrlreq.bRequestType & 0x80) == USB_DIR_OUT) {
 			switch ((ctrlreq.bRequestType) & USB_TYPE_MASK) {
@@ -402,7 +402,7 @@ void handle_epx_irq(U8 epIntpnd){
 		usbdev.ep_handler[3-1]();
 	}
 }
-void IsrUsbd(void) {
+void IsrUsbd(unsigned long nr, unsigned long parameter) {
 	U8 usbdIntpnd = usbdevregs->USB_INT_REG;
 	U8 epIntpnd = usbdevregs->EP_INT_REG;
 	DbgPrintf("#", epIntpnd, usbdIntpnd);

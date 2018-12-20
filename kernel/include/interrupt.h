@@ -19,7 +19,7 @@ typedef struct hw_int_type {
 
 struct irq_desc;
 
-typedef	void (*irq_flow_handler_t)(unsigned int irq);
+typedef	void (*irq_flow_handler_t)(unsigned int irq, struct irq_desc *desc);
 //typedef void (*irq_handler_t)(unsigned long nr, unsigned long parameter, struct pt_regs * regs);
 typedef void (*irq_handler_t)(unsigned long nr, unsigned long parameter);
 

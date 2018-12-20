@@ -33,7 +33,7 @@
 
 */
 
-#include "div64.h"
+#include <div64.h>
 
 /**
  * strlen - Find the length of a string

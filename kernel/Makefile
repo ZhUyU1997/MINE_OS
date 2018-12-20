@@ -98,7 +98,7 @@ endif
 # Load default variables.
 CFLAGS		:=
 ASFLAGS		:=
-LDFLAGS		:= -T $(srctree)/arch/$(ARCH)/$(MACH)/kernel.lds
+LDFLAGS		:=
 ARCH_CFLAGS	:=
 MCFLAGS		:=
 MLDFLAGS	:=

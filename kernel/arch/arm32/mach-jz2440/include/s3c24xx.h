@@ -366,7 +366,6 @@
 #define rLCDSRCPND  (*(volatile unsigned *)0x4d000058)	//LCD Interrupt source
 #define rLCDINTMSK  (*(volatile unsigned *)0x4d00005c)	//LCD Interrupt mask
 #define rTCONSEL    (*(volatile unsigned *)0x4d000060)	//LPC3600 Control --- edited by junon
-#define PALETTE     (0x4d000400)						//Palette start address
 
 
 //Nand Flash
@@ -376,7 +375,6 @@
 #define rNFADDR		(*(volatile unsigned *)0x4E00000C)      //NAND Flash address
 #define rNFDATA		(*(volatile unsigned *)0x4E000010)      //NAND Flash data
 #define rNFDATA8	(*(volatile unsigned char *)0x4E000010) //NAND Flash data
-#define NFDATA		(0x4E000010)      						//NAND Flash data address
 #define rNFMECCD0	(*(volatile unsigned *)0x4E000014)      //NAND Flash ECC for Main Area
 #define rNFMECCD1	(*(volatile unsigned *)0x4E000018)
 #define rNFSECCD	(*(volatile unsigned *)0x4E00001C)		//NAND Flash ECC for Spare Area
@@ -690,9 +688,9 @@
 #define rIISPSR  (*(volatile unsigned *)0x55000008)	//IIS Prescaler
 #define rIISFCON (*(volatile unsigned *)0x5500000c)	//IIS FIFO control
 #ifdef __BIG_ENDIAN
-#define IISFIFO  ((volatile unsigned short *)0x55000012)	//IIS FIFO entry
+#define rIISFIFO  ((volatile unsigned short *)0x55000012)	//IIS FIFO entry
 #else //Little Endian
-#define IISFIFO  ((volatile unsigned short *)0x55000010)	//IIS FIFO entry
+#define rIISFIFO  ((volatile unsigned short *)0x55000010)	//IIS FIFO entry
 #endif
 
 
@@ -890,57 +888,5 @@
 #define pISR_RTC		(*(unsigned *)(_ISR_STARTADDRESS+0x98))
 #define pISR_ADC		(*(unsigned *)(_ISR_STARTADDRESS+0x9c))
 
-
-// PENDING BIT
-#define BIT_EINT0		(1<<0)
-#define BIT_EINT1		(1<<1)
-#define BIT_EINT2		(1<<2)
-#define BIT_EINT3		(1<<3)
-#define BIT_EINT4_7		(1<<4)
-#define BIT_EINT8_23	(1<<5)
-#define BIT_CAM			(1<<6)		// Added for 2440.
-#define BIT_BAT_FLT		(1<<7)
-#define BIT_TICK		(1<<8)
-#define BIT_WDT_AC97	(1<<9)
-#define BIT_TIMER0		(1<<10)
-#define BIT_TIMER1		(1<<11)
-#define BIT_TIMER2		(1<<12)
-#define BIT_TIMER3		(1<<13)
-#define BIT_TIMER4		(1<<14)
-#define BIT_UART2		(1<<15)
-#define BIT_LCD			(1<<16)
-#define BIT_DMA0		(1<<17)
-#define BIT_DMA1		(1<<18)
-#define BIT_DMA2		(1<<19)
-#define BIT_DMA3		(1<<20)
-#define BIT_SDI			(1<<21)
-#define BIT_SPI0		(1<<22)
-#define BIT_UART1		(1<<23)
-#define BIT_NFCON		(1<<24)		// Added for 2440.
-#define BIT_USBD		(1<<25)
-#define BIT_USBH		(1<<26)
-#define BIT_IIC			(1<<27)
-#define BIT_UART0		(1<<28)
-#define BIT_SPI1		(1<<29)
-#define BIT_RTC			(1<<30)
-#define BIT_ADC			(1<<31)
-#define BIT_ALLMSK		(0xffffffff)
-
-#define BIT_SUB_ALLMSK	(0x7fff)
-#define BIT_SUB_AC97 	(1<<14)
-#define BIT_SUB_WDT 	(1<<13)
-#define BIT_SUB_CAM_S	(1<<12)		// Added for 2440.
-#define BIT_SUB_CAM_C	(1<<11)		// Added for 2440.
-#define BIT_SUB_ADC		(1<<10)
-#define BIT_SUB_TC		(1<<9)
-#define BIT_SUB_ERR2	(1<<8)
-#define BIT_SUB_TXD2	(1<<7)
-#define BIT_SUB_RXD2	(1<<6)
-#define BIT_SUB_ERR1	(1<<5)
-#define BIT_SUB_TXD1	(1<<4)
-#define BIT_SUB_RXD1	(1<<3)
-#define BIT_SUB_ERR0	(1<<2)
-#define BIT_SUB_TXD0	(1<<1)
-#define BIT_SUB_RXD0	(1<<0)
 
 #endif

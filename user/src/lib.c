@@ -16,13 +16,13 @@
 #include "syscall.h"
 
 #define PP_HELP(x) #x
-#define SYSFUNC_DEF(name) extern int name (int x, ...); \
+#define SYSFUNC_DEF(name) \
 	_SYSFUNC_DEF_(name,__NR_##name)
 #define _SYSFUNC_DEF_(name,nr)	__SYSFUNC_DEF__(name,nr)
 #define __SYSFUNC_DEF__(name,nr)	\
 	__asm__	(		\
 		".global " #name "	\n\t"	\
-	  ".type	" #name ",	#function \n\t"	\
+		".type	" #name ",	#function \n\t"	\
 		#name ":		\n\t"	\
 		"ldmia   sp, { r4-r5 }	\n\t"	\
 		"mov   r7, #" PP_HELP(nr)	"\n\t"	\
@@ -47,8 +47,5 @@ SYSFUNC_DEF(brk)
 SYSFUNC_DEF(reboot)
 SYSFUNC_DEF(chdir)
 SYSFUNC_DEF(getdents)
-
-
-
 
 

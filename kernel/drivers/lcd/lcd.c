@@ -1,3 +1,4 @@
+#include <string.h>
 #include "lcd.h"
 #include "lcd_controller.h"
 
@@ -68,5 +69,6 @@ int lcd_init(void)
 
 	/* 使用LCD的参数, 初始化LCD控制器 */
 	lcd_controller_init(g_p_lcd_selected);
+	return 0;
 }
 

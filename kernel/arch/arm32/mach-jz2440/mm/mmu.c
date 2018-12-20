@@ -1,4 +1,5 @@
 #include <global_config.h>
+#include <stdio.h>
 #include <assert.h>
 #include <pgtable.h>
 #include <mmu.h>
@@ -15,14 +16,13 @@ void set_pte(pte_t *pte, U32 physicaladdr, U32 AP0, U32 AP1, U32 AP2, U32 AP3, U
 		.B = B,
 		.type = MMU_SMALL_PAGE,
 	};
-	pte[0] = *(pte_t *)&page;
+	((SMALL_PAGE *)pte)[0] = page;
 }
 
 pte_t *alloc_pte(pmd_t *pmd){
 	U32 temp = pmd[0];
-	U32 *paddr;
 	SECTION sec = *(SECTION *)pmd;
-	if(temp&0x3 == MMU_COARSE_PAGE)
+	if((temp & 0x3) == MMU_COARSE_PAGE)
 		assert(0);
 
 	U32 *p = kmalloc(PAGE_2K_SIZE, 0);
@@ -37,7 +37,7 @@ pte_t *alloc_pte(pmd_t *pmd){
 		.base_address = Virt_To_Phy(p) >> MMU_COARSE_PAGE_SHIFT,
 	};
 
-	if(temp&0x3 == MMU_SECTION) {
+	if((temp & 0x3) == MMU_SECTION) {
 		page.domain = sec.domain;
 		SMALL_PAGE small_page = {
 			.base_address = (sec.base_address << MMU_SECTION_SHIFT)>> MMU_SMALL_PAGE_SHIFT,
@@ -51,7 +51,7 @@ pte_t *alloc_pte(pmd_t *pmd){
 		};
 		
 		for(int i=0;i<512;i++){
-			pte[i] = *(pte_t *)&small_page;
+			((SMALL_PAGE *)pte)[i] = small_page;
 			small_page.base_address++;
 		}
 	}else{
@@ -60,16 +60,16 @@ pte_t *alloc_pte(pmd_t *pmd){
 		memset(pte, 0, 512*4);
 	}
 	
-	pmd[0] = *(pmd_t *)&page;
+	((COARSE_PAGE *)pmd)[0] = page;
 	page.base_address++;
-	pmd[1] = *(pmd_t *)&page;
+	((COARSE_PAGE *)pmd)[1] = page;
 
 	return pte;
 }
 
 void set_pmd(pmd_t *pmd, U32 physicaladdr, U32 AP, U32 domain, U32 C, U32 B){
 	U32 temp = pmd[0];
-	if(temp&0x3 == MMU_COARSE_PAGE)
+	if((temp & 0x3) == MMU_COARSE_PAGE)
 		assert(0);
 	SECTION sec = {
 		.base_address = physicaladdr >> MMU_SECTION_SHIFT,
@@ -82,14 +82,14 @@ void set_pmd(pmd_t *pmd, U32 physicaladdr, U32 AP, U32 domain, U32 C, U32 B){
 		.B = B,
 		.type = MMU_SECTION,
 	};
-	pmd[0] = *(pmd_t *)&sec;
+	((SECTION *)pmd)[0] = sec;
 	sec.base_address++;
-	pmd[1] = *(pmd_t *)&sec;
+	((SECTION *)pmd)[1] = sec;
 }
 
 void set_pgd(pgd_t *pgd, U32 physicaladdr, U32 AP, U32 domain, U32 C, U32 B){
 	assert(!(physicaladdr&(PGDIR_SIZE-1)));
-	pmd_t *pmd = pgd;
+	pmd_t *pmd = (pmd_t *)pgd;
 	set_pmd(pmd, physicaladdr, AP, domain, C, B);
 }
 
@@ -101,7 +101,7 @@ static void alloc_init_pgd(pgd_t *pgd, U32 virtuladdr, U32 physicaladdr, U32 cou
 	for (int i = 0; i < count; i++) {
 		assert(vaddr>=virtuladdr);
 		assert(paddr>=physicaladdr);
-		pmd_t *pmd = pgd + pgd_index(vaddr);
+		pmd_t *pmd = (pmd_t *)(pgd + pgd_index(vaddr));
 		set_pmd(pmd, paddr, AP, domain, C, B);
 		vaddr += PGDIR_SIZE;
 		paddr += PGDIR_SIZE;
@@ -147,8 +147,8 @@ extern void arm920_flush_kern_cache_all();
 void set_vector_map(){
 	pgd_t *pgd = (pgd_t *)MUM_TLB_BASE_ADDR;
 
-	memcpy(0x33fff000, 0x30100000, 4096);
-	pmd_t *pmd = pgd + pgd_index(0xffff0000);
+	memcpy((void *)0x33fff000, (void *)0x30100000, 4096);
+	pmd_t *pmd = (pmd_t *)(pgd + pgd_index(0xffff0000));
 	pte_t *pte = alloc_pte(pmd);
 	pte = pte + pte_index(0xffff0000);
 	set_pte(pte, 0x33fff000, MMU_FULL_ACCESS, MMU_FULL_ACCESS, MMU_FULL_ACCESS, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
@@ -240,10 +240,10 @@ void mmu_test(){
 	int *p;
 	pgd_t *pgd;
 
-	p = 0x32000000;
+	p = (int *)0x32000000;
 	p[0] = 0x12345678;
 	
-	p = 0xe2000000;
+	p = (int *)0xe2000000;
 	pgd = (pgd_t *)MUM_TLB_BASE_ADDR + pgd_index(0xe2000000);
 	//set_pgd(pgd, 0x32400000, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
 	//flush_pmd_entry(pgd);
@@ -253,10 +253,10 @@ void mmu_test(){
 	printf("[0xe2000000] = %#X\n", *(int *)0xe2000000);
 
 
-	p = 0x32200000;
+	p = (int *)0x32200000;
 	printf("[0x32200000] = %#X\n", *(int *)0x32200000);
 	pgd = (pgd_t *)MUM_TLB_BASE_ADDR + pgd_index(0x32000000);
-	set_pgd(pgd, p, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
+	set_pgd(pgd, (U32)p, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
 	
 	flush_tlb();
 	flush_cache();

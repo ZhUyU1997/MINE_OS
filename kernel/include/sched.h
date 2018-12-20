@@ -1,29 +1,39 @@
-/***************************************************
-*		版权声明
-*
-*	本操作系统名为：MINE
-*	该操作系统未经授权不得以盈利或非盈利为目的进行开发，
-*	只允许个人学习以及公开交流使用
-*
-*	代码最终所有权及解释权归田宇所有；
-*
-*	本模块作者：	田宇
-*	EMail:		345538255@qq.com
-*
-*
-***************************************************/
-
 #ifndef __SCHED_H__
 #define __SCHED_H__
 
 /*
  * cloning flags:
  */
+#define CSIGNAL					0x000000ff	/* signal mask to be sent at exit */
+#define CLONE_VM				0x00000100	/* set if VM shared between processes */
+#define CLONE_FS				0x00000200	/* set if fs info shared between processes */
+#define CLONE_FILES				0x00000400	/* set if open files shared between processes */
+#define CLONE_SIGHAND			0x00000800	/* set if signal handlers and blocked signals shared */
+#define CLONE_PTRACE			0x00002000	/* set if we want to let tracing continue on the child too */
+#define CLONE_VFORK				0x00004000	/* set if the parent wants the child to wake it up on mm_release */
+#define CLONE_PARENT			0x00008000	/* set if we want to have the same parent as the cloner */
+#define CLONE_THREAD			0x00010000	/* Same thread group? */
+#define CLONE_NEWNS				0x00020000	/* New namespace group? */
+#define CLONE_SYSVSEM			0x00040000	/* share system V SEM_UNDO semantics */
+#define CLONE_SETTLS			0x00080000	/* create a new TLS for the child */
+#define CLONE_PARENT_SETTID		0x00100000	/* set the TID in the parent */
+#define CLONE_CHILD_CLEARTID	0x00200000	/* clear the TID in the child */
+#define CLONE_DETACHED			0x00400000	/* Unused, ignored */
+#define CLONE_UNTRACED			0x00800000	/* set if the tracing process can't force CLONE_PTRACE on this clone */
+#define CLONE_CHILD_SETTID		0x01000000	/* set the TID in the child */
+/* 0x02000000 was previously the unused CLONE_STOPPED (Start in stopped state)
+   and is now available for re-use. */
+#define CLONE_NEWUTS			0x04000000	/* New utsname group? */
+#define CLONE_NEWIPC			0x08000000	/* New ipcs */
+#define CLONE_NEWUSER			0x10000000	/* New user namespace */
+#define CLONE_NEWPID			0x20000000	/* New pid namespace */
+#define CLONE_NEWNET			0x40000000	/* New network namespace */
+#define CLONE_IO				0x80000000	/* Clone io context */
 
-
-#define CLONE_VM		(1 << 0)	/* shared Virtual Memory between processes */
-#define CLONE_FS		(1 << 1)	/* shared fs info between processes */
-#define CLONE_SIGNAL	(1 << 2)	/* shared signal between processes */
-
+/*
+ * List of flags we want to share for kernel threads,
+ * if only because they are not used by them anyway.
+ */
+#define CLONE_KERNEL			(CLONE_FS | CLONE_FILES | CLONE_SIGHAND)
 
 #endif

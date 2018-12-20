@@ -21,7 +21,7 @@
 #include "errno.h"
 #include "mmu.h"
 
-struct Global_Memory_Descriptor mms = {{0}, 0};
+struct Global_Memory_Descriptor mms;
 
 //// each zone index
 
@@ -94,7 +94,6 @@ void init_memory() {
 	int i, j;
 	unsigned long TotalMem = 0 ;
 	struct E820 *p = NULL;
-	unsigned long *tmp = NULL;
 
 	color_printk(BLUE, BLACK, "Display Physics Address MAP,Type(1:RAM,2:ROM or Reserved,3:ACPI Reclaim Memory,4:ACPI NVS Memory,Others:Undefine)\n");
 	p = (struct E820[2]) {
@@ -319,7 +318,6 @@ struct Page *alloc_pages(int zone_select, int number, unsigned long page_flags) 
 	for (int i = zone_start; i <= zone_end; i++) {
 		struct Zone *z;
 		unsigned long start, end;
-		unsigned long tmp;
 
 		if (mms.zones_struct[i].page_free_count < number)
 			continue;
@@ -643,7 +641,7 @@ struct Slab_cache *slab_create(unsigned long size, void * (* constructor)(void *
 	slab_cache->total_free = slab_cache->cache_pool->free_count;
 	slab_cache->cache_pool->Vaddress = Phy_To_Virt(slab_cache->cache_pool->page->PHY_address);
 	slab_cache->cache_pool->color_count = slab_cache->cache_pool->free_count;
-	slab_cache->cache_pool->color_length = (ALIGN(slab_cache->cache_pool->color_count, 8) / 8, sizeof(unsigned long));
+	slab_cache->cache_pool->color_length = ALIGN(ALIGN(slab_cache->cache_pool->color_count, 8) / 8, sizeof(unsigned long));
 	slab_cache->cache_pool->color_map = (unsigned long *)kmalloc(slab_cache->cache_pool->color_length, 0);
 
 	if (slab_cache->cache_pool->color_map == NULL) {
@@ -914,13 +912,12 @@ unsigned long slab_init() {
 
 unsigned long do_brk(unsigned long addr, unsigned long len) {
 	unsigned long * tmp = NULL;
-	unsigned long * virtual = NULL;
 	struct Page * p = NULL;
 	unsigned long i = 0;
 
 	for (i = addr; i < addr + len; i += PAGE_2M_SIZE) {
 		tmp = Phy_To_Virt(pgd_offset(current->mm, addr));
-		if (*tmp == NULL) {
+		if (*tmp == (unsigned long)NULL) {
 			p = alloc_pages(ZONE_NORMAL, 1, PG_PTable_Maped);
 			if (p == NULL)
 				return -ENOMEM;

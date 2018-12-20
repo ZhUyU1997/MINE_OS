@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <s3c24xx.h>
 #include <timer.h>
 #include <interrupt.h>
@@ -118,7 +119,7 @@ void i2c_interrupt_func(unsigned long nr, unsigned long parameter) {
 }
 
 
-void s3c2440_i2c_con_init(void) {
+int s3c2440_i2c_con_init(void) {
 	/* 配置引脚用于I2C*/
 	GPECON &= ~((3 << 28) | (3 << 30));
 	GPECON |= ((2 << 28) | (2 << 30));
@@ -135,6 +136,7 @@ void s3c2440_i2c_con_init(void) {
 
 	/* 注册中断处理函数 */
 	request_irq(IRQ_IIC, i2c_interrupt_func);
+	return 1;
 }
 
 int do_master_tx(p_i2c_msg msg) {

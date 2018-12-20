@@ -1,18 +1,3 @@
-/***************************************************
-*		版权声明
-*
-*	本操作系统名为：MINE
-*	该操作系统未经授权不得以盈利或非盈利为目的进行开发，
-*	只允许个人学习以及公开交流使用
-*
-*	代码最终所有权及解释权归田宇所有；
-*
-*	本模块作者：	田宇
-*	EMail:		345538255@qq.com
-*
-*
-***************************************************/
-
 #ifndef __PREEMPT_H__
 
 #define __PREEMPT_H__
@@ -28,6 +13,9 @@
 #define inc_preempt_count() add_preempt_count(1)
 #define dec_preempt_count() sub_preempt_count(1)
 
+//TODO:瀹屽杽
+//#ifdef CONFIG_PREEMPT_COUNT
+#if 1
 
 #define preempt_disable() \
 	do { \
@@ -47,4 +35,13 @@
 		preempt_enable_no_resched(); \
 		barrier(); \
 	} while (0)
+
+#else
+
+#define preempt_disable()		do { } while (0)
+#define sched_preempt_enable_no_resched()	do { } while (0)
+#define preempt_enable_no_resched()	do { } while (0)
+#define preempt_enable()		do { } while (0)
+
+#endif
 #endif

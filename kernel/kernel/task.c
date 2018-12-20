@@ -12,28 +12,28 @@
 *
 *
 ***************************************************/
-#include "ldscript.h"
-#include "sys/err.h"
-#include "global_config.h"
-#include "assert.h"
-#include "pgtable.h"
-#include "mmu.h"
-#include "timer.h"
-#include "task.h"
-#include "ptrace.h"
-#include "lib.h"
-#include "memory.h"
-#include "linkage.h"
-#include "schedule.h"
-#include "printk.h"
-#include "smp.h"
-#include "unistd.h"
-#include "stdio.h"
-#include "sched.h"
-#include "sched.h"
-#include "errno.h"
-#include "fcntl.h"
-#include "waitqueue.h"
+#include <sys/types.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <printk.h>
+#include <ldscript.h>
+#include <sys/err.h>
+#include <global_config.h>
+#include <assert.h>
+#include <pgtable.h>
+#include <mmu.h>
+#include <timer.h>
+#include <task.h>
+#include <ptrace.h>
+#include <lib.h>
+#include <memory.h>
+#include <linkage.h>
+#include <schedule.h>
+#include <smp.h>
+#include <sched.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <waitqueue.h>
 
 struct mm_struct init_mm = {0};
 
@@ -43,7 +43,7 @@ struct thread_struct init_thread = {
 };
 
 union task_union init_task_union = {INIT_TASK(init_task_union.task)};
-struct task_struct *init_task[NR_CPUS] = {&init_task_union.task,0};
+struct task_struct *init_task[NR_CPUS] = {&init_task_union.task};
 struct task_struct *current = NULL;
 
 long global_pid;
@@ -85,8 +85,6 @@ unsigned long do_execve(struct pt_regs *regs, char *name, char *argv[], char *en
 	unsigned long code_start_addr = 0x800000;
 	unsigned long stack_start_addr = 0xa00000;
 	unsigned long brk_start_addr = 0xc00000;
-	unsigned long * tmp;
-	unsigned long * virtual = NULL;
 	struct Page * p = NULL;
 	struct file * filp = NULL;
 	unsigned long retval = 0;
@@ -139,7 +137,6 @@ unsigned long do_execve(struct pt_regs *regs, char *name, char *argv[], char *en
 	current->flags &= ~PF_VFORK;
 
 	if (argv != NULL) {
-		int argc = 0;
 		int len = 0;
 		int i = 0;
 		char ** dargv = (char **)(stack_start_addr - 10 * sizeof(char *));
@@ -176,10 +173,10 @@ unsigned long init(unsigned long arg) {
 
 	color_printk(RED, BLACK, "init task is running,arg:%#018lx\n", arg);
 
-	struct pt_regs *regs = (unsigned long)current + STACK_SIZE - sizeof(struct pt_regs);
+	struct pt_regs *regs = (struct pt_regs *)((unsigned long)current + STACK_SIZE - sizeof(struct pt_regs));
 	current->flags &= ~PF_KTHREAD;
 
-	if(IS_ERR(do_execve(regs, "/init.bin", NULL, NULL))){
+	if(IS_ERR_VALUE(do_execve(regs, "/init.bin", NULL, NULL))){
 		color_printk(RED, BLACK, "do_execve error\n");
 		return 1;
 	}
@@ -267,8 +264,6 @@ unsigned long copy_mm(unsigned long clone_flags, struct task_struct *tsk) {
 	unsigned long code_start_addr = 0x800000;
 	unsigned long stack_start_addr = 0xa00000;
 	unsigned long brk_start_addr = 0xc00000;
-	unsigned long * tmp;
-	unsigned long * virtual = NULL;
 	struct Page * p = NULL;
 
 	if (clone_flags & CLONE_VM) {
@@ -288,7 +283,7 @@ unsigned long copy_mm(unsigned long clone_flags, struct task_struct *tsk) {
 		p = alloc_pages(ZONE_NORMAL, 1, PG_PTable_Maped);
 		pgd_t *pgd = pgd_offset(newmm, code_start_addr);
 		set_pgd(pgd, p->PHY_address, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
-		memcpy(Phy_To_Virt(p->PHY_address), code_start_addr, stack_start_addr - code_start_addr);
+		memcpy((void *)Phy_To_Virt(p->PHY_address), (void *)code_start_addr, stack_start_addr - code_start_addr);
 	}
 
 	////copy user brk space
@@ -330,7 +325,7 @@ unsigned long copy_thread(unsigned long clone_flags, unsigned long stack_start, 
 
 	memcpy(childregs, regs, sizeof(struct pt_regs));
 	childregs->ARM_r0 = 0;
-	childregs->ARM_sp = childregs;
+	childregs->ARM_sp = (unsigned long)childregs;
 
 	tsk->cpu_context.sp = (unsigned long)childregs;
 
@@ -395,9 +390,7 @@ unsigned long do_fork(struct pt_regs *regs, unsigned long clone_flags, unsigned 
 
 	wakeup_process(tsk);
 
-fork_ok:
 	return retval;
-
 
 copy_thread_fail:
 	exit_thread(tsk);
@@ -469,7 +462,7 @@ void task_init() {
 
 	list_init(&init_task_union.task.list);
 
-	kernel_thread(init, 10, CLONE_FS | CLONE_SIGNAL);
+	kernel_thread(init, 10, CLONE_FS | CLONE_SIGHAND);
 
 	init_task_union.task.preempt_count = 0;
 	init_task_union.task.state = TASK_RUNNING;

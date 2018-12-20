@@ -1,17 +1,10 @@
 #ifndef _ASMARM_PGTABLE_H
 #define _ASMARM_PGTABLE_H
 
+#include <sys/types.h>
+#include <pgtable-2level-types.h>
 #include <pgtable_2level.h>
 #include <tlbflush.h>
-#include <sys/types.h>
-
-typedef u32 pteval_t;
-typedef u32 pmdval_t;
-
-typedef pteval_t pte_t;
-typedef pmdval_t pmd_t;
-typedef pmdval_t pgd_t[2];
-typedef pteval_t pgprot_t;
 
 typedef u32 phys_addr_t;
 

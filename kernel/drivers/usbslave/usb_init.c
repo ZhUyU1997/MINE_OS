@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <s3c24x0.h>
 #include <interrupt.h>
 #include <timer.h>

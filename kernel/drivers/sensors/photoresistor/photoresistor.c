@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <serial.h>
 
 void photoresistor_get_vol(int *m, int *n, int c){
 	double vol, vol0;

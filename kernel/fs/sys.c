@@ -182,7 +182,7 @@ unsigned long sys_fork(struct pt_regs *regs) {
 }
 unsigned long sys_vfork(struct pt_regs *regs) {
 	color_printk(GREEN, BLACK, "sys_vfork\n");
-	return do_fork(regs, CLONE_VM | CLONE_FS | CLONE_SIGNAL, regs->ARM_sp, 0);
+	return do_fork(regs, CLONE_VM | CLONE_FS | CLONE_SIGHAND, regs->ARM_sp, 0);
 }
 unsigned long sys_execve(struct pt_regs *regs) {
 	char * pathname = NULL;

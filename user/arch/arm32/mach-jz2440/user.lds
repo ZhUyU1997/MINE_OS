@@ -4,6 +4,7 @@ SECTIONS {
     .text :
 	{
 		_text = .;
+		arch/arm32/mach-jz2440/head.o;
 		*(.text*);
 		_etext = .;
 	}

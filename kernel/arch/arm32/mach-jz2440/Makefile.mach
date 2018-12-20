@@ -1,10 +1,19 @@
-MCFLAGS		:= -w -fno-builtin -std=gnu99 -O2 \
+DEFINES		+= -D__ARM32_ARCH__=4
+
+WFLAGS		:= -Wall -Wno-unused
+
+ASFLAGS		:= $(WFLAGS) -O3
+CFLAGS		:= $(WFLAGS) -O3
+LDFLAGS		:= -T arch/$(ARCH)/$(MACH)/kernel.lds -nostdlib
+
+MCFLAGS		:= -std=gnu99 -O2 \
 				-march=armv4t -mtune=arm920t \
-				-nostdinc -msoft-float -fsigned-char \
-				-fno-omit-frame-pointer
+				-ffreestanding -msoft-float -fsigned-char \
+				-fno-omit-frame-pointer \
+				-marm -mno-thumb-interwork
 
 MASFLAGS	:= -D__ASSEMBLY__
-MLDFLAGS	:= -nostdlib
+MLDFLAGS	:=
 
 LIBDIRS		:= -L $(dir $(shell $(CC) -march=armv4t -mtune=arm920t -print-libgcc-file-name))
 LIBS		:= -lgcc

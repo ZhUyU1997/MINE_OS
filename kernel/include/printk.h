@@ -16,6 +16,7 @@
 #ifndef __PRINTK_H__
 #define __PRINTK_H__
 
+#include <stdio.h>
 
 #define ZEROPAD	1		/* pad with zero */
 #define SIGN	2		/* unsigned/signed long */

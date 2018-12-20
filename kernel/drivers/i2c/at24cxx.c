@@ -41,7 +41,7 @@ int at24cxx_read(unsigned int addr, unsigned char *data, int len) {
 	msg[0].addr  = AT24CXX_ADDR;
 	msg[0].flags  = 0; /* write */
 	msg[0].len   = 1;
-	msg[0].buf   = &addr;
+	msg[0].buf   = (unsigned char *)&addr;
 	msg[0].err   = 0;
 	msg[0].cnt_transferred = -1;
 

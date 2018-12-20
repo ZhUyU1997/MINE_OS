@@ -1,4 +1,7 @@
+#include <stdio.h>
+#include <serial.h>
 #include "irda_raw.h"
+#include "circle_buffer.h"
 
 /*
  * 从环型缓冲区中获得脉冲数据,

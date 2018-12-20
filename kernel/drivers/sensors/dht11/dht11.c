@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <serial.h>
 #include <s3c24xx.h>
 #include <timer.h>
 /* 使用GPG5作用dht11的DATA引脚 */

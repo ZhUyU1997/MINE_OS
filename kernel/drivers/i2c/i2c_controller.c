@@ -1,4 +1,5 @@
-
+#include <sys/types.h>
+#include <string.h>
 #include "i2c_controller.h"
 
 #define I2C_CONTROLLER_NUM 10
@@ -8,10 +9,10 @@ static p_i2c_controller p_i2c_controllers[I2C_CONTROLLER_NUM];
 static p_i2c_controller p_i2c_con_selected;
 
 
-void register_i2c_controller(p_i2c_controller *p) {
+void register_i2c_controller(i2c_controller *p) {
 	int i;
 	for (i = 0; i < I2C_CONTROLLER_NUM; i++) {
-		if (!p_i2c_controllers[i]) {
+		if (p_i2c_controllers[i] == NULL) {
 			p_i2c_controllers[i] = p;
 			return;
 		}

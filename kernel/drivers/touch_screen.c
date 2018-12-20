@@ -112,7 +112,7 @@ int ts_read_raw_asyn(int *px, int *py, int *ppressure) {
  * 当触摸屏被按下时，进入自动(连续) X/Y轴坐标转换模式；
  * 当触摸屏被松开时，进入等待中断模式，再次等待INT_TC中断
  */
-static void Isr_Tc(void) {
+static void Isr_Tc(unsigned long nr, unsigned long parameter) {
 	if (ADCDAT0 & 0x8000) {
 		TS_DEBUG("Stylus Up\n");
 		del_timer(&ts_timer);
@@ -142,7 +142,7 @@ static void timer_handle(void * data) {
  * A/D转换结束时发生此中断
  * 先读取X、Y坐标值，再进入等待中断模式
  */
-static void Isr_Adc(void) {
+static void Isr_Adc(unsigned long nr, unsigned long parameter) {
 	int x = ADCDAT0 & 0x3ff;
 	int y = ADCDAT1 & 0x3ff;
 
@@ -165,7 +165,7 @@ static void Isr_Adc(void) {
 		del_timer(&ts_timer);
 		report_ts_xy(-1, -1, 0);
 		wait_down_int();
-		return;
+		return ;
 	}
 #if 0
 	//abs > 1000 ,如果太小会死循环，可以设个计数器解决

@@ -2,8 +2,8 @@
 #define __BUG_H__
 
 #include <printk.h>
+#include <compiler.h>
 
-#define unlikely(x) x
 #define BUG() do { \
 			color_printk(WHITE, RED, "BUG: %s:%d/%s()!\n", __FILE__, __LINE__, __func__); \
 		} while (0)

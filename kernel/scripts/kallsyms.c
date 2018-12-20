@@ -111,7 +111,7 @@ void write_src(void) {
 		if (table[i].address == last_addr)
 			continue;
 
-		printf("\t.word\t%d\n", position);
+		printf("\t.word\t%ld\n", position);
 		position += table[i].symbol_length;
 		last_addr = table[i].address;
 	}

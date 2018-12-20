@@ -1,7 +1,9 @@
 #include <assert.h>
 #include <stdio.h>
+#include <irqflags.h>
+
 void __Assert(char *msg){
 	printf("Assertion failed: %s\n",msg);
-	disable_irq();
+	local_irq_disable();
 	while(1);
 }

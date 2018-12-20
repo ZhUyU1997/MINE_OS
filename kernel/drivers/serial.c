@@ -2,6 +2,7 @@
 #include "s3c24xx.h"
 #include "serial.h"
 #include "framebuffer.h"
+
 #define TXD0READY   (1<<2)
 #define RXD0READY   (1)
 
@@ -28,7 +29,6 @@ void uart0_init(void) {
 static void UART0_RX(unsigned long nr, unsigned long parameter){//接收中断
 	unsigned char buf;
 	buf = URXH0;  //将接收到的字符存放在buf中
-	printf("%02X ", buf&0xff);
 }
 static void UART0_TX(unsigned long nr, unsigned long parameter){//清除发送中断
 }

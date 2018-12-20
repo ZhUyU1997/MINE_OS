@@ -34,6 +34,22 @@
 #define __NR_getdents	15
 
 extern int syscall(int num, ...);
+//TOOD
+unsigned long putstring(char *string);
+unsigned long open(char *filename, int flags);
+unsigned long close(int fd);
+unsigned long read(int fd, void * buf, long count);
+unsigned long write(int fd, void * buf, long count);
+unsigned long lseek(int filds, long offset, int whence);
+unsigned long fork();
+unsigned long vfork();
+unsigned long execve(char *name, char *argv[], char *envp[]);
+unsigned long exit(int exit_code);
+unsigned long wait4(unsigned long pid, int *status, int options, void *rusage);
+unsigned long brk(unsigned long brk);
+unsigned long reboot(unsigned long cmd, void * arg);
+unsigned long chdir(char *filename);
+unsigned long getdents(int fd, void * dirent, long count);
 
 #define PP_FILL(...) PP_FILL_I(__VA_ARGS__, 0, 0, 0, 0, 0, 0, 0)
 #define PP_FILL_I(e1, e2, e3, e4, e5, e6, e7, ...) e1, e2, e3, e4, e5, e6, e7

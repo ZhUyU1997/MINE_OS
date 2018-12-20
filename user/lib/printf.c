@@ -14,6 +14,7 @@
 ***************************************************/
 
 #include <stdarg.h>
+#include <syscall.h>
 #include "printf.h"
 
 /*
@@ -51,9 +52,11 @@ static char * number(char * str, long num, int base, int size, int precision,	in
 	} else
 		sign=(type & PLUS) ? '+' : ((type & SPACE) ? ' ' : 0);
 	if (sign) size--;
-	if (type & SPECIAL)
+	if (type & SPECIAL) {
 		if (base == 16) size -= 2;
 		else if (base == 8) size--;
+	}
+
 	i = 0;
 	if (num == 0)
 		tmp[i++]='0';
@@ -66,7 +69,7 @@ static char * number(char * str, long num, int base, int size, int precision,	in
 			*str++ = ' ';
 	if (sign)
 		*str++ = sign;
-	if (type & SPECIAL)
+	if (type & SPECIAL) {
 		if (base == 8)
 			*str++ = '0';
 		else if (base==16) 
@@ -74,6 +77,7 @@ static char * number(char * str, long num, int base, int size, int precision,	in
 			*str++ = '0';
 			*str++ = digits[33];
 		}
+	}
 	if (!(type & LEFT))
 		while(size-- > 0)
 			*str++ = c;

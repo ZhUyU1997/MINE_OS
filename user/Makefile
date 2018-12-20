@@ -98,7 +98,7 @@ endif
 # Load default variables.
 CFLAGS		:=
 ASFLAGS		:=
-LDFLAGS		:= -T $(srctree)/arch/$(ARCH)/$(MACH)/user.lds
+LDFLAGS		:=
 ARCH_CFLAGS	:=
 MCFLAGS		:=
 MLDFLAGS	:=
@@ -130,7 +130,7 @@ sinclude $(srctree)/arch/$(ARCH)/Makefile.arch
 include $(srctree)/scripts/Makefile.include
 
 # Add necessary directory for INCDIRS and SRCDIRS.
-SRCDIRS		+=	arch/$(ARCH) init src lib
+SRCDIRS		+=	arch/$(ARCH) src lib
 INCDIRS		+=	include	drivers					\
 				arch/$(ARCH)/include			\
 				arch/$(ARCH)/$(MACH)/include

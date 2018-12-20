@@ -1,6 +1,10 @@
 #include <s3c24xx.h>
 #include <interrupt.h>
+#include <timer.h>
+#include <stdio.h>
+#include <serial.h>
 #include "irda_raw.h"
+#include "circle_buffer.h"
 
 /* IRDA引脚 : EINT1/GPF1 */
 

@@ -13,6 +13,7 @@
 *
 ***************************************************/
 #include <global_config.h>
+#include <stdio.h>
 #include "backtrace.h"
 
 extern unsigned long kallsyms_addresses[] __attribute__((weak));;
@@ -41,7 +42,7 @@ void backtrace(unsigned long regs) {
 	unsigned long ret_address;
 
 	for (int i = 0; i < 10; i++) {
-		if (rbp < 4096 || rbp >= SWI_STACK_BASE_ADDR) {
+		if (rbp < (unsigned long *)4096 || rbp >= (unsigned long *)SWI_STACK_BASE_ADDR) {
 			printf("\e[31;40mreach the top\e[0m\n");
 			break;
 		}
@@ -63,7 +64,7 @@ void panic() {
 		: "=r"(rbp));
 
 	for (int i = 0; i < 10; i++) {
-		if (rbp >= SWI_STACK_BASE_ADDR) {
+		if (rbp >= (unsigned long *)SWI_STACK_BASE_ADDR) {
 			printf("\e[31;40mreach the top\e[0m\n");
 			break;
 		}

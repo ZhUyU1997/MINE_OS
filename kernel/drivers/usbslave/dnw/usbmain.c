@@ -21,7 +21,7 @@ extern S3C24X0_USB_DEVICE * usbdevregs;
 extern S3C24X0_DMAS * dmaregs;
 extern S3C24X0_CLOCK_POWER * clk_powerregs;
 /**************************[UPLL]*******************************/
-void ChangeUPllValue(int mdiv, int pdiv, int sdiv) { //����UPLLCON�Ĵ���
+void ChangeUPllValue(int mdiv, int pdiv, int sdiv) {
 	clk_powerregs->UPLLCON = (mdiv << 12) | (pdiv << 4) | sdiv;
 }
 /**************************

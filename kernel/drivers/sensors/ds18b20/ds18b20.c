@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <serial.h>
 #include <s3c24xx.h>
 #include <timer.h>
 /* 使用GPG6作用ds18b20的DATA引脚 */
@@ -199,11 +201,11 @@ int ds18b20_read_temperature(double *temp) {
 	/* 计算温度 */
 
 	/* 先判断精度 */
-	if (ram[4] & (3 << 5) == 0) /* 精度: 9bit */
+	if ((ram[4] & (3 << 5)) == 0) /* 精度: 9bit */
 		i = 3;
-	else if (ram[4] & (3 << 5) == (1 << 5)) /* 精度: 10bit */
+	else if ((ram[4] & (3 << 5)) == (1 << 5)) /* 精度: 10bit */
 		i = 2;
-	else if (ram[4] & (3 << 5) == (2 << 5)) /* 精度: 11bit */
+	else if ((ram[4] & (3 << 5)) == (2 << 5)) /* 精度: 11bit */
 		i = 1;
 	else
 		/* 精度是 12 bit */

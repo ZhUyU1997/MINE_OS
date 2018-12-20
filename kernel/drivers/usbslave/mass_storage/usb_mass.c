@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <string.h>
 #include <usb/ch9.h>
 #include <assert.h>
 #include <usb/2440usb.h>
@@ -16,7 +18,7 @@ void handle_mass_class(struct usb_ctrlrequest ctrlreq) {
 			DbgPrintf("[MAX_LUN]");
 			char lun = MASS_STORAGE_MAX_LUN;
 			CLR_EP0_OUT_PKT_RDY();
-			usb_send_init(EP0, &lun, 1);
+			usb_send_init(EP0, (U8 *)&lun, 1);
 			ep0State = EP0_STATE_TRANSMIT;
 			break;
 		}
@@ -75,7 +77,7 @@ struct mass_req_fsm {
 	int flg_req;
 	int exec_status;
 };
-struct mass_req_fsm g_mass_req = {0};
+struct mass_req_fsm g_mass_req;
 
 //**********************************************************************/
 //usb mass in bulk endpoint
@@ -89,7 +91,7 @@ int handle_mass_bulk_in() {
 		g_mass_req.tcsw.dCSWTag = g_mass_req.tcbw.dCBWTag;
 		g_mass_req.tcsw.dCSWDataResidue = 0;
 		g_mass_req.tcsw.dCSWStatus = g_mass_req.exec_status;
-		usb_send_init(EP2, &g_mass_req.tcsw, sizeof(struct csw));
+		usb_send_init(EP2, (U8 *)&g_mass_req.tcsw, sizeof(struct csw));
 		usb_send_message(EP2);
 		g_mass_req.flg_req = 0;
 		g_mass_req.exec_status = 0;
@@ -128,7 +130,7 @@ void handle_mass_bulk_cmd(char *buf, int size) {
 			DbgPrintf("[INQUIRY]");
 			//in
 			if (pcbw->bmCBWFlags & (1 << 7)) {
-				usb_send_init(EP2, (char *)Inquiry_rpy, sizeof(Inquiry_rpy));
+				usb_send_init(EP2, (U8 *)Inquiry_rpy, sizeof(Inquiry_rpy));
 				usb_send_message(EP2);
 			}
 			break;
@@ -137,14 +139,14 @@ void handle_mass_bulk_cmd(char *buf, int size) {
 			if (pcbw->bmCBWFlags & (1 << 7)) {
 				//	unsigned int t_size = (((char *)&pcbd->parameter)[0]<<8) | ((char *)&pcbd->parameter)[1];
 				//	DbgPrintf("size:%d\n",t_size);
-				usb_send_init(EP2, (char *)ReadFmtCap_rpy, sizeof(ReadFmtCap_rpy));
+				usb_send_init(EP2, (U8 *)ReadFmtCap_rpy, sizeof(ReadFmtCap_rpy));
 				usb_send_message(EP2);
 			}
 			break;
 		case ReadCap:
 			DbgPrintf("[READ CAP]");
 			if (pcbw->bmCBWFlags & (1 << 7)) {
-				usb_send_init(EP2, (char *)ReadCap_rpy, sizeof(ReadCap_rpy));
+				usb_send_init(EP2, (U8 *)ReadCap_rpy, sizeof(ReadCap_rpy));
 				usb_send_message(EP2);
 			}
 			break;
@@ -192,7 +194,7 @@ void handle_mass_bulk_cmd(char *buf, int size) {
 		case ModeSense:
 			DbgPrintf("[MODESENSE %d]", pcbw->dCBWDataTransferLength);
 			if (pcbw->bmCBWFlags & (1 << 7)) {
-				usb_send_init(EP2, (char *)ModeSense_rpy, pcbw->dCBWDataTransferLength);
+				usb_send_init(EP2, (U8 *)ModeSense_rpy, pcbw->dCBWDataTransferLength);
 				usb_send_message(EP2);
 			}
 			break;
@@ -232,7 +234,7 @@ void handle_mass_bulk_out() {
 	switch (mass_out_fsm) {
 		case MASS_OUT_CMD:
 			DbgPrintf("[CMD]");
-			handle_mass_bulk_cmd(buf, size);
+			handle_mass_bulk_cmd((char *)buf, size);
 			break;
 		case MASS_OUT_DATA:
 			DbgPrintf("[DATA]");

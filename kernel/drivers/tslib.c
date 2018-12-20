@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <framebuffer.h>
 
 static double a1, b1, c1;
 static double a2, b2, c2;

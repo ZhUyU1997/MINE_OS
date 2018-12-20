@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <timer.h>
 #include "nand.h"
 /* NAND FLASH控制器 */
@@ -399,7 +400,7 @@ int nand_erase_block(unsigned int block_number) {
 void nand_print(unsigned int page) {
 	char buf[2048] = {0};
 	char spare[64] = {0};
-	nand_read_page(page, buf, 2048, spare, 64);
+	nand_read_page(page, (unsigned char *)buf, 2048, (unsigned char *)spare, 64);
 	printf("NAND BLOCK:%d PAGE:%d :\n\r", PAGE_TO_BLOCK(page), (page) & 0x3f);
 	printf("MAIN DATA:\n\r");
 	for (int i = 0; i < 2048; i++) {

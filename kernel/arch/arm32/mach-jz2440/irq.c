@@ -98,8 +98,8 @@ static inline void s3c_irqext_ack(int irq) {
 static inline void s3c_irqsub_mask(unsigned int irq) {
 	unsigned long mask;
 	unsigned long submask;
-	unsigned int parentbit;
-	int subcheck;
+	unsigned int parentbit = 0;
+	int subcheck = 0;
 
 	submask = INTSUBMSK;
 	mask = INTMSK;
@@ -147,10 +147,33 @@ static inline void s3c_irqsub_mask(unsigned int irq) {
 static inline void s3c_irqsub_unmask(unsigned int irq) {
 	unsigned long mask;
 	unsigned long submask;
-	unsigned int parentbit;
+	unsigned int parentbit = 0;
 
 	submask = INTSUBMSK;
 	mask = INTMSK;
+
+	switch (irq) {
+		case IRQ_S3CUART_RX0 ... IRQ_S3CUART_ERR0:
+			parentbit = INTMSK_UART0;
+			break;
+		case IRQ_S3CUART_RX1 ... IRQ_S3CUART_ERR1:
+			parentbit = INTMSK_UART1;
+			break;
+		case IRQ_S3CUART_RX2 ... IRQ_S3CUART_ERR2:
+			parentbit = INTMSK_UART2;
+			break;
+		case IRQ_TC ... IRQ_ADC:
+			parentbit = INTMSK_ADCPARENT;
+			break;
+		case IRQ_S3C2440_CAM_C ... IRQ_S3C2440_CAM_P:
+			parentbit = INTMSK_CAM;
+			break;
+		case IRQ_S3C2440_WDT ... IRQ_S3C2440_AC97:
+			parentbit = INTMSK_WDT;
+			break;
+		default:
+			assert(0);
+	}
 
 	submask &= ~(1UL << (irq - IRQ_S3CUART_RX0));
 	mask &= ~parentbit;
@@ -161,7 +184,7 @@ static inline void s3c_irqsub_unmask(unsigned int irq) {
 }
 static inline void s3c_irqsub_ack(unsigned int irq) {
 	unsigned int bit = 1UL << (irq - IRQ_S3CUART_RX0);
-	unsigned int parentmask;
+	unsigned int parentmask = 0;
 
 	SUBSRCPND = bit;
 
@@ -217,7 +240,7 @@ void irq_set_controller(int irq, hw_int_controller *controller) {
 
 void generic_handle_irq_desc(int irq, struct irq_desc *desc) {
 	if (desc)
-		desc->handle_irq(irq);
+		desc->handle_irq(irq, desc);
 	else
 		assert(0);
 }
@@ -236,7 +259,7 @@ int generic_handle_irq(unsigned int irq) {
 }
 
 /* irq demux for adc */
-static void s3c_irq_demux_adc(unsigned int irq) {
+static void s3c_irq_demux_adc(unsigned int irq, struct irq_desc *desc) {
 	unsigned int subsrc, submsk;
 	unsigned int offset = 9;
 
@@ -292,23 +315,23 @@ static void s3c_irq_demux_uart(unsigned int start) {
 /* uart demux entry points */
 
 static void
-s3c_irq_demux_uart0(unsigned int irq) {
+s3c_irq_demux_uart0(unsigned int irq, struct irq_desc *desc) {
 	irq = irq;
 	s3c_irq_demux_uart(IRQ_S3CUART_RX0);
 }
 
 static void
-s3c_irq_demux_uart1(unsigned int irq) {
+s3c_irq_demux_uart1(unsigned int irq, struct irq_desc *desc) {
 	irq = irq;
 	s3c_irq_demux_uart(IRQ_S3CUART_RX1);
 }
 
-static void s3c_irq_demux_uart2(unsigned int irq) {
+static void s3c_irq_demux_uart2(unsigned int irq, struct irq_desc *desc) {
 	irq = irq;
 	s3c_irq_demux_uart(IRQ_S3CUART_RX2);
 }
 
-static void s3c_irq_demux_extint8(unsigned int irq) {
+static void s3c_irq_demux_extint8(unsigned int irq, struct irq_desc *desc) {
 	unsigned long eintpnd = EINTPEND;
 	unsigned long eintmsk = EINTMASK;
 
@@ -326,7 +349,7 @@ static void s3c_irq_demux_extint8(unsigned int irq) {
 	}
 }
 
-static void s3c_irq_demux_extint4t7(unsigned int irq) {
+static void s3c_irq_demux_extint4t7(unsigned int irq, struct irq_desc *desc) {
 	unsigned long eintpnd = EINTPEND;
 	unsigned long eintmsk = EINTMASK;
 
@@ -347,7 +370,7 @@ static void s3c_irq_demux_extint4t7(unsigned int irq) {
 
 /* WDT/AC97 */
 
-static void s3c_irq_demux_wdtac97(unsigned int irq) {
+static void s3c_irq_demux_wdtac97(unsigned int irq, struct irq_desc *desc) {
 	unsigned int subsrc, submsk;
 
 	/* read the current pending interrupts, and the mask
@@ -372,7 +395,7 @@ static void s3c_irq_demux_wdtac97(unsigned int irq) {
 
 /* camera irq */
 
-static void s3c_irq_demux_cam(unsigned int irq) {
+static void s3c_irq_demux_cam(unsigned int irq, struct irq_desc *desc) {
 	unsigned int subsrc, submsk;
 
 	/* read the current pending interrupts, and the mask

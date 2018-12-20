@@ -1,8 +1,10 @@
+#include <string.h>
 #include <usb/ch9.h>
 #include <usb/2440usb.h>
 #include "usb_mass.h"
 
-static U8 *ramdisk = MASS_STORAGE_ADDR;
+static U8 *ramdisk = (U8 *)MASS_STORAGE_ADDR;
+
 void usb_read_ramdisk(int ep, U32 addr, U32 size) {
 	DbgPrintf("[READ BLOCK:%d,SIZE:%d]", addr / MASS_STORAGE_BLOCK_SIZE, size / MASS_STORAGE_BLOCK_SIZE);
 	usb_send_init(ep, ramdisk + addr, size);

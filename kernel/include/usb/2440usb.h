@@ -180,25 +180,25 @@ typedef char S8;
 #define PWR_REG_DEFAULT_VALUE		(DISABLE_SUSPEND)
 
 
-#define CLR_EP0_OUT_PKT_RDY() 		usbdevregs->EP0_CSR =((usbdevregs->EP0_CSR) & (~EP0_WR_BITS) | EP0_SERVICED_OUT_PKT_RDY)
-#define CLR_EP0_OUTPKTRDY_DATAEND() usbdevregs->EP0_CSR =((usbdevregs->EP0_CSR) & (~EP0_WR_BITS) | (EP0_SERVICED_OUT_PKT_RDY|EP0_DATA_END))
-#define SET_EP0_IN_PKT_RDY() 		usbdevregs->EP0_CSR =((usbdevregs->EP0_CSR) & (~EP0_WR_BITS) | (EP0_IN_PKT_READY))
-#define SET_EP0_INPKTRDY_DATAEND() 	usbdevregs->EP0_CSR =((usbdevregs->EP0_CSR) & (~EP0_WR_BITS) | (EP0_IN_PKT_READY|EP0_DATA_END))
-#define CLR_EP0_SETUP_END() 		usbdevregs->EP0_CSR =((usbdevregs->EP0_CSR) & (~EP0_WR_BITS) | (EP0_SERVICED_SETUP_END))
-#define CLR_EP0_SENT_STALL() 		usbdevregs->EP0_CSR =((usbdevregs->EP0_CSR) & (~EP0_WR_BITS) & (~EP0_SENT_STALL))
+#define CLR_EP0_OUT_PKT_RDY() 		usbdevregs->EP0_CSR =(((usbdevregs->EP0_CSR) & (~EP0_WR_BITS)) | EP0_SERVICED_OUT_PKT_RDY)
+#define CLR_EP0_OUTPKTRDY_DATAEND() usbdevregs->EP0_CSR =(((usbdevregs->EP0_CSR) & (~EP0_WR_BITS)) | (EP0_SERVICED_OUT_PKT_RDY|EP0_DATA_END))
+#define SET_EP0_IN_PKT_RDY() 		usbdevregs->EP0_CSR =(((usbdevregs->EP0_CSR) & (~EP0_WR_BITS)) | (EP0_IN_PKT_READY))
+#define SET_EP0_INPKTRDY_DATAEND() 	usbdevregs->EP0_CSR =(((usbdevregs->EP0_CSR) & (~EP0_WR_BITS)) | (EP0_IN_PKT_READY|EP0_DATA_END))
+#define CLR_EP0_SETUP_END() 		usbdevregs->EP0_CSR =(((usbdevregs->EP0_CSR) & (~EP0_WR_BITS)) | (EP0_SERVICED_SETUP_END))
+#define CLR_EP0_SENT_STALL() 		usbdevregs->EP0_CSR =(((usbdevregs->EP0_CSR) & (~EP0_WR_BITS)) & (~EP0_SENT_STALL))
 #define FLUSH_EP0_FIFO() 			{while(usbdevregs->OUT_FIFO_CNT1_REG) usbdevregs->fifo[0].EP_FIFO_REG;}
 #define WAIT_EP0_IN_PKT()			while (usbdevregs->EP0_CSR & EP0_IN_PKT_READY);
 
-#define SET_EPX_IN_PKT_RDY()		usbdevregs->IN_CSR1_REG = ((usbdevregs->IN_CSR1_REG) & (~EPI_WR_BITS) | EPI_IN_PKT_READY)
-#define SET_EPX_IN_SEND_STALL()		usbdevregs->IN_CSR1_REG = ((usbdevregs->IN_CSR1_REG) & (~EPI_WR_BITS) | EPI_SEND_STALL)
-#define CLR_EPX_IN_SENT_STALL()		usbdevregs->IN_CSR1_REG = ((usbdevregs->IN_CSR1_REG) & (~EPI_WR_BITS) & (~EPI_SENT_STALL))
-#define FLUSH_EPX_IN_FIFO()			usbdevregs->IN_CSR1_REG = ((usbdevregs->IN_CSR1_REG) & (~EPI_WR_BITS) | EPI_FIFO_FLUSH)
+#define SET_EPX_IN_PKT_RDY()		usbdevregs->IN_CSR1_REG = (((usbdevregs->IN_CSR1_REG) & (~EPI_WR_BITS)) | EPI_IN_PKT_READY)
+#define SET_EPX_IN_SEND_STALL()		usbdevregs->IN_CSR1_REG = (((usbdevregs->IN_CSR1_REG) & (~EPI_WR_BITS)) | EPI_SEND_STALL)
+#define CLR_EPX_IN_SENT_STALL()		usbdevregs->IN_CSR1_REG = (((usbdevregs->IN_CSR1_REG) & (~EPI_WR_BITS)) & (~EPI_SENT_STALL))
+#define FLUSH_EPX_IN_FIFO()			usbdevregs->IN_CSR1_REG = (((usbdevregs->IN_CSR1_REG) & (~EPI_WR_BITS)) | EPI_FIFO_FLUSH)
 #define WAIT_EPX_IN_PKT()			while (usbdevregs->IN_CSR1_REG & EPI_IN_PKT_READY);
 
-#define CLR_EPX_OUT_PKT_RDY() 		usbdevregs->OUT_CSR1_REG = ((usbdevregs->OUT_CSR1_REG) & (~EPO_WR_BITS) & (~EPO_OUT_PKT_READY))
-#define SET_EPX_OUT_SEND_STALL()	usbdevregs->OUT_CSR1_REG = ((usbdevregs->OUT_CSR1_REG) & (~EPO_WR_BITS) | EPO_SEND_STALL)
-#define CLR_EPX_OUT_SENT_STALL()	usbdevregs->OUT_CSR1_REG = ((usbdevregs->OUT_CSR1_REG) & (~EPO_WR_BITS) & (~EPO_SENT_STALL))
-#define FLUSH_EPX_OUT_FIFO()		usbdevregs->OUT_CSR1_REG = ((usbdevregs->OUT_CSR1_REG) & (~EPO_WR_BITS) | EPO_FIFO_FLUSH) 
+#define CLR_EPX_OUT_PKT_RDY() 		usbdevregs->OUT_CSR1_REG = (((usbdevregs->OUT_CSR1_REG) & (~EPO_WR_BITS)) & (~EPO_OUT_PKT_READY))
+#define SET_EPX_OUT_SEND_STALL()	usbdevregs->OUT_CSR1_REG = (((usbdevregs->OUT_CSR1_REG) & (~EPO_WR_BITS)) | EPO_SEND_STALL)
+#define CLR_EPX_OUT_SENT_STALL()	usbdevregs->OUT_CSR1_REG = (((usbdevregs->OUT_CSR1_REG) & (~EPO_WR_BITS)) & (~EPO_SENT_STALL))
+#define FLUSH_EPX_OUT_FIFO()		usbdevregs->OUT_CSR1_REG = (((usbdevregs->OUT_CSR1_REG) & (~EPO_WR_BITS)) | EPO_FIFO_FLUSH) 
 
 U32 get_ep_fifo_size(enum ENDPOINT ep);
 U32 usb_buf_remain(struct usb_buf *ub);
@@ -217,7 +217,7 @@ void usb_receive_message(enum ENDPOINT ep, U8 *buf, U32 size);
 
 void Ep0Handler(void);
 
-void IsrUsbd(void);
+void IsrUsbd(unsigned long nr, unsigned long parameter);
 
 #define USB_DEBUG 0
 #if USB_DEBUG == 1

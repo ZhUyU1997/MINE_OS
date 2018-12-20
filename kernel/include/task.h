@@ -16,20 +16,16 @@
 #ifndef __TASK_H__
 #define __TASK_H__
 
-#include "sys/types.h"
-#include "memory.h"
-#include "cpu.h"
-#include "lib.h"
-#include "ptrace.h"
-#include "ldscript.h"
-#include "pgtable.h"
-#include "vfs.h"
-#include "waitqueue.h"
-
-#define CLONE_FS	(1 << 0)
-#define CLONE_FILES	(1 << 1)
-#define CLONE_SIGNAL	(1 << 2)
-
+#include <sys/types.h>
+#include <memory.h>
+#include <cpu.h>
+#include <lib.h>
+#include <ptrace.h>
+#include <ldscript.h>
+#include <pgtable.h>
+#include <vfs.h>
+#include <waitqueue.h>
+#include <mm_types.h>
 
 // stack size 32K
 #define STACK_SIZE 32768
@@ -42,17 +38,6 @@ extern long global_pid;
 #define	TASK_UNINTERRUPTIBLE	(1 << 2)
 #define	TASK_ZOMBIE		(1 << 3)
 #define	TASK_STOPPED		(1 << 4)
-
-struct mm_struct {
-	pgd_t *pgd;	//page table point
-
-	unsigned long start_code, end_code;
-	unsigned long start_data, end_data;
-	unsigned long start_rodata, end_rodata;
-	unsigned long start_bss, end_bss;
-	unsigned long start_brk, end_brk;
-	unsigned long start_stack;
-};
 
 struct thread_struct {
 	unsigned long address;
@@ -92,8 +77,10 @@ struct task_struct {
 	struct cpu_context_save cpu_context;
 	struct List list;
 
-	unsigned long addr_limit;	/*0x0000,0000,0000,0000 - 0x0000,7fff,ffff,ffff user*/
+	/*0x0000,0000,0000,0000 - 0x0000,7fff,ffff,ffff user*/
 	/*0xffff,8000,0000,0000 - 0xffff,ffff,ffff,ffff kernel*/
+	unsigned long addr_limit;
+
 	long pid;
 	long priority;
 	long vrun_time;
@@ -179,12 +166,12 @@ void task_init();
 
 extern void cpu_arm920_switch_mm(pgd_t *pgd, struct mm_struct *mm);
 
-#define cpu_switch_mm(pgd,mm) cpu_arm920_switch_mm(Virt_To_Phy(pgd),mm)
+#define cpu_switch_mm(pgd,mm) cpu_arm920_switch_mm((pgd_t *)Virt_To_Phy(pgd),mm)
 
 static inline void switch_mm(struct task_struct *prev, struct task_struct *next) {
 	cpu_arm920_switch_mm(next->mm->pgd, next->mm);
 }
-
+extern void exit_mm(struct task_struct *tsk);
 extern void ret_system_call(void);
 extern void system_call(void);
 

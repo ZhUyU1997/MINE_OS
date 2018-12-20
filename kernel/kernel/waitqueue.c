@@ -13,6 +13,7 @@
 *
 ***************************************************/
 
+#include <schedule.h>
 #include "waitqueue.h"
 #include "task.h"
 #include "lib.h"

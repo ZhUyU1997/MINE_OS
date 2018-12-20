@@ -1,5 +1,7 @@
 #include <sys/types.h>
 #include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <timer.h>
 #include <usb/2440usb.h>
 #include <memory.h>
@@ -7,9 +9,13 @@
 #include "fcntl.h"
 #include "sys/dirent.h"
 #include "vfs.h"
+
 #define CMD_MAX_CMD_NUM 50
 #define CMD_MAXARGS 10
+
 extern cmd_table *ct_list[];
+int run_command(char *cmd);
+
 CMD_DEFINE(ls, "ls", "ls") {
 	struct dirent *dir;
 	int len = 0;
@@ -54,8 +60,10 @@ CMD_DEFINE(usbdebug, "usbdebug", "usbdebug") {
 	return 0;
 }
 CMD_DEFINE(usbtest, "usbtest", "usbtest") {
+#if 0
 	printf("USB slave 测试\n");
 	usb_init_slave();
+#endif
 	return 0;
 }
 CMD_DEFINE(backtrace, "backtrace", "backtrace") {
@@ -67,7 +75,7 @@ CMD_DEFINE(backtrace, "backtrace", "backtrace") {
 	return 0;
 }
 CMD_DEFINE(usbmouse, "usbmouse", "usbmouse") {
-#if 1
+#if 0
 	while (1) {
 		U8 Buf[4] = {0, 0, 0, 0};
 		switch (getc()) {
@@ -120,23 +128,7 @@ CMD_DEFINE(udelay, "udelay", "udelay") {
 	run_command("RTC");
 	return 0;
 }
-CMD_DEFINE(wr_at24xx, "wr_at24xx", "wr_at24xx") {
-	if (argc != 3)
-		return 1;
-	int err;
 
-	/* 获得地址 */
-	unsigned int addr = simple_strtoul(argv[1], NULL, 10);
-	if (addr > 256) {
-		printf("address > 256, error!\n");
-		return;
-	}
-	printf("[write:%d][%s]\n", addr, argv[2]);
-	err = at24cxx_write(addr, argv[2], strlen(argv[2]) + 1);
-	if (err)
-		printf("[error]\n");
-	return 0;
-}
 
 void view_hex(char *data, int len){
 	for (int i = 0; i < (len + 15) / 16; i++) {
@@ -166,42 +158,9 @@ void view_hex(char *data, int len){
 		printf("\n");
 	}
 }
-CMD_DEFINE(rd_at24xx, "rd_at24xx", "rd_at24xx addr len") {
-	unsigned char data[100];
-	unsigned char str[16];
-	int err;
-	int cnt = 0;
 
-	if (argc != 3)
-		return 1;
-	/* 获得地址 */
-	unsigned int addr = simple_strtoul(argv[1], NULL, 10);
-
-	if (addr > 256) {
-		printf("address > 256, error!\n");
-		return;
-	}
-
-	/* 获得长度 */
-	int len = simple_strtoul(argv[2], NULL, 10);
-	err = at24cxx_read(addr, data, len);
-	if (err)
-		printf("[error]\n");
-	printf("[data view]\n");
-	view_hex(data, len);
-	return 0;
-}
-CMD_DEFINE(i2c_init, "i2c_init", "i2c_init") {
-	i2c_init();
-	return 0;
-}
-CMD_DEFINE(i2c_test, "i2c_test", "i2c_test") {
-	run_command("i2c_init");
-	run_command("wr_at24xx 0 helloworld!");
-	run_command("rd_at24xx 0 20");
-	return 0;
-}
 CMD_DEFINE(RTC, "RTC", "RTC") {
+#if 0
 	char data[7] = {0};
 	char *week_str[7] = {"一", "二", "三", "四", "五", "六", "日"};
 	char *week;
@@ -235,46 +194,10 @@ CMD_DEFINE(RTC, "RTC", "RTC") {
 		printf("error!参数数量异常\n");
 		return 1;
 	}
+#endif
 	return 0;
 }
-CMD_DEFINE(spi_test, "spi_test", "spi_test") {
-	int vol0, vol1;
-	int t0, t1;
-	char str[200];
-	unsigned int mid, pid;
-	SPIInit();
-	OLEDInit();
-	OLEDPrint(0, 0, "www.100ask.net");
 
-	SPIFlashReadID(&mid, &pid);
-	printf("SPI Flash : MID = 0x%02x, PID = 0x%02x\n", mid, pid);
-
-	sprintf(str, "SPI : %02x, %02x", mid, pid);
-	OLEDPrint(2, 0, str);
-
-	SPIFlashInit();
-
-	SPIFlashEraseSector(4096);
-	SPIFlashProgram(4096, "100ask", 7);
-	SPIFlashRead(4096, str, 7);
-	printf("SPI Flash read from 4096: %s\n", str);
-	OLEDPrint(4, 0, str);
-
-	i2c_init();
-
-	OLEDClearPage(2);
-	OLEDClearPage(3);
-
-	printf("Measuring the voltage of AIN0 and AIN1, press any key to exit\n");
-	while (!serial_getc_async()) {  // 串口无输入，则不断测试
-		get_adc(&vol0, &t0, 0);
-		get_adc(&vol1, &t1, 2);
-		//printf("AIN0 = %d.%-3dV    AIN2 = %d.%-3dV\r", (int)vol0, t0, (int)vol1, t1);
-		sprintf(str, "ADC: %d.%-3d, %d.%-3d", (int)vol0, t0, (int)vol1, t1);
-		OLEDPrint(6, 0, str);
-	}
-	return 0;
-}
 CMD_DEFINE(usbslave,
 		   "usbslave - get file from host(PC)",
 		   "[loadAddress] [wait] \n"
@@ -312,7 +235,7 @@ CMD_DEFINE(usbslave,
 	return 0;
 }
 CMD_DEFINE(mmtest, "mmtest", "mmtest") {
-	UINT16 *data,data2;
+	UINT16 *data, *data2;
 	data = kmalloc(7680, 0);
 	printf("kamlloc size = %d addr = %X\n", 7680, data);
 	kfree(data);
@@ -338,6 +261,7 @@ static void vt100_response(char *str){
 	printf(str);
 }
 CMD_DEFINE(vt100, "vt100", "vt100") {
+#if 0
 	terminal_init();
 	setRotation(0);
 	vt100_init(vt100_response);
@@ -359,6 +283,7 @@ CMD_DEFINE(vt100, "vt100", "vt100") {
 		}
 		vt100_putc(data);
 	}
+#endif
 #endif
 	return 0;
 }
@@ -383,10 +308,6 @@ cmd_table *ct_list[] = {
 	CMD_ENTRY(usbdebug),
 	CMD_ENTRY(usbmouse),
 	CMD_ENTRY(usbtest),
-	CMD_ENTRY(wr_at24xx),
-	CMD_ENTRY(rd_at24xx),
-	CMD_ENTRY(i2c_init),
-	CMD_ENTRY(i2c_test),
 	CMD_ENTRY(RTC),
 	CMD_ENTRY(backtrace),
 	CMD_ENTRY(mmtest),
@@ -473,4 +394,5 @@ int cmd_loop() {
 			continue;
 		run_command(buf);
 	}
+	return 0;
 }

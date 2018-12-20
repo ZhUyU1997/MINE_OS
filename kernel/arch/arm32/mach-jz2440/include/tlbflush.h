@@ -10,6 +10,7 @@
 #ifndef _ASMARM_TLBFLUSH_H
 #define _ASMARM_TLBFLUSH_H
 
+#include <mm_types.h>
 
 #define nop() __asm__ __volatile__("mov\tr0,r0\t@ nop\n\t");
 #define isb() __asm__ __volatile__ ("" : : : "memory")

@@ -398,7 +398,7 @@ void drawChar(uint16_t x, uint16_t y, uint8_t ch) {
 	y = PIXEL_Y(y);
 
 	// character glyph buffer
-	char *_buf = &font[ch * 5];
+	const unsigned char *_buf = &font[ch * 5];
 
 	for (int b = 0; b < t->char_height; b++) {
 		// draw 5 pixels for each column of the glyph

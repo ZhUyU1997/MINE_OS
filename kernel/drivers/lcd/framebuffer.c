@@ -1,4 +1,6 @@
-#include "assert.h"
+#include <assert.h>
+#include <graphics.h>
+#include <memory.h>
 #include "framebuffer.h"
 #include "lcd.h"
 

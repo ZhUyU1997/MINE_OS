@@ -1,4 +1,7 @@
+#include <stdio.h>
 #include <irqflags.h>
+#include "backtrace.h"
+
 void HandleUndef() {
 	unsigned int pc = 0, cpsr = 0, sp = 0, lr = 0, fp = 0;
 	asm volatile(
