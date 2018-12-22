@@ -16,19 +16,19 @@
 #include "usbout.h"
 #include "usbinit.h"
 
-extern volatile U32 dwUSBBufReadPtr;
-extern volatile U32 dwUSBBufWritePtr;
-extern volatile U32 dwWillDMACnt;
-extern volatile U32 bDMAPending;
-extern volatile U32 dwUSBBufBase;
-extern volatile U32 dwUSBBufSize;
+extern volatile u32_t dwUSBBufReadPtr;
+extern volatile u32_t dwUSBBufWritePtr;
+extern volatile u32_t dwWillDMACnt;
+extern volatile u32_t bDMAPending;
+extern volatile u32_t dwUSBBufBase;
+extern volatile u32_t dwUSBBufSize;
 
 extern S3C24X0_INTERRUPT * intregs;
 extern S3C24X0_USB_DEVICE * usbdevregs;
 extern S3C24X0_DMAS * dmaregs;
 
-static void PrintEpoPkt(U8 *pt, int cnt);
-static void RdPktEp3_CheckSum(U8 *buf, int num);
+static void PrintEpoPkt(u8_t *pt, int cnt);
+static void RdPktEp3_CheckSum(u8_t *buf, int num);
 
 // ===================================================================
 // All following commands will operate in case
@@ -44,10 +44,10 @@ static void RdPktEp3_CheckSum(U8 *buf, int num);
 // Prepare for the packit size constraint!!!
 // EP3 = OUT end point.
 
-static U8 ep3Buf[EP3_PKT_SIZE];
+static u8_t ep3Buf[EP3_PKT_SIZE];
 
 void Ep3Handler(void) {
-	U8 out_csr3;
+	u8_t out_csr3;
 	int fifoCnt;
 	usbdevregs->INDEX_REG = 3;
 	out_csr3 = usbdevregs->OUT_CSR1_REG;
@@ -62,20 +62,20 @@ void Ep3Handler(void) {
 #else
 
 		if (downloadFileSize == 0) {
-			RdPktEp3((U8 *)downPt, 8);
+			RdPktEp3((u8_t *)downPt, 8);
 
 			if (download_run == 0) {
 				downloadAddress = tempDownloadAddress;
 			} else {
-				downloadAddress = ((U32 *)downPt)[0];
+				downloadAddress = ((u32_t *)downPt)[0];
 				dwUSBBufReadPtr = downloadAddress;
 				dwUSBBufWritePtr = downloadAddress;
 			}
-			downloadFileSize = ((U32 *)downPt)[1];
+			downloadFileSize = ((u32_t *)downPt)[1];
 			checkSum = 0;
-			downPt = (U8 *)downloadAddress;
+			downPt = (u8_t *)downloadAddress;
 
-			RdPktEp3_CheckSum((U8 *)downPt, fifoCnt - 8); //The first 8-bytes are deleted.
+			RdPktEp3_CheckSum((u8_t *)downPt, fifoCnt - 8); //The first 8-bytes are deleted.
 			downPt += fifoCnt - 8;
 
 #if USBDMA
@@ -88,7 +88,7 @@ void Ep3Handler(void) {
 #if USBDMA
 			printf("<ERROR>\n");
 #endif
-			RdPktEp3_CheckSum((U8 *)downPt, fifoCnt);
+			RdPktEp3_CheckSum((u8_t *)downPt, fifoCnt);
 			downPt += fifoCnt; //fifoCnt=64
 		}
 #endif
@@ -96,7 +96,7 @@ void Ep3Handler(void) {
 #if 0
 		if (((rOUT_CSR1_REG & 0x1) == 1) && ((rEP_INT_REG & 0x8) == 0)) {
 			fifoCnt = rOUT_FIFO_CNT1_REG;
-			RdPktEp3_CheckSum((U8 *)downPt, fifoCnt);
+			RdPktEp3_CheckSum((u8_t *)downPt, fifoCnt);
 			downPt += fifoCnt; //fifoCnt=64
 			CLR_EP3_OUT_PKT_READY();
 		}
@@ -115,7 +115,7 @@ void Ep3Handler(void) {
 
 
 
-void PrintEpoPkt(U8 *pt, int cnt) {
+void PrintEpoPkt(u8_t *pt, int cnt) {
 	DbgPrintf("[BOUT:%d:", cnt);
 	for (int i = 0; i < cnt; i++)
 		DbgPrintf("%x,", pt[i]);
@@ -123,9 +123,9 @@ void PrintEpoPkt(U8 *pt, int cnt) {
 }
 
 
-void RdPktEp3_CheckSum(U8 *buf, int num) {
+void RdPktEp3_CheckSum(u8_t *buf, int num) {
 	for (int i = 0; i < num; i++) {
-		buf[i] = (U8)usbdevregs->fifo[3].EP_FIFO_REG;
+		buf[i] = (u8_t)usbdevregs->fifo[3].EP_FIFO_REG;
 		checkSum += buf[i];
 	}
 }
@@ -133,9 +133,9 @@ void RdPktEp3_CheckSum(U8 *buf, int num) {
 
 
 void IsrDma2(void) {
-	U8 out_csr3;
-	U32 dwEmptyCnt;
-	U8 saveIndexReg = usbdevregs->INDEX_REG;
+	u8_t out_csr3;
+	u32_t dwEmptyCnt;
+	u8_t saveIndexReg = usbdevregs->INDEX_REG;
 	usbdevregs->INDEX_REG = 3;
 	out_csr3 = usbdevregs->OUT_CSR1_REG;
 
@@ -172,7 +172,7 @@ void IsrDma2(void) {
 
 
 void ClearEp3OutPktReady(void) {
-	U8 out_csr3;
+	u8_t out_csr3;
 	usbdevregs->INDEX_REG = 3;
 	out_csr3 = usbdevregs->OUT_CSR1_REG;
 	CLR_EP3_OUT_PKT_READY();

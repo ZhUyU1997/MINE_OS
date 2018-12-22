@@ -292,12 +292,12 @@ char     rxpkt_pool[ RXPKT_Q_SIZE * sizeof(DM_RXPKT) ];
 /*********************************************************************************************
 MARCOS DEFINE
 **********************************************************************************************/
-#define DM9000_outb(data,reg) ( *(volatile U8  *)reg = data )
-#define DM9000_outw(data,reg) ( *(volatile U16 *)reg = data )
-#define DM9000_outl(data,reg) ( *(volatile U32 *)reg = data )
-#define DM9000_inb(reg) (*(volatile U8  *)reg)
-#define DM9000_inw(reg) (*(volatile U16 *)reg)
-#define DM9000_inl(reg) (*(volatile U32 *)reg)
+#define DM9000_outb(data,reg) ( *(volatile u8_t  *)reg = data )
+#define DM9000_outw(data,reg) ( *(volatile u16_t *)reg = data )
+#define DM9000_outl(data,reg) ( *(volatile u32_t *)reg = data )
+#define DM9000_inb(reg) (*(volatile u8_t  *)reg)
+#define DM9000_inw(reg) (*(volatile u16_t *)reg)
+#define DM9000_inl(reg) (*(volatile u32_t *)reg)
 
 
 /*********************************************************************************************
@@ -313,7 +313,7 @@ CONFIG DM9000 DEBUG
 功能描述:
 **********************************************************************************************/
 
-void NetDly_us(U32 usec)
+void NetDly_us(u32_t usec)
 {
     udelay(usec);
 }
@@ -335,7 +335,7 @@ void NetDly_ms(U32 ms)
 输出    : 1:succeed 0:fail
 功能描述: 8bit return
 **********************************************************************************************/
-U8 DM9000A_ReadReg(U32 reg) {
+u8_t DM9000A_ReadReg(u32_t reg) {
 	DM9000_outb(reg, DM9000_IO);
 	return DM9000_inb(DM9000_DATA);
 }
@@ -346,7 +346,7 @@ U8 DM9000A_ReadReg(U32 reg) {
 输出    : 1:succeed 0:fail
 功能描述: 8bit write
 **********************************************************************************************/
-void DM9000A_WriteReg(U32 reg , U8 val) {
+void DM9000A_WriteReg(u32_t reg , u8_t val) {
 	DM9000_outb(reg, DM9000_IO);
 	DM9000_outb(val, DM9000_DATA);
 }
@@ -356,8 +356,8 @@ void DM9000A_WriteReg(U32 reg , U8 val) {
 输出    :
 功能描述: 16bit return
 **********************************************************************************************/
-U16 PHY_ReadReg(U32 phy_reg) {
-	U16 val;
+u16_t PHY_ReadReg(u32_t phy_reg) {
+	u16_t val;
 
 	DM9000A_WriteReg(DM9000A_EPAR, DM9000A_PHY | phy_reg);
 	DM9000A_WriteReg(DM9000A_EPCR, EPCR_ERPRR | EPCR_EPOS); //0xc
@@ -376,11 +376,11 @@ U16 PHY_ReadReg(U32 phy_reg) {
 输出    : null
 功能描述:
 **********************************************************************************************/
-void PHY_WriteReg(U32 phy_reg, U16 phy_val) {
-	U8 val_h, val_l;
+void PHY_WriteReg(u32_t phy_reg, u16_t phy_val) {
+	u8_t val_h, val_l;
 
-	val_h = (U8)((phy_val >> 8) & 0xff);
-	val_l = (U8)(phy_val & 0xff);
+	val_h = (u8_t)((phy_val >> 8) & 0xff);
+	val_l = (u8_t)(phy_val & 0xff);
 	DM9000A_WriteReg(DM9000A_EPAR , DM9000A_PHY | phy_reg);
 	DM9000A_WriteReg(DM9000A_EPDRH, val_h);
 	DM9000A_WriteReg(DM9000A_EPDRL, val_l);
@@ -397,8 +397,8 @@ void PHY_WriteReg(U32 phy_reg, U16 phy_val) {
 输出    : U32 id 0x90000a46
 功能描述:
 **********************************************************************************************/
-U32 DM9000A_Info(void) {
-	U32 id;
+u32_t DM9000A_Info(void) {
+	u32_t id;
 
 	id  =  DM9000A_ReadReg(DM9000A_VIDL);
 	id |= (DM9000A_ReadReg(DM9000A_VIDH) << 8);
@@ -415,7 +415,7 @@ U32 DM9000A_Info(void) {
 功能描述:
 **********************************************************************************************/
 void DM9000A_Probe(void) {
-	U32 id_val;
+	u32_t id_val;
 	id_val = DM9000A_Info();
 	if (id_val == DM9000A_ID) {
 		DM9000A_DEBUG(DM9000A_DEBUG_COM, "DM9000_address=0x%x,DM9000_id=0x%x\n", DM9000A_BASE, id_val);
@@ -430,7 +430,7 @@ void DM9000A_Probe(void) {
 功能描述:
 **********************************************************************************************/
 void DM9000A_Reset(void) {
-	U8 check_pidl, check_pidh;
+	u8_t check_pidl, check_pidh;
 
 	DM9000A_WriteReg(DM9000A_GPR, 0); /*Power internal PHY by writting 0 */
 
@@ -462,7 +462,7 @@ void DM9000A_Reset(void) {
 输出    : null
 功能描述:
 **********************************************************************************************/
-void PHY_SetMode(U32 mode) {
+void PHY_SetMode(u32_t mode) {
 	DM9000A_WriteReg(DM9000A_GPR, GPR_PHYPD);
 	DM9000A_WriteReg(DM9000A_GPR, GPR_PHYPU);
 
@@ -501,10 +501,10 @@ void PHY_SetMode(U32 mode) {
 **********************************************************************************************/
 void DM9000_outblk_16bit(volatile void *data_ptr, int count) {
 	int i;
-	U32 tmplen = (count + 1) / 2;
+	u32_t tmplen = (count + 1) / 2;
 
 	for (i = 0; i < tmplen; i++) {
-		DM9000_outw( ((U16 *)data_ptr)[i], DM9000_DATA) ;
+		DM9000_outw( ((u16_t *)data_ptr)[i], DM9000_DATA) ;
 	}
 
 }
@@ -518,10 +518,10 @@ void DM9000_outblk_16bit(volatile void *data_ptr, int count) {
 **********************************************************************************************/
 void DM9000_inblk_16bit(void *data_ptr, int count) {
 	int i;
-	U32 tmplen = (count + 1) / 2;
+	u32_t tmplen = (count + 1) / 2;
 
 	for (i = 0; i < tmplen; i++) {
-		((U16 *)data_ptr)[i] = DM9000_inw(DM9000_DATA);
+		((u16_t *)data_ptr)[i] = DM9000_inw(DM9000_DATA);
 	}
 }
 
@@ -532,7 +532,7 @@ void DM9000_inblk_16bit(void *data_ptr, int count) {
 输出    : null
 功能描述:
 **********************************************************************************************/
-void DM9000_rx_status_16bit(U16 *pRxStatus, U16 *pRxLen) {
+void DM9000_rx_status_16bit(u16_t *pRxStatus, u16_t *pRxLen) {
 	DM9000_outb(DM9000A_MRCMD, DM9000_IO);
 
 	*pRxStatus = DM9000_inw(DM9000_DATA);
@@ -546,9 +546,9 @@ void DM9000_rx_status_16bit(U16 *pRxStatus, U16 *pRxLen) {
 输出    : err:1=ok,0=tx_fail
 功能描述:
 **********************************************************************************************/
-U8 DM9000A_Tx(volatile void *packet, int length) {
-	U32 timeout;
-	U8  err = 1;
+u8_t DM9000A_Tx(volatile void *packet, int length) {
+	u32_t timeout;
+	u8_t  err = 1;
 	//printf("DM9000A_Tx\n");
 	//NetReceive(packet, length);
 	DM9000A_WriteReg(DM9000A_ISR, ISR_PT);
@@ -600,11 +600,11 @@ void DM9000A_Halt(void) {
 输出    : null
 功能描述:
 **********************************************************************************************/
-U8 DM9000A_Rx(void) {
+u8_t DM9000A_Rx(void) {
 	DM_RXPKT *rx_memblk;
 	INT8U    err;
 	char rxbyte, *data_ptr;
-	U16  RxStatus, RxLen = 0;
+	u16_t  RxStatus, RxLen = 0;
 	//printf("*****Rx\n");
 	if ( !( DM9000A_ReadReg(DM9000A_ISR) & 0x01  ) ) { //check packet ready or not
 		return 0 ;
@@ -670,8 +670,8 @@ U8 DM9000A_Rx(void) {
 }
 
 
-void NetReceive(void *pdata, U16 len) {
-	U16 i = 0;
+void NetReceive(void *pdata, u16_t len) {
+	u16_t i = 0;
 	printf("ethernet2.0 mac frame start:\n");
 	while (i < len) {
 		printf("%02x ", ((char *)pdata)[i]&0xff);
@@ -690,8 +690,8 @@ void NetReceive(void *pdata, U16 len) {
 功能描述:
 **********************************************************************************************/
 void DM9000A_Init(void) {
-	U8    readback[6];
-	U32   offset, link, i;
+	u8_t    readback[6];
+	u32_t   offset, link, i;
 	INT8U err;
 
 	DM9000A_Reset();

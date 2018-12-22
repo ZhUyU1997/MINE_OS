@@ -2,11 +2,11 @@
 #define __DEF_H__
 
 #ifndef U32
-typedef unsigned int U32;
+typedef unsigned int u32_t;
 #endif
 
 #ifndef U16
-typedef unsigned short U16;
+typedef unsigned short u16_t;
 #endif
 
 #ifndef S32
@@ -18,7 +18,7 @@ typedef short int S16;
 #endif
 
 #ifndef U8
-typedef unsigned char U8;
+typedef unsigned char u8_t;
 #endif
 
 #ifndef S8

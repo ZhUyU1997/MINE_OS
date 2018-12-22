@@ -32,9 +32,9 @@ enum EP0_STATE {
 
 /* usb buf */
 struct usb_buf {
-	U8 *buf;
-	U32 size;
-	U32 count;
+	u8_t *buf;
+	u32_t size;
+	u32_t count;
 };
 
 
@@ -45,11 +45,11 @@ struct usbdev_struct {
 	struct usb_hid_descriptor *hid_desc;
 	struct usb_endpoint_descriptor *endpoint_desc[4];
 	char *string_desc[4];
-	U32 string_desc_size[4];
-	U8 *config_all;
-	U32 config_all_size;
-	U8 *report_desc;
-	U32 report_desc_size;
+	u32_t string_desc_size[4];
+	u8_t *config_all;
+	u32_t config_all_size;
+	u8_t *report_desc;
+	u32_t report_desc_size;
 	void (*ep_handler[4])();
 	void (*reset)();
 	void (*handle_class)(struct usb_ctrlrequest ctrlreq);
@@ -200,20 +200,20 @@ typedef char S8;
 #define CLR_EPX_OUT_SENT_STALL()	usbdevregs->OUT_CSR1_REG = (((usbdevregs->OUT_CSR1_REG) & (~EPO_WR_BITS)) & (~EPO_SENT_STALL))
 #define FLUSH_EPX_OUT_FIFO()		usbdevregs->OUT_CSR1_REG = (((usbdevregs->OUT_CSR1_REG) & (~EPO_WR_BITS)) | EPO_FIFO_FLUSH) 
 
-U32 get_ep_fifo_size(enum ENDPOINT ep);
-U32 usb_buf_remain(struct usb_buf *ub);
-U32 usb_buf_count(struct usb_buf *ub);
-void usb_buf_init(struct usb_buf *ub, U8 *buf, U32 size);
+u32_t get_ep_fifo_size(enum ENDPOINT ep);
+u32_t usb_buf_remain(struct usb_buf *ub);
+u32_t usb_buf_count(struct usb_buf *ub);
+void usb_buf_init(struct usb_buf *ub, u8_t *buf, u32_t size);
 
-U32 usb_buf_tx(struct usb_buf *ub, enum ENDPOINT ep);
+u32_t usb_buf_tx(struct usb_buf *ub, enum ENDPOINT ep);
 void usb_buf_ep0_tx(struct usb_buf *ub);
 
-void ep_tx_fifo(enum ENDPOINT ep, U8 *buf, U32 size);
-U32 ep_rx_fifo(enum ENDPOINT ep, U8 *buf, U32 size);
+void ep_tx_fifo(enum ENDPOINT ep, u8_t *buf, u32_t size);
+u32_t ep_rx_fifo(enum ENDPOINT ep, u8_t *buf, u32_t size);
 
-void usb_send_init(enum ENDPOINT ep, U8 *buf, U32 size);
+void usb_send_init(enum ENDPOINT ep, u8_t *buf, u32_t size);
 void usb_send_message(enum ENDPOINT ep);
-void usb_receive_message(enum ENDPOINT ep, U8 *buf, U32 size);
+void usb_receive_message(enum ENDPOINT ep, u8_t *buf, u32_t size);
 
 void Ep0Handler(void);
 

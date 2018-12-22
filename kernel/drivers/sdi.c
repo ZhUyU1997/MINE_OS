@@ -16,10 +16,10 @@
 #define SD_DEBUG(fmt,args...)
 #endif
 
-volatile U16 SD_RCA;
-volatile U32 LBA_OFFSET;
-volatile U32 TOTAL_SECTOR;
-volatile U32 TOTAL_SIZE; //(MB)
+volatile u16_t SD_RCA;
+volatile u32_t LBA_OFFSET;
+volatile u32_t TOTAL_SECTOR;
+volatile u32_t TOTAL_SIZE; //(MB)
 
 #define SDCard_BlockSize	9
 #define SDCARD_BUFF_SIZE	512
@@ -27,8 +27,8 @@ volatile U32 TOTAL_SIZE; //(MB)
  变量定义
 ********************************************************/
 SD_STRUCT SDCard;
-U8 cTxBuffer[SDCARD_BUFF_SIZE * 2];
-U8 cRxBuffer[SDCARD_BUFF_SIZE * 2];
+u8_t cTxBuffer[SDCARD_BUFF_SIZE * 2];
+u8_t cRxBuffer[SDCARD_BUFF_SIZE * 2];
 
 
 void TEST_SD() {
@@ -129,7 +129,7 @@ void CMD0(void) {
 出口：=1:MMC卡 =0:非MMC卡
 说明：无
 **********************************************/
-U8 CMD1(void) {
+u8_t CMD1(void) {
 	rSDICARG = 0xff8000;					//(SD OCR:2.7V~3.6V)
 	rSDICCON = (0x1 << 9) | (0x1 << 8) | 0x41; 		//sht_resp, wait_resp, start,
 
@@ -150,7 +150,7 @@ U8 CMD1(void) {
  =0：无效卡
 说明：无
 **********************************************/
-U8 CMD8(void) {
+u8_t CMD8(void) {
 	rSDICARG = 0x000001AA;
 	rSDICCON = (0x1 << 9) | (0x1 << 8) | 0x48;	//sht_resp, wait_resp, start
 
@@ -167,7 +167,7 @@ U8 CMD8(void) {
 出口：=0 失败 =1 成功
 说明：无
 **********************************************/
-U8 CMD55(U16 iRCA) {
+u8_t CMD55(u16_t iRCA) {
 	rSDICARG = iRCA << 16;
 	rSDICCON = (0x1 << 9) | (0x1 << 8) | 0x77;	//sht_resp, wait_resp, start
 	return Chk_CMD_End(55, 1);
@@ -181,8 +181,8 @@ U8 CMD55(U16 iRCA) {
  =2SDHC V2.0
 说明：无
 **********************************************/
-U8 ACMD41(U16 iRCA) {
-	U8 cReturn;
+u8_t ACMD41(u16_t iRCA) {
+	u8_t cReturn;
 
 	if (!CMD55(iRCA))
 		return 0;
@@ -208,7 +208,7 @@ U8 ACMD41(U16 iRCA) {
 出口：=0失败 =1成功
 说明：无
 **********************************************/
-U8 CMD2(U8 *cCID_Info) {
+u8_t CMD2(u8_t *cCID_Info) {
 	rSDICARG = 0x0;
 	rSDICCON = (0x1 << 10) | (0x1 << 9) | (0x1 << 8) | 0x42; //lng_resp, wait_resp, start
 
@@ -241,7 +241,7 @@ U8 CMD2(U8 *cCID_Info) {
 出口：=0 失败 =1 成功
 说明：无
 **********************************************/
-U8 CMD3(U16 iCardType, U16 *iRCA) {
+u8_t CMD3(u16_t iCardType, u16_t *iRCA) {
 	rSDICARG = iCardType << 16;					// (MMC:Set RCA, SD:Ask RCA-->SBZ)
 	rSDICCON = (0x1 << 9) | (0x1 << 8) | 0x43;	// sht_resp, wait_resp, start
 
@@ -262,7 +262,7 @@ U8 CMD3(U16 iCardType, U16 *iRCA) {
 出口：无
 说明：无
 **********************************************/
-U8 CMD7(U8 cSorD, U16 iRCA) {
+u8_t CMD7(u8_t cSorD, u16_t iRCA) {
 	if (cSorD) {
 		rSDICARG = iRCA << 16;				// (RCA,stuff bit)
 		rSDICCON = (0x1 << 9) | (0x1 << 8) | 0x47; // sht_resp, wait_resp, start
@@ -284,7 +284,7 @@ U8 CMD7(U8 cSorD, U16 iRCA) {
 出口：卡状态非0值
 说明：无
 **********************************************/
-U16 CMD13(U16 iRCA) {
+u16_t CMD13(u16_t iRCA) {
 	rSDICARG = iRCA << 16;				// (RCA,stuff bit)
 	rSDICCON = (0x1 << 9) | (0x1 << 8) | 0x4d;	// sht_resp, wait_resp, start
 
@@ -300,7 +300,7 @@ U16 CMD13(U16 iRCA) {
 出口：=0：失败 =1：成功
 说明：无
 **********************************************/
-U8 ACMD6(U8 BusWidth, U16 iRCA) {
+u8_t ACMD6(u8_t BusWidth, u16_t iRCA) {
 	if (!CMD55(iRCA))
 		return 0;
 	rSDICARG = BusWidth << 1;					//Wide 0: 1bit, 1: 4bit
@@ -315,7 +315,7 @@ U8 ACMD6(U8 BusWidth, U16 iRCA) {
 出口：=0失败 =1成功
 说明：无
 **********************************************/
-U8 CMD9(U16 iRCA, U32 *lCSD) {
+u8_t CMD9(u16_t iRCA, u32_t *lCSD) {
 	rSDICARG = iRCA << 16;			// (RCA,stuff bit)
 	rSDICCON = (0x1 << 10) | (0x1 << 9) | (0x1 << 8) | 0x49;	// long_resp, wait_resp, start
 
@@ -334,7 +334,7 @@ U8 CMD9(U16 iRCA, U32 *lCSD) {
 出口：=1：成功 =0：失败
 说明：无
 **********************************************/
-U8 CMD17(U32 Addr) {
+u8_t CMD17(u32_t Addr) {
 	//STEP1:发送指令
 	rSDICARG = Addr;				//设定指令参数
 	rSDICCON = (1 << 9) | (1 << 8) | 0X51;	//发送CMD17指令
@@ -346,7 +346,7 @@ U8 CMD17(U32 Addr) {
 出口：=1：成功 =0：失败
 说明：无
 **********************************************/
-U8 CMD18(U32 Addr) {
+u8_t CMD18(u32_t Addr) {
 	//STEP1:发送指令
 	rSDICARG = Addr;				//设定指令参数
 	rSDICCON = (1 << 9) | (1 << 8) | 0X52;	//发送CMD17指令
@@ -358,7 +358,7 @@ U8 CMD18(U32 Addr) {
 出口：=1：成功 =0：失败
 说明：无
 **********************************************/
-U8 CMD12(void) {
+u8_t CMD12(void) {
 	rSDICARG = 0x0;
 	rSDICCON = (0x1 << 9) | (0x1 << 8) | 0x4c;	//sht_resp, wait_resp, start,
 	return Chk_CMD_End(12, 1);
@@ -369,7 +369,7 @@ U8 CMD12(void) {
 出口：=1：成功 =0：失败
 说明：无
 **********************************************/
-U8 CMD24(U32 Addr) {
+u8_t CMD24(u32_t Addr) {
 	//STEP1:发送指令
 	rSDICARG = Addr;				//设定指令参数
 	rSDICCON = (1 << 9) | (1 << 8) | 0x58;	//发送CMD24指令
@@ -381,7 +381,7 @@ U8 CMD24(U32 Addr) {
 出口：=1：成功 =0：失败
 说明：无
 **********************************************/
-U8 CMD25(U32 Addr) {
+u8_t CMD25(u32_t Addr) {
 	//STEP1:发送指令
 	rSDICARG = Addr;				//设定指令参数
 	rSDICCON = (1 << 9) | (1 << 8) | 0x59;	//发送CMD25指令
@@ -393,7 +393,7 @@ U8 CMD25(U32 Addr) {
 出口：=1：成功 =0：失败
 说明：无
 **********************************************/
-U8 CMD32(U32 Addr) {
+u8_t CMD32(u32_t Addr) {
 	//STEP1:发送指令
 	rSDICARG = Addr;				//设定指令参数
 	rSDICCON = (1 << 9) | (1 << 8) | 0x60;	//发送CMD32指令
@@ -405,7 +405,7 @@ U8 CMD32(U32 Addr) {
 出口：=1：成功 =0：失败
 说明：无
 **********************************************/
-U8 CMD33(U32 Addr) {
+u8_t CMD33(u32_t Addr) {
 	//STEP1:发送指令
 	rSDICARG = Addr;				//设定指令参数
 	rSDICCON = (1 << 9) | (1 << 8) | 0x61;	//发送CMD33指令
@@ -417,7 +417,7 @@ U8 CMD33(U32 Addr) {
 出口：=1：成功 =0：失败
 说明：无
 **********************************************/
-U8 CMD38(void) {
+u8_t CMD38(void) {
 	//STEP1:发送指令
 	rSDICARG = 0;					//设定指令参数
 	rSDICCON = (1 << 9) | (1 << 8) | 0x66;	//发送CMD38指令
@@ -432,7 +432,7 @@ U8 CMD38(void) {
 出口：=1：成功 =0：失败
 说明：无
 **********************************************/
-U8 Card_sel_desel(U8 cSelDesel, U16 iCardRCA) {
+u8_t Card_sel_desel(u8_t cSelDesel, u16_t iCardRCA) {
 	return CMD7(cSelDesel, iCardRCA);
 }
 
@@ -445,13 +445,13 @@ U8 Card_sel_desel(U8 cSelDesel, U16 iCardRCA) {
  =1：成功 =0：失败
 说明：无
 **********************************************/
-U8 Set_bus_Width(U8 cCardType, U8 cBusWidth, U16 iRCA) {
+u8_t Set_bus_Width(u8_t cCardType, u8_t cBusWidth, u16_t iRCA) {
 	if (cCardType == MMC_CARD)
 		return 0;
 	return ACMD6(cBusWidth, iRCA);
 }
 
-U8 SDI_CheckDATend(void) {
+u8_t SDI_CheckDATend(void) {
 	int finish;
 	finish = rSDIDSTA;
 	while (!((finish & 0x10) || (finish & 0x20))) {  // Chek timeout or data end
@@ -483,9 +483,9 @@ U8 SDI_CheckDATend(void) {
 在主调函数中定义一个数组作为接收缓冲区，如 U32 Rx_buffer[BufferSize];
 然后开始调用 Read_Mult_Block(addr,BufferSize,Rx_buffer);
 **********************************************************************************/
-U8 Read_Mult_Block(U32 Addr, U32 count, U8* RxBuffer) {
-	U32 i = 0;
-	U32 status = 0;
+u8_t Read_Mult_Block(u32_t Addr, u32_t count, u8_t* RxBuffer) {
+	u32_t i = 0;
+	u32_t status = 0;
 	rSDIFSTA = rSDIFSTA | (1 << 16); // FIFO reset
 	rSDIDCON = (count) | (2 << 12) | (1 << 14) | (1 << 16) | (1 << 17) | (1 << 19) | (2 << 22);
 	//TODO:sd v2.0 中 Addr为扇区号，因此代码不兼容sd v1.0
@@ -505,11 +505,11 @@ U8 Read_Mult_Block(U32 Addr, U32 count, U8* RxBuffer) {
 			status = rSDIFSTA;
 			if ((status & 0x1000) == 0x1000) {
 				//如果接收 FIFO 中有数据
-				U32 temp = rSDIDAT;
-				RxBuffer[0] = ((U8 *)&temp)[0];
-				RxBuffer[1] = ((U8 *)&temp)[1];
-				RxBuffer[2] = ((U8 *)&temp)[2];
-				RxBuffer[3] = ((U8 *)&temp)[3];
+				u32_t temp = rSDIDAT;
+				RxBuffer[0] = ((u8_t *)&temp)[0];
+				RxBuffer[1] = ((u8_t *)&temp)[1];
+				RxBuffer[2] = ((u8_t *)&temp)[2];
+				RxBuffer[3] = ((u8_t *)&temp)[3];
 				RxBuffer += 4;
 				j++;
 			}
@@ -549,9 +549,9 @@ U8 Read_Mult_Block(U32 Addr, U32 count, U8* RxBuffer) {
 在主调函数中定义一个数组作为发送缓冲区，如 U32 Tx_buffer[BlockSize];
 然后开始调用 Write_Mult_Block(addr,DatSize,Tx_buffer);
 **********************************************************************************/
-U8 Write_Mult_Block(U32 Addr, U32 count, U8* TxBuffer) {
-	U16 i = 0;
-	U32 status = 0;
+u8_t Write_Mult_Block(u32_t Addr, u32_t count, u8_t* TxBuffer) {
+	u16_t i = 0;
+	u32_t status = 0;
 	rSDIFSTA = rSDIFSTA | (1 << 16);	// FIFO reset
 	rSDIDCON = (count) | (3 << 12) | (1 << 14) | (1 << 16) | (1 << 17) | (1 << 20) | (2 << 22);
 	//TODO:sd v2.0 中 Addr为扇区号，因此代码不兼容sd v1.0
@@ -565,11 +565,11 @@ U8 Write_Mult_Block(U32 Addr, U32 count, U8* TxBuffer) {
 			status = rSDIFSTA;
 			if ((status & 0x2000)) {
 				//如果发送 FIFO 可用，即 FIFO 未满
-				U32 temp;
-				((U8 *)&temp)[0] = TxBuffer[0];
-				((U8 *)&temp)[1] = TxBuffer[1];
-				((U8 *)&temp)[2] = TxBuffer[2];
-				((U8 *)&temp)[3] = TxBuffer[3];
+				u32_t temp;
+				((u8_t *)&temp)[0] = TxBuffer[0];
+				((u8_t *)&temp)[1] = TxBuffer[1];
+				((u8_t *)&temp)[2] = TxBuffer[2];
+				((u8_t *)&temp)[3] = TxBuffer[3];
 				rSDIDAT = temp;
 				TxBuffer += 4;
 				j++;
@@ -618,7 +618,7 @@ U8 Write_Mult_Block(U32 Addr, U32 count, U8* TxBuffer) {
  小，但由于没有与扇区对齐，从而使起始地址和结束地址跨度为两个扇区，那么这两个扇区将会
  被擦除。
 **********************************************************************************/
-U8 Erase_Block(U32 StartAddr, U32 EndAddr) {
+u8_t Erase_Block(u32_t StartAddr, u32_t EndAddr) {
 	if (CMD32(StartAddr) != 1)
 		return 0;
 	if (CMD33(EndAddr) != 1)
@@ -634,9 +634,9 @@ U8 Erase_Block(U32 StartAddr, U32 EndAddr) {
 出口：=0失败 =1成功
 说明：无
 **********************************************/
-U8 SDI_init(void) {
+u8_t SDI_init(void) {
 	int i;
-	U8  MBR[512];
+	u8_t  MBR[512];
 
 	udelay(500000);	//当板子重新上电时需要延时
 	//printf("GPEUP=%X,GPECON=%X,GPGDAT=%X,GPGCON=%X,GPGUP=%X\n",rGPEUP,rGPECON,rGPGDAT,rGPGCON,rGPGUP);
@@ -776,7 +776,7 @@ U8 SDI_init(void) {
 
 
 
-U8 Read_Block(U32 Addr, U32 count, U8* RxBuffer) {
+u8_t Read_Block(u32_t Addr, u32_t count, u8_t* RxBuffer) {
 	assert((count) && (RxBuffer));
 	if (count == 0) {
 		return 0;
@@ -789,7 +789,7 @@ U8 Read_Block(U32 Addr, U32 count, U8* RxBuffer) {
 		return 0;
 	}
 }
-U8 Write_Block(U32 Addr, U32 count, U8* TxBuffer) {
+u8_t Write_Block(u32_t Addr, u32_t count, u8_t* TxBuffer) {
 	assert((count) && (TxBuffer));
 	if (count == 0) {
 		return 0;

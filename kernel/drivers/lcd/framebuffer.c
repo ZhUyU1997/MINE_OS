@@ -33,7 +33,7 @@ UINT16 GetPixel(UINT32 x, UINT32 y) {
 }
 
 /* 清屏 */
-void ClearScreen(U32 color) {
+void ClearScreen(u32_t color) {
 	UINT32 x, y;
 
 	color = convert888_565(color);

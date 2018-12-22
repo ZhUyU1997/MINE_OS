@@ -13,10 +13,10 @@
 #include "usbsetup.h"
 #include "usbmain.h"
 
-extern volatile U32 dwUSBBufReadPtr;
-extern volatile U32 dwUSBBufWritePtr;
-extern volatile U32 dwPreDMACnt;
-extern volatile U32 dwNextDMACnt;
+extern volatile u32_t dwUSBBufReadPtr;
+extern volatile u32_t dwUSBBufWritePtr;
+extern volatile u32_t dwPreDMACnt;
+extern volatile u32_t dwNextDMACnt;
 
 extern S3C24X0_INTERRUPT * intregs;
 extern S3C24X0_USB_DEVICE * usbdevregs;
@@ -100,37 +100,37 @@ void ReconfigUsbd(void) {
 }
 
 
-void RdPktEp0(U8 *buf, int num) {
+void RdPktEp0(u8_t *buf, int num) {
 	for (int i = 0; i < num; i++) {
-		buf[i] = (U8)usbdevregs->fifo[0].EP_FIFO_REG;
+		buf[i] = (u8_t)usbdevregs->fifo[0].EP_FIFO_REG;
 	}
 }
-void WrPktEp0(U8 *buf, int num) {
+void WrPktEp0(u8_t *buf, int num) {
 	for (int i = 0; i < num; i++) {
 		usbdevregs->fifo[0].EP_FIFO_REG = buf[i];
 	}
 }
-void WrPktEp1(U8 *buf, int num) {
+void WrPktEp1(u8_t *buf, int num) {
 	for (int i = 0; i < num; i++) {
 		usbdevregs->fifo[1].EP_FIFO_REG = buf[i];
 	}
 }
-void WrPktEp2(U8 *buf, int num) {
+void WrPktEp2(u8_t *buf, int num) {
 	for (int i = 0; i < num; i++) {
 		usbdevregs->fifo[2].EP_FIFO_REG = buf[i];
 	}
 }
-void RdPktEp3(U8 *buf, int num) {
+void RdPktEp3(u8_t *buf, int num) {
 	for (int i = 0; i < num; i++) {
-		buf[i] = (U8)usbdevregs->fifo[3].EP_FIFO_REG;
+		buf[i] = (u8_t)usbdevregs->fifo[3].EP_FIFO_REG;
 	}
 }
-void RdPktEp4(U8 *buf, int num) {
+void RdPktEp4(u8_t *buf, int num) {
 	for (int i = 0; i < num; i++) {
-		buf[i] = (U8)usbdevregs->fifo[4].EP_FIFO_REG;
+		buf[i] = (u8_t)usbdevregs->fifo[4].EP_FIFO_REG;
 	}
 }
-void ConfigEp3DmaMode(U32 bufAddr, U32 count) {
+void ConfigEp3DmaMode(u32_t bufAddr, u32_t count) {
 	usbdevregs->INDEX_REG = 3;
 	count = count & 0xfffff; //transfer size should be <1MB
 

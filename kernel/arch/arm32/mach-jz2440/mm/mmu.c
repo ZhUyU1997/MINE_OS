@@ -4,7 +4,7 @@
 #include <mmu.h>
 #include <memory.h>
 
-void set_pte(pte_t *pte, U32 physicaladdr, U32 AP0, U32 AP1, U32 AP2, U32 AP3, U32 domain, U32 C, U32 B){
+void set_pte(pte_t *pte, u32_t physicaladdr, u32_t AP0, u32_t AP1, u32_t AP2, u32_t AP3, u32_t domain, u32_t C, u32_t B){
 	SMALL_PAGE page = {
 		.base_address = physicaladdr >> MMU_SMALL_PAGE_SHIFT,
 		.AP0 = AP0,
@@ -19,12 +19,12 @@ void set_pte(pte_t *pte, U32 physicaladdr, U32 AP0, U32 AP1, U32 AP2, U32 AP3, U
 }
 
 pte_t *alloc_pte(pmd_t *pmd){
-	U32 temp = pmd[0];
+	u32_t temp = pmd[0];
 	SECTION sec = *(SECTION *)pmd;
 	if((temp & 0x3) == MMU_COARSE_PAGE)
 		assert(0);
 
-	U32 *p = kmalloc(PAGE_2K_SIZE, 0);
+	u32_t *p = kmalloc(PAGE_2K_SIZE, 0);
 	assert(p);
 	pte_t *pte = p;
 
@@ -66,8 +66,8 @@ pte_t *alloc_pte(pmd_t *pmd){
 	return pte;
 }
 
-void set_pmd(pmd_t *pmd, U32 physicaladdr, U32 AP, U32 domain, U32 C, U32 B){
-	U32 temp = pmd[0];
+void set_pmd(pmd_t *pmd, u32_t physicaladdr, u32_t AP, u32_t domain, u32_t C, u32_t B){
+	u32_t temp = pmd[0];
 	if((temp & 0x3) == MMU_COARSE_PAGE)
 		assert(0);
 	SECTION sec = {
@@ -86,14 +86,14 @@ void set_pmd(pmd_t *pmd, U32 physicaladdr, U32 AP, U32 domain, U32 C, U32 B){
 	((SECTION *)pmd)[1] = sec;
 }
 
-void set_pgd(pgd_t *pgd, U32 physicaladdr, U32 AP, U32 domain, U32 C, U32 B){
+void set_pgd(pgd_t *pgd, u32_t physicaladdr, u32_t AP, u32_t domain, u32_t C, u32_t B){
 	assert(!(physicaladdr&(PGDIR_SIZE-1)));
 	pmd_t *pmd = (pmd_t *)pgd;
 	set_pmd(pmd, physicaladdr, AP, domain, C, B);
 }
 
-static void alloc_init_pgd(pgd_t *pgd, U32 virtuladdr, U32 physicaladdr, U32 count, U32 AP, U32 domain, U32 C, U32 B){
-	U32 vaddr = virtuladdr, paddr = physicaladdr;
+static void alloc_init_pgd(pgd_t *pgd, u32_t virtuladdr, u32_t physicaladdr, u32_t count, u32_t AP, u32_t domain, u32_t C, u32_t B){
+	u32_t vaddr = virtuladdr, paddr = physicaladdr;
 	assert(!(vaddr& (PGDIR_SIZE-1)));
 	assert(!(paddr& (PGDIR_SIZE-1)));
 	assert(count>0);
@@ -255,7 +255,7 @@ void mmu_test(){
 	p = (int *)0x32200000;
 	printf("[0x32200000] = %#X\n", *(int *)0x32200000);
 	pgd = (pgd_t *)CONFIG_MUM_TLB_BASE_ADDR + pgd_index(0x32000000);
-	set_pgd(pgd, (U32)p, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
+	set_pgd(pgd, (u32_t)p, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
 	
 	flush_tlb();
 	flush_cache();

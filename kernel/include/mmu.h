@@ -95,8 +95,8 @@ typedef struct TINY_PAGE {
 	unsigned int base_address: 22;
 } TINY_PAGE;
 
-void set_pmd(pmd_t *pmd, U32 physicaladdr, U32 AP, U32 domain, U32 C, U32 B);
-void set_pgd(pgd_t *pgd, U32 physicaladdr, U32 AP, U32 domain, U32 C, U32 B);
+void set_pmd(pmd_t *pmd, u32_t physicaladdr, u32_t AP, u32_t domain, u32_t C, u32_t B);
+void set_pgd(pgd_t *pgd, u32_t physicaladdr, u32_t AP, u32_t domain, u32_t C, u32_t B);
 void mmu_init(void);
 
 #endif

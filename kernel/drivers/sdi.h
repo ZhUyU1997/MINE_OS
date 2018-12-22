@@ -6,10 +6,10 @@
 //#define SD_NORM_CLK   20000000  //24Mhz
 //#define SD_BUS_WIDTH_TYPE 1     //0:1bit  1:4bit
 
-extern volatile U16 SD_RCA;
-extern volatile U32 LBA_OFFSET;
-extern volatile U32 TOTAL_SECTOR;
-extern volatile U32 TOTAL_SIZE; //(MB)
+extern volatile u16_t SD_RCA;
+extern volatile u32_t LBA_OFFSET;
+extern volatile u32_t TOTAL_SECTOR;
+extern volatile u32_t TOTAL_SIZE; //(MB)
 
 #define	INICLK		300000
 #define	SDCLK		24000000	//PCLK=49.392MHz
@@ -28,20 +28,20 @@ extern volatile U32 TOTAL_SIZE; //(MB)
 /* SD卡信息结构体定义 */
 /* the information structure variable of SD Card*/
 typedef struct SD_STRUCT {
-	U8 cCardType;				/* 卡类型 */
-	U8 cBlockSize;				// 卡的块长度，以为2的2次方表示，如512字节为2的9次方，则该值为9
-	U8 cCardCID[16];			// 卡的CID信息
-	U16 iCardRCA;				/* 卡逻辑地址 */
-	U32 lCardCSD[4];			// 卡的CSD信息
-	U32 lBlockNum;				/* 卡中块的数量 */
-	U32 lBlockLen;				/* 卡的块长度(单位:字节) */
-	U32 lSectorSize;			/* 一次可擦除的块个数 */
-	U32 lCardSize;				//卡容量(单位:字节)
+	u8_t cCardType;				/* 卡类型 */
+	u8_t cBlockSize;				// 卡的块长度，以为2的2次方表示，如512字节为2的9次方，则该值为9
+	u8_t cCardCID[16];			// 卡的CID信息
+	u16_t iCardRCA;				/* 卡逻辑地址 */
+	u32_t lCardCSD[4];			// 卡的CSD信息
+	u32_t lBlockNum;				/* 卡中块的数量 */
+	u32_t lBlockLen;				/* 卡的块长度(单位:字节) */
+	u32_t lSectorSize;			/* 一次可擦除的块个数 */
+	u32_t lCardSize;				//卡容量(单位:字节)
 
 
-	U32 timeout_read;			/* 读块超时时间(单位: 8 SPI clock) */
-	U32 timeout_write;			/* 写块超时时间(单位: 8 SPI clock) */
-	U32 timeout_erase;			/* 擦块超时时间(单位: 8 SPI clock) */
+	u32_t timeout_read;			/* 读块超时时间(单位: 8 SPI clock) */
+	u32_t timeout_write;			/* 写块超时时间(单位: 8 SPI clock) */
+	u32_t timeout_erase;			/* 擦块超时时间(单位: 8 SPI clock) */
 } SD_STRUCT;
 
 
@@ -84,32 +84,32 @@ typedef struct _card_desc {
 
 int Chk_CMD_End(int cmd, int be_resp);
 void CMD0(void);
-U8 CMD1(void);
-U8 CMD8(void);
-U8 CMD55(U16 iRCA);
-U8 ACMD41(U16 iRCA)	;
-U8 CMD2(U8 *cCID_Info);
-U8 CMD3(U16 iCardType, U16 *iRCA);
-U8 CMD7(U8 cSorD, U16 iRCA);
-U16 CMD13(U16 iRCA)	;
-U8 ACMD6(U8 BusWidth, U16 iRCA);
-U8 CMD9(U16 iRCA, U32 *lCSD)	;
-U8 CMD17(U32 Addr);
-U8 CMD18(U32 Addr);
-U8 CMD12(void);
-U8 CMD24(U32 Addr);
-U8 CMD25(U32 Addr);
-U8 CMD32(U32 Addr);
-U8 CMD33(U32 Addr);
-U8 CMD38(void);
+u8_t CMD1(void);
+u8_t CMD8(void);
+u8_t CMD55(u16_t iRCA);
+u8_t ACMD41(u16_t iRCA)	;
+u8_t CMD2(u8_t *cCID_Info);
+u8_t CMD3(u16_t iCardType, u16_t *iRCA);
+u8_t CMD7(u8_t cSorD, u16_t iRCA);
+u16_t CMD13(u16_t iRCA)	;
+u8_t ACMD6(u8_t BusWidth, u16_t iRCA);
+u8_t CMD9(u16_t iRCA, u32_t *lCSD)	;
+u8_t CMD17(u32_t Addr);
+u8_t CMD18(u32_t Addr);
+u8_t CMD12(void);
+u8_t CMD24(u32_t Addr);
+u8_t CMD25(u32_t Addr);
+u8_t CMD32(u32_t Addr);
+u8_t CMD33(u32_t Addr);
+u8_t CMD38(void);
 
-U8 Card_sel_desel(U8 cSelDesel, U16 iCardRCA);
-U8 Set_bus_Width(U8 cCardType, U8 cBusWidth, U16 iRCA);
-U8 SDI_init(void);
-U8 Read_Mult_Block(U32 Addr, U32 DatSize, U8* RxBuffer);
-U8 Write_Mult_Block(U32 Addr, U32 DatSize, U8* TxBuffer);
-U8 Erase_Block(U32 StartAddr, U32 EndAddr);
-U8 Read_Block(U32 Addr, U32 count, U8* RxBuffer);
-U8 Write_Block(U32 Addr, U32 count, U8* TxBuffer);
+u8_t Card_sel_desel(u8_t cSelDesel, u16_t iCardRCA);
+u8_t Set_bus_Width(u8_t cCardType, u8_t cBusWidth, u16_t iRCA);
+u8_t SDI_init(void);
+u8_t Read_Mult_Block(u32_t Addr, u32_t DatSize, u8_t* RxBuffer);
+u8_t Write_Mult_Block(u32_t Addr, u32_t DatSize, u8_t* TxBuffer);
+u8_t Erase_Block(u32_t StartAddr, u32_t EndAddr);
+u8_t Read_Block(u32_t Addr, u32_t count, u8_t* RxBuffer);
+u8_t Write_Block(u32_t Addr, u32_t count, u8_t* TxBuffer);
 #endif
 

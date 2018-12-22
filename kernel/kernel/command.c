@@ -77,7 +77,7 @@ CMD_DEFINE(backtrace, "backtrace", "backtrace") {
 CMD_DEFINE(usbmouse, "usbmouse", "usbmouse") {
 #if 0
 	while (1) {
-		U8 Buf[4] = {0, 0, 0, 0};
+		u8_t Buf[4] = {0, 0, 0, 0};
 		switch (getc()) {
 			case 'a':
 				Buf[1] = -1;	//这里一次往左移动一个单位。
@@ -205,8 +205,8 @@ CMD_DEFINE(usbslave,
 #if 0
 	//TODO:最好将文件下载到文件系统中
 	extern int download_run;
-	extern volatile U32 dwUSBBufBase;
-	extern volatile U32 dwUSBBufSize;
+	extern volatile u32_t dwUSBBufBase;
+	extern volatile u32_t dwUSBBufSize;
 
 	int wait = 1;
 #define BUF_SIZE (1024*1024)

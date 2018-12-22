@@ -10,7 +10,7 @@
 
 void Ep0Handler(void);
 void InitDescriptorTable(void);
-void PrintEp0Pkt(U8 *pt);
+void PrintEp0Pkt(u8_t *pt);
 
 #define EP0_STATE_INIT 			(0)
 
@@ -45,6 +45,6 @@ void PrintEp0Pkt(U8 *pt);
 #define EP0_GET_STATUS3  (38)
 #define EP0_GET_STATUS4  (39)
 
-extern U32 ep0State;
+extern u32_t ep0State;
 
 #endif /*__USBSETUP_H__*/

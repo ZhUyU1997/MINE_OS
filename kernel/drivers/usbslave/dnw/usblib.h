@@ -15,15 +15,15 @@
 void ConfigUsbd(void);
 void ReconfigUsbd(void);
 
-void RdPktEp0(U8 *buf, int num);
-void WrPktEp0(U8 *buf, int num);
-void WrPktEp1(U8 *buf, int num);
-void WrPktEp2(U8 *buf, int num);
-void RdPktEp3(U8 *buf, int num);
-void RdPktEp4(U8 *buf, int num);
+void RdPktEp0(u8_t *buf, int num);
+void WrPktEp0(u8_t *buf, int num);
+void WrPktEp1(u8_t *buf, int num);
+void WrPktEp2(u8_t *buf, int num);
+void RdPktEp3(u8_t *buf, int num);
+void RdPktEp4(u8_t *buf, int num);
 
 void ConfigEp3IntMode(void);
-void ConfigEp3DmaMode(U32 bufAddr, U32 count);
+void ConfigEp3DmaMode(u32_t bufAddr, u32_t count);
 
 #endif /*__USBLIB_H__*/
 

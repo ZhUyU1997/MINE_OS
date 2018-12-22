@@ -7,11 +7,11 @@
 #define FONT_W 8
 #define FONT_H 16
 
-static U32 text_color = 0x0;
-static U32 background_color = 0xffffff;
+static u32_t text_color = 0x0;
+static u32_t background_color = 0xffffff;
 
 /* rgb: 0x00RRGGBB */
-U16 convert888_565(U32 rgb) {
+u16_t convert888_565(u32_t rgb) {
 	int r = (rgb >> 16) & 0xff;
 	int g = (rgb >> 8) & 0xff;
 	int b = rgb & 0xff;
@@ -35,7 +35,7 @@ U16 convert888_565(U32 rgb) {
  *         对于8BPP: color为调色板中的索引值，
  *     其颜色取决于调色板中的数值
  */
-void DrawLine(int x1, int y1, int x2, int y2, U32 color) {
+void DrawLine(int x1, int y1, int x2, int y2, u32_t color) {
 	int dx, dy, e;
 	dx = x2 - x1;
 	dy = y2 - y1;
@@ -148,7 +148,7 @@ void DrawLine(int x1, int y1, int x2, int y2, U32 color) {
 	}
 }
 
-void DrawCircle(U32 x, U32 y, U32 r, U32 color) {
+void DrawCircle(u32_t x, u32_t y, u32_t r, u32_t color) {
 	int num;
 	int a = 0;
 	int b = r;
@@ -173,7 +173,7 @@ void DrawCircle(U32 x, U32 y, U32 r, U32 color) {
 	}
 }
 
-void DrawFillRect(U32 x, U32 y, U32 w, U32 h, U32 color) {
+void DrawFillRect(u32_t x, u32_t y, u32_t w, u32_t h, u32_t color) {
 	color = convert888_565(color);
 	for(int i = 0; i < h; i++){
 		for(int j = 0; j < w; j++){
@@ -182,7 +182,7 @@ void DrawFillRect(U32 x, U32 y, U32 w, U32 h, U32 color) {
 	}
 }
 
-void DispCross(U32 x, U32 y, U32 color) {
+void DispCross(u32_t x, u32_t y, u32_t color) {
 	DrawLine(x - 10, y, x + 10, y, color);
 	DrawLine(x, y - 10, x, y + 10, color);
 }

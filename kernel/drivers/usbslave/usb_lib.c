@@ -7,7 +7,7 @@
 
 struct usb_buf ub[4];
 
-int check_fifo_size(enum ENDPOINT ep, U32 size) {
+int check_fifo_size(enum ENDPOINT ep, u32_t size) {
 	switch (ep) {
 		case EP0:
 			assert(size <= EP0_PKT_SIZE);
@@ -44,27 +44,27 @@ int check_ep(enum ENDPOINT ep) {
 			return 0;
 	}
 }
-void ep_tx_fifo(enum ENDPOINT ep, U8 *buf, U32 size) {
+void ep_tx_fifo(enum ENDPOINT ep, u8_t *buf, u32_t size) {
 	assert(buf && size);
 	if (check_fifo_size(ep, size)) {
 		STORE_INDEX(ep);
-		for (U32 i = 0; i < size; i++)
+		for (u32_t i = 0; i < size; i++)
 			usbdevregs->fifo[ep].EP_FIFO_REG = buf[i];
 		RESTORE_INDEX();
 	}
 }
 
-U32 ep_rx_fifo(enum ENDPOINT ep, U8 *buf, U32 size) {
+u32_t ep_rx_fifo(enum ENDPOINT ep, u8_t *buf, u32_t size) {
 	assert(buf && size);
 	if (check_fifo_size(ep, size)) {
 		STORE_INDEX(ep);
-		U32 real_size = usbdevregs->OUT_FIFO_CNT1_REG
+		u32_t real_size = usbdevregs->OUT_FIFO_CNT1_REG
 						| (usbdevregs->OUT_FIFO_CNT2_REG << 8);
 		if (real_size > size)
 			return 0;
 		else
 			size = real_size;
-		for (U32 i = 0; i < size; i++)
+		for (u32_t i = 0; i < size; i++)
 			buf[i] = usbdevregs->fifo[ep].EP_FIFO_REG;
 		RESTORE_INDEX();
 	}
@@ -72,7 +72,7 @@ U32 ep_rx_fifo(enum ENDPOINT ep, U8 *buf, U32 size) {
 	return size;
 }
 
-U32 get_ep_fifo_size(enum ENDPOINT ep) {
+u32_t get_ep_fifo_size(enum ENDPOINT ep) {
 	switch (ep) {
 		case EP0:
 			return EP0_PKT_SIZE;
@@ -89,9 +89,9 @@ U32 get_ep_fifo_size(enum ENDPOINT ep) {
 	}
 	return 0;
 }
-void print_pkt(U8 *buf, U32 size) {
+void print_pkt(u8_t *buf, u32_t size) {
 	DbgPrintf("[RCV:%d]\n", size);
-	for (U32 i = 0; i < size; i++){
+	for (u32_t i = 0; i < size; i++){
 		DbgPrintf("%02x ", buf[i]);
 		if(i%16==15)
 			DbgPrintf("\n");
@@ -99,11 +99,11 @@ void print_pkt(U8 *buf, U32 size) {
 	DbgPrintf("\n[END]\n");
 }
 
-U32 usb_buf_tx(struct usb_buf *ub, enum ENDPOINT ep) {
+u32_t usb_buf_tx(struct usb_buf *ub, enum ENDPOINT ep) {
 	STORE_INDEX(ep);
-	U32 size = get_ep_fifo_size(ep);
-	U32 reamin_size = usb_buf_remain(ub);
-	U32 ret = 0;
+	u32_t size = get_ep_fifo_size(ep);
+	u32_t reamin_size = usb_buf_remain(ub);
+	u32_t ret = 0;
 	if (reamin_size > 0)
 		ret = usb_buf_read_const(ub, ADDR_EP_FIFO(ep), (reamin_size >= size) ? size : reamin_size);
 	RESTORE_INDEX();
@@ -115,8 +115,8 @@ U32 usb_buf_tx(struct usb_buf *ub, enum ENDPOINT ep) {
  * 如果是最后一个数据包，IN_PKT_RDY置位的同时还要将 DATA_END 置位
  */
 void usb_buf_ep0_tx(struct usb_buf *ub) {
-	U32 size = get_ep_fifo_size(EP0);
-	U32 reamin_size = usb_buf_remain(ub);
+	u32_t size = get_ep_fifo_size(EP0);
+	u32_t reamin_size = usb_buf_remain(ub);
 	if(reamin_size > 0)
 		usb_buf_tx(ub, EP0);
 	if (reamin_size > size) {
@@ -134,8 +134,8 @@ void usb_buf_ep0_tx(struct usb_buf *ub) {
 	}
 }
 void usb_buf_epx_tx(enum ENDPOINT ep, struct usb_buf *ub) {
-	U32 size = get_ep_fifo_size(ep);
-	U32 reamin_size = usb_buf_remain(ub);
+	u32_t size = get_ep_fifo_size(ep);
+	u32_t reamin_size = usb_buf_remain(ub);
 	if(reamin_size > 0)
 		usb_buf_tx(ub, ep);
 	if (reamin_size > 0 && reamin_size < size) {
@@ -147,7 +147,7 @@ void usb_buf_epx_tx(enum ENDPOINT ep, struct usb_buf *ub) {
 	}
 	SET_EPX_IN_PKT_RDY();
 }
-void usb_send_init(enum ENDPOINT ep, U8 *buf, U32 size) {
+void usb_send_init(enum ENDPOINT ep, u8_t *buf, u32_t size) {
 	if(!check_ep(ep))
 		return;
 	usb_buf_init(&ub[ep], buf, size);
@@ -180,7 +180,7 @@ void usb_send_message(enum ENDPOINT ep) {
 	RESTORE_INDEX();
 }
 //TODO:
-void usb_receive_message(enum ENDPOINT ep, U8 *buf, U32 size) {
+void usb_receive_message(enum ENDPOINT ep, u8_t *buf, u32_t size) {
 	ep_rx_fifo(ep, buf, size);
 }
 #if USB_DEBUG == 1

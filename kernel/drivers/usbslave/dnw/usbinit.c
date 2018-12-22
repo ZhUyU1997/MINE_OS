@@ -26,7 +26,7 @@ S3C24X0_CLOCK_POWER * clk_powerregs;
 S3C24X0_GPIO * gpioregs;
 
 void USB_ISR_Init(void);
-U32 usb_receive(char *buf, size_t len, U32 wait);
+u32_t usb_receive(char *buf, size_t len, u32_t wait);
 /*
 extern void Timer_InitEx(void);
 extern void Timer_StartEx(void);
@@ -78,28 +78,28 @@ void Clk1_Enable(int clock_sel);
 void Clk0_Disable(void);
 void Clk1_Disable(void);
 
-volatile U32 downloadAddress;
+volatile u32_t downloadAddress;
 
 void (*restart)(void) = 0;
 void (*run)(void);
 
 
 volatile unsigned char *downPt;
-volatile U32 downloadFileSize;
-volatile U16 checkSum;
+volatile u32_t downloadFileSize;
+volatile u16_t checkSum;
 volatile unsigned int err = 0;
-volatile U32 totalDmaCount;
+volatile u32_t totalDmaCount;
 
 volatile int isUsbdSetConfiguration;
 
 int download_run = 0;
-volatile U32 tempDownloadAddress;
-volatile U32 dwUSBBufReadPtr;
-volatile U32 dwUSBBufWritePtr;
-volatile U32 dwWillDMACnt;
-volatile U32 bDMAPending;
-volatile U32 dwUSBBufBase;
-volatile U32 dwUSBBufSize;
+volatile u32_t tempDownloadAddress;
+volatile u32_t dwUSBBufReadPtr;
+volatile u32_t dwUSBBufWritePtr;
+volatile u32_t dwWillDMACnt;
+volatile u32_t bDMAPending;
+volatile u32_t dwUSBBufBase;
+volatile u32_t dwUSBBufSize;
 
 
 //***************************[ PORTS ]****************************************************
@@ -223,8 +223,8 @@ void usb_init_slave(void) {
 #endif
 
 #if 0
-	U32 mpll_val = clk_powerregs->MPLLCON;
-	U32 upll_val = clk_powerregs->UPLLCON;
+	u32_t mpll_val = clk_powerregs->MPLLCON;
+	u32_t upll_val = clk_powerregs->UPLLCON;
 	printf("UPLLVal [M:%xh,P:%xh,S:%xh]\n", (upll_val & (0xff << 12)) >> 12, (upll_val & (0x3f << 4)) >> 4, (upll_val & 0x3));
 	printf("MPLLVal [M:%xh,P:%xh,S:%xh]\n", (mpll_val & (0xff << 12)) >> 12, (mpll_val & (0x3f << 4)) >> 4, (mpll_val & 0x3));
 	printf("CLKDIVN:%xh\n", clk_powerregs->CLKDIVN);
@@ -246,10 +246,10 @@ void usb_init_slave(void) {
 	printf("USB slave is enable!\n");
 }
 
-U32 usb_receive(char *buf, size_t len, U32 wait) {
+u32_t usb_receive(char *buf, size_t len, u32_t wait) {
 	int first = 1;
-	U8 tempMem[16];
-	U32 j;
+	u8_t tempMem[16];
+	u32_t j;
 	unsigned int dwRecvTimeSec = 0;
 
 	dwUSBBufReadPtr = dwUSBBufBase;		// USB_BUF_BASE
@@ -258,7 +258,7 @@ U32 usb_receive(char *buf, size_t len, U32 wait) {
 
 	tempDownloadAddress = dwUSBBufBase; // USB_BUF_BASE // RAM_BASE, changed by thisway.diy for wince, 2006.06.18
 
-	downloadAddress = (U32)tempMem; //_RAM_STARTADDRESS;
+	downloadAddress = (u32_t)tempMem; //_RAM_STARTADDRESS;
 	downPt = (unsigned char *)downloadAddress;
 	//This address is used for receiving first 8 byte.
 	downloadFileSize = 0;

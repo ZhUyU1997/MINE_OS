@@ -36,9 +36,9 @@ void UsbdMain(void) {
 	PrepareEp1Fifo();
 }
 void IsrUsbd(unsigned long nr, unsigned long parameter) {
-	U8 saveIndexReg = usbdevregs->INDEX_REG;
-	U8 usbdIntpnd	= usbdevregs->USB_INT_REG;
-	U8 epIntpnd		= usbdevregs->EP_INT_REG;
+	u8_t saveIndexReg = usbdevregs->INDEX_REG;
+	u8_t usbdIntpnd	= usbdevregs->USB_INT_REG;
+	u8_t epIntpnd		= usbdevregs->EP_INT_REG;
 	DbgPrintf("{\n", epIntpnd, usbdIntpnd);
 	DbgPrintf("[INT:EP_I=%x,USBI=%x]", epIntpnd, usbdIntpnd);
 

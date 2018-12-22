@@ -16,7 +16,7 @@
 extern S3C24X0_USB_DEVICE * usbdevregs;
 extern S3C24X0_DMAS * dmaregs;
 
-static void PrintEpiPkt(U8 *pt, int cnt);
+static void PrintEpiPkt(u8_t *pt, int cnt);
 
 
 /*
@@ -34,21 +34,21 @@ static void PrintEpiPkt(U8 *pt, int cnt);
 // Prepare the code for the packit size constraint!!!
 // EP1 = IN end point.
 
-U8 ep1Buf[EP1_PKT_SIZE];
+u8_t ep1Buf[EP1_PKT_SIZE];
 int transferIndex = 0;
 
 void PrepareEp1Fifo(void) {
 	usbdevregs->INDEX_REG = 1;
-	U8 in_csr1 = usbdevregs->EP0_CSR_IN_CSR1_REG;
+	u8_t in_csr1 = usbdevregs->EP0_CSR_IN_CSR1_REG;
 	for (int i = 0; i < EP1_PKT_SIZE; i++)
-		ep1Buf[i] = (U8)(transferIndex + i);
+		ep1Buf[i] = (u8_t)(transferIndex + i);
 	WrPktEp1(ep1Buf, EP1_PKT_SIZE);
 	SET_EP1_IN_PKT_READY();
 }
 
 
 void Ep1Handler(void) {
-	U8 in_csr1;
+	u8_t in_csr1;
 	int i;
 	usbdevregs->INDEX_REG = 1;
 	in_csr1 = usbdevregs->EP0_CSR_IN_CSR1_REG;
@@ -69,7 +69,7 @@ void Ep1Handler(void) {
 	return;
 }
 
-void PrintEpiPkt(U8 *pt, int cnt) {
+void PrintEpiPkt(u8_t *pt, int cnt) {
 	DbgPrintf("[B_IN:%d:", cnt);
 	for (int i = 0; i < cnt; i++)
 		DbgPrintf("%x,", pt[i]);

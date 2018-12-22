@@ -77,89 +77,89 @@
 
 
 struct USB_SETUP_DATA {
-	U8 bmRequestType;
-	U8 bRequest;
-	U8 bValueL;
-	U8 bValueH;
-	U8 bIndexL;
-	U8 bIndexH;
-	U8 bLengthL;
-	U8 bLengthH;
+	u8_t bmRequestType;
+	u8_t bRequest;
+	u8_t bValueL;
+	u8_t bValueH;
+	u8_t bIndexL;
+	u8_t bIndexH;
+	u8_t bLengthL;
+	u8_t bLengthH;
 };
 
 
 struct USB_DEVICE_DESCRIPTOR {
-	U8 bLength;
-	U8 bDescriptorType;
-	U8 bcdUSBL;
-	U8 bcdUSBH;
-	U8 bDeviceClass;
-	U8 bDeviceSubClass;
-	U8 bDeviceProtocol;
-	U8 bMaxPacketSize0;
-	U8 idVendorL;
-	U8 idVendorH;
-	U8 idProductL;
-	U8 idProductH;
-	U8 bcdDeviceL;
-	U8 bcdDeviceH;
-	U8 iManufacturer;
-	U8 iProduct;
-	U8 iSerialNumber;
-	U8 bNumConfigurations;
+	u8_t bLength;
+	u8_t bDescriptorType;
+	u8_t bcdUSBL;
+	u8_t bcdUSBH;
+	u8_t bDeviceClass;
+	u8_t bDeviceSubClass;
+	u8_t bDeviceProtocol;
+	u8_t bMaxPacketSize0;
+	u8_t idVendorL;
+	u8_t idVendorH;
+	u8_t idProductL;
+	u8_t idProductH;
+	u8_t bcdDeviceL;
+	u8_t bcdDeviceH;
+	u8_t iManufacturer;
+	u8_t iProduct;
+	u8_t iSerialNumber;
+	u8_t bNumConfigurations;
 };
 
 
 struct USB_CONFIGURATION_DESCRIPTOR {
-	U8 bLength;
-	U8 bDescriptorType;
-	U8 wTotalLengthL;
-	U8 wTotalLengthH;
-	U8 bNumInterfaces;
-	U8 bConfigurationValue;
-	U8 iConfiguration;
-	U8 bmAttributes;
-	U8 maxPower;
+	u8_t bLength;
+	u8_t bDescriptorType;
+	u8_t wTotalLengthL;
+	u8_t wTotalLengthH;
+	u8_t bNumInterfaces;
+	u8_t bConfigurationValue;
+	u8_t iConfiguration;
+	u8_t bmAttributes;
+	u8_t maxPower;
 };
 
 
 struct USB_INTERFACE_DESCRIPTOR {
-	U8 bLength;
-	U8 bDescriptorType;
-	U8 bInterfaceNumber;
-	U8 bAlternateSetting;
-	U8 bNumEndpoints;
-	U8 bInterfaceClass;
-	U8 bInterfaceSubClass;
-	U8 bInterfaceProtocol;
-	U8 iInterface;
+	u8_t bLength;
+	u8_t bDescriptorType;
+	u8_t bInterfaceNumber;
+	u8_t bAlternateSetting;
+	u8_t bNumEndpoints;
+	u8_t bInterfaceClass;
+	u8_t bInterfaceSubClass;
+	u8_t bInterfaceProtocol;
+	u8_t iInterface;
 };
 
 
 struct USB_ENDPOINT_DESCRIPTOR {
-	U8 bLength;
-	U8 bDescriptorType;
-	U8 bEndpointAddress;
-	U8 bmAttributes;
-	U8 wMaxPacketSizeL;
-	U8 wMaxPacketSizeH;
-	U8 bInterval;
+	u8_t bLength;
+	u8_t bDescriptorType;
+	u8_t bEndpointAddress;
+	u8_t bmAttributes;
+	u8_t wMaxPacketSizeL;
+	u8_t wMaxPacketSizeH;
+	u8_t bInterval;
 };
 
 struct USB_CONFIGURATION_SET {
-	U8 ConfigurationValue;
+	u8_t ConfigurationValue;
 };
 
 struct USB_GET_STATUS {
-	U8 Device;
-	U8 Interface;
-	U8 Endpoint0;
-	U8 Endpoint1;
-	U8 Endpoint3;
+	u8_t Device;
+	u8_t Interface;
+	u8_t Endpoint0;
+	u8_t Endpoint1;
+	u8_t Endpoint3;
 };
 
 struct USB_INTERFACE_GET {
-	U8 AlternateSetting;
+	u8_t AlternateSetting;
 };
 
 #endif /*__USB_H__*/

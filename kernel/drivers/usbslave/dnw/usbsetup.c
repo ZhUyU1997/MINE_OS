@@ -36,18 +36,18 @@ extern S3C24X0_DMAS * dmaregs;
 #define CLR_EP0_SENT_STALL() 		usbdevregs->EP0_CSR_IN_CSR1_REG =( ep0_csr & (~EP0_WR_BITS) & (~EP0_SENT_STALL) )
 #define FLUSH_EP0_FIFO() 			{while(usbdevregs->OUT_FIFO_CNT1_REG) usbdevregs->fifo[0].EP_FIFO_REG;}
 
-U32 ep0State;
+u32_t ep0State;
 
 extern volatile int isUsbdSetConfiguration;
-volatile U8 Rwuen;
-volatile U8 Configuration = 1;
-volatile U8 AlterSetting;
-volatile U8 Selfpwr = TRUE;
-volatile U8 device_status;
-volatile U8 interface_status;
-volatile U8 endpoint0_status;
-volatile U8 endpoint1_status;
-volatile U8 endpoint3_status;
+volatile u8_t Rwuen;
+volatile u8_t Configuration = 1;
+volatile u8_t AlterSetting;
+volatile u8_t Selfpwr = TRUE;
+volatile u8_t device_status;
+volatile u8_t interface_status;
+volatile u8_t endpoint0_status;
+volatile u8_t endpoint1_status;
+volatile u8_t endpoint3_status;
 
 struct USB_SETUP_DATA descSetup;
 struct USB_DEVICE_DESCRIPTOR descDev;
@@ -60,17 +60,17 @@ struct USB_INTERFACE_GET InterfaceGet;
 struct USB_GET_STATUS StatusGet;   //={0,0,0,0,0};
 
 
-static const U8 descStr0[] = {
+static const u8_t descStr0[] = {
 	4, STRING_TYPE, LANGID_US_L, LANGID_US_H, //codes representing languages
 };
 
-static const U8 descStr1[] = { //Manufacturer
+static const u8_t descStr1[] = { //Manufacturer
 	(0x14 + 2), STRING_TYPE,
 	'S', 0x0, 'y', 0x0, 's', 0x0, 't', 0x0, 'e', 0x0, 'm', 0x0, ' ', 0x0, 'M', 0x0,
 	'C', 0x0, 'U', 0x0,
 };
 
-static const U8 descStr2[] = { //Product
+static const u8_t descStr2[] = { //Product
 	(0x2a + 2), STRING_TYPE,
 	'S', 0x0, 'E', 0x0, 'C', 0x0, ' ', 0x0, 'S', 0x0, '3', 0x0, 'C', 0x0, '2', 0x0,
 	'4', 0x0, '1', 0x0, '0', 0x0, 'X', 0x0, ' ', 0x0, 'T', 0x0, 'e', 0x0, 's', 0x0,
@@ -81,7 +81,7 @@ static const U8 descStr2[] = { //Product
 void Ep0Handler(void) {
 	static int ep0SubState;
 	usbdevregs->INDEX_REG = 0;
-	U8 ep0_csr = usbdevregs->EP0_CSR_IN_CSR1_REG;
+	u8_t ep0_csr = usbdevregs->EP0_CSR_IN_CSR1_REG;
 
 	DbgPrintf("<0:%x]\n", ep0_csr);
 
@@ -124,8 +124,8 @@ void Ep0Handler(void) {
 	//判断是否接受了新的数据包
 	if ((ep0_csr & EP0_OUT_PKT_READY)) {
 		//读8个字节的令牌包
-		RdPktEp0((U8 *)&descSetup, EP0_PKT_SIZE);
-		PrintEp0Pkt((U8 *)(&descSetup)); //DEBUG
+		RdPktEp0((u8_t *)&descSetup, EP0_PKT_SIZE);
+		PrintEp0Pkt((u8_t *)(&descSetup)); //DEBUG
 		//判断请求类型
 		//note:bmRequestType不能判断请求类型
 		switch (descSetup.bRequest) {
@@ -244,7 +244,7 @@ void Ep0Handler(void) {
 				switch (descSetup.bmRequestType) {
 					case (0x80):
 						CLR_EP0_OUT_PKT_RDY();
-						StatusGet.Device = ((U8)Rwuen << 1) | (U8)Selfpwr;
+						StatusGet.Device = ((u8_t)Rwuen << 1) | (u8_t)Selfpwr;
 						ep0State = EP0_GET_STATUS0;
 						break;
 					case (0x81):
@@ -329,19 +329,19 @@ void Ep0Handler(void) {
 		case EP0_STATE_GD_DEV_0:
 			//TODO:在第一次获取设备描述符只用发第一个数据包
 			DbgPrintf("[GD_DEV_0]\n");
-			WrPktEp0((U8 *)&descDev + 0, 8); //EP0_PKT_SIZE
+			WrPktEp0((u8_t *)&descDev + 0, 8); //EP0_PKT_SIZE
 			SET_EP0_IN_PKT_RDY();
 			ep0State = EP0_STATE_GD_DEV_1;
 			break;
 		case EP0_STATE_GD_DEV_1:
 			DbgPrintf("[GD_DEV_1]\n");
-			WrPktEp0((U8 *)&descDev + 0x8, 8);
+			WrPktEp0((u8_t *)&descDev + 0x8, 8);
 			SET_EP0_IN_PKT_RDY();
 			ep0State = EP0_STATE_GD_DEV_2;
 			break;
 		case EP0_STATE_GD_DEV_2:
 			DbgPrintf("[GD_DEV_2]\n");
-			WrPktEp0((U8 *)&descDev + 0x10, 2); //8+8+2=0x12
+			WrPktEp0((u8_t *)&descDev + 0x10, 2); //8+8+2=0x12
 			SET_EP0_INPKTRDY_DATAEND();
 			ep0State = EP0_STATE_INIT;
 			break;
@@ -370,28 +370,28 @@ void Ep0Handler(void) {
 		*/
 		case EP0_STATE_GD_CFG_0://读取配置描述符
 			DbgPrintf("[GD_CFG_0]\n");
-			WrPktEp0((U8 *)&descConf + 0, 8); //EP0_PKT_SIZE
+			WrPktEp0((u8_t *)&descConf + 0, 8); //EP0_PKT_SIZE
 			SET_EP0_IN_PKT_RDY();
 			ep0State = EP0_STATE_GD_CFG_1;
 			break;
 		case EP0_STATE_GD_CFG_1://读取配置描述符+接口描述符
 			DbgPrintf("[GD_CFG_1]\n");
-			WrPktEp0((U8 *)&descConf + 8, 1);
-			WrPktEp0((U8 *)&descIf + 0, 7);
+			WrPktEp0((u8_t *)&descConf + 8, 1);
+			WrPktEp0((u8_t *)&descIf + 0, 7);
 			SET_EP0_IN_PKT_RDY();
 			ep0State = EP0_STATE_GD_CFG_2;
 			break;
 		case EP0_STATE_GD_CFG_2://读取接口描述符+端点1描述符
 			DbgPrintf("[GD_CFG_2]\n");
-			WrPktEp0((U8 *)&descIf + 7, 2);
-			WrPktEp0((U8 *)&descEndpt0 + 0, 6);
+			WrPktEp0((u8_t *)&descIf + 7, 2);
+			WrPktEp0((u8_t *)&descEndpt0 + 0, 6);
 			SET_EP0_IN_PKT_RDY();
 			ep0State = EP0_STATE_GD_CFG_3;
 			break;
 		case EP0_STATE_GD_CFG_3://读取端点1描述符+端点3描述符
 			DbgPrintf("[GD_CFG_3]\n");
-			WrPktEp0((U8 *)&descEndpt0 + 6, 1);
-			WrPktEp0((U8 *)&descEndpt1 + 0, 7); //2440的端点3，看地址
+			WrPktEp0((u8_t *)&descEndpt0 + 6, 1);
+			WrPktEp0((u8_t *)&descEndpt1 + 0, 7); //2440的端点3，看地址
 			SET_EP0_IN_PKT_RDY();
 			ep0State = EP0_STATE_GD_CFG_4;
 			break;
@@ -405,52 +405,52 @@ void Ep0Handler(void) {
 		/* GET_DESCRIPTOR:CONFIGURATION ONLY */
 		case EP0_STATE_GD_CFG_ONLY_0:
 			DbgPrintf("[GD_CFG_ONLY_0]\n");
-			WrPktEp0((U8 *)&descConf + 0, 8); //EP0_PKT_SIZE
+			WrPktEp0((u8_t *)&descConf + 0, 8); //EP0_PKT_SIZE
 			SET_EP0_IN_PKT_RDY();
 			ep0State = EP0_STATE_GD_CFG_ONLY_1;
 			break;
 		case EP0_STATE_GD_CFG_ONLY_1:
 			DbgPrintf("[GD_CFG_ONLY_1]\n");
-			WrPktEp0((U8 *)&descConf + 8, 1);
+			WrPktEp0((u8_t *)&descConf + 8, 1);
 			SET_EP0_INPKTRDY_DATAEND();
 			ep0State = EP0_STATE_INIT;
 			break;
 		/* GET_DESCRIPTOR:INTERFACE ONLY */
 		case EP0_STATE_GD_IF_ONLY_0:
 			DbgPrintf("[GD_IF_ONLY_0]\n");
-			WrPktEp0((U8 *)&descIf + 0, 8);
+			WrPktEp0((u8_t *)&descIf + 0, 8);
 			SET_EP0_IN_PKT_RDY();
 			ep0State = EP0_STATE_GD_IF_ONLY_1;
 			break;
 		case EP0_STATE_GD_IF_ONLY_1:
 			DbgPrintf("[GD_IF_ONLY_1]\n");
-			WrPktEp0((U8 *)&descIf + 8, 1);
+			WrPktEp0((u8_t *)&descIf + 8, 1);
 			SET_EP0_INPKTRDY_DATAEND();
 			ep0State = EP0_STATE_INIT;
 			break;
 		/* GET_DESCRIPTOR:ENDPOINT 1 ONLY */
 		case EP0_STATE_GD_EP0_ONLY_0:
 			DbgPrintf("[GD_EP0_ONLY_0]\n");
-			WrPktEp0((U8 *)&descEndpt0 + 0, 7);
+			WrPktEp0((u8_t *)&descEndpt0 + 0, 7);
 			SET_EP0_INPKTRDY_DATAEND();
 			ep0State = EP0_STATE_INIT;
 			break;
 		/* GET_DESCRIPTOR:ENDPOINT 3 ONLY */
 		case EP0_STATE_GD_EP1_ONLY_0:
 			DbgPrintf("[GD_EP1_ONLY_0]\n");
-			WrPktEp0((U8 *)&descEndpt1 + 0, 7); //2440的端点3，看地址
+			WrPktEp0((u8_t *)&descEndpt1 + 0, 7); //2440的端点3，看地址
 			SET_EP0_INPKTRDY_DATAEND();
 			ep0State = EP0_STATE_INIT;
 			break;
 		case EP0_INTERFACE_GET:
-			WrPktEp0((U8 *)&InterfaceGet + 0, 1);
+			WrPktEp0((u8_t *)&InterfaceGet + 0, 1);
 			SET_EP0_INPKTRDY_DATAEND();
 			ep0State = EP0_STATE_INIT;
 			break;
 		/* GET_DESCRIPTOR:STRING *//* 字符串描述符 */
 		case EP0_STATE_GD_STR_I0:
 			DbgPrintf("[GD_STR_I0]\n");
-			WrPktEp0((U8 *)descStr0, 4);
+			WrPktEp0((u8_t *)descStr0, 4);
 			SET_EP0_INPKTRDY_DATAEND();
 			ep0State = EP0_STATE_INIT;
 			ep0SubState = 0;
@@ -458,12 +458,12 @@ void Ep0Handler(void) {
 		case EP0_STATE_GD_STR_I1:
 			DbgPrintf("[GD_STR_I1_%d]\n", ep0SubState);
 			if ((ep0SubState * EP0_PKT_SIZE + EP0_PKT_SIZE) < sizeof(descStr1)) {
-				WrPktEp0((U8 *)descStr1 + (ep0SubState * EP0_PKT_SIZE), EP0_PKT_SIZE);
+				WrPktEp0((u8_t *)descStr1 + (ep0SubState * EP0_PKT_SIZE), EP0_PKT_SIZE);
 				SET_EP0_IN_PKT_RDY();
 				ep0State = EP0_STATE_GD_STR_I1;
 				ep0SubState++;
 			} else {
-				WrPktEp0((U8 *)descStr1 + (ep0SubState * EP0_PKT_SIZE),
+				WrPktEp0((u8_t *)descStr1 + (ep0SubState * EP0_PKT_SIZE),
 						 sizeof(descStr1) - (ep0SubState * EP0_PKT_SIZE));
 				SET_EP0_INPKTRDY_DATAEND();
 				ep0State = EP0_STATE_INIT;
@@ -473,13 +473,13 @@ void Ep0Handler(void) {
 		case EP0_STATE_GD_STR_I2:
 			DbgPrintf("[GD_STR_I2_%d]\n", ep0SubState);
 			if ((ep0SubState * EP0_PKT_SIZE + EP0_PKT_SIZE) < sizeof(descStr2)) {
-				WrPktEp0((U8 *)descStr2 + (ep0SubState * EP0_PKT_SIZE), EP0_PKT_SIZE);
+				WrPktEp0((u8_t *)descStr2 + (ep0SubState * EP0_PKT_SIZE), EP0_PKT_SIZE);
 				SET_EP0_IN_PKT_RDY();
 				ep0State = EP0_STATE_GD_STR_I2;
 				ep0SubState++;
 			} else {
 				DbgPrintf("[E]\n");
-				WrPktEp0((U8 *)descStr2 + (ep0SubState * EP0_PKT_SIZE),
+				WrPktEp0((u8_t *)descStr2 + (ep0SubState * EP0_PKT_SIZE),
 						 sizeof(descStr2) - (ep0SubState * EP0_PKT_SIZE));
 				SET_EP0_INPKTRDY_DATAEND();
 				ep0State = EP0_STATE_INIT;
@@ -488,33 +488,33 @@ void Ep0Handler(void) {
 			break;
 		/* 发送配置 */
 		case EP0_CONFIG_SET:
-			WrPktEp0((U8 *)&ConfigSet + 0, 1);
+			WrPktEp0((u8_t *)&ConfigSet + 0, 1);
 			SET_EP0_INPKTRDY_DATAEND();
 			ep0State = EP0_STATE_INIT;
 			break;
 		/* 状态 */
 		case EP0_GET_STATUS0:
-			WrPktEp0((U8 *)&StatusGet + 0, 1);
+			WrPktEp0((u8_t *)&StatusGet + 0, 1);
 			SET_EP0_INPKTRDY_DATAEND();
 			ep0State = EP0_STATE_INIT;
 			break;
 		case EP0_GET_STATUS1:
-			WrPktEp0((U8 *)&StatusGet + 1, 1);
+			WrPktEp0((u8_t *)&StatusGet + 1, 1);
 			SET_EP0_INPKTRDY_DATAEND();
 			ep0State = EP0_STATE_INIT;
 			break;
 		case EP0_GET_STATUS2:
-			WrPktEp0((U8 *)&StatusGet + 2, 1);
+			WrPktEp0((u8_t *)&StatusGet + 2, 1);
 			SET_EP0_INPKTRDY_DATAEND();
 			ep0State = EP0_STATE_INIT;
 			break;
 		case EP0_GET_STATUS3:
-			WrPktEp0((U8 *)&StatusGet + 3, 1);
+			WrPktEp0((u8_t *)&StatusGet + 3, 1);
 			SET_EP0_INPKTRDY_DATAEND();
 			ep0State = EP0_STATE_INIT;
 			break;
 		case EP0_GET_STATUS4:
-			WrPktEp0((U8 *)&StatusGet + 4, 1);
+			WrPktEp0((u8_t *)&StatusGet + 4, 1);
 			SET_EP0_INPKTRDY_DATAEND();
 			ep0State = EP0_STATE_INIT;
 			break;
@@ -524,7 +524,7 @@ void Ep0Handler(void) {
 	}
 }
 
-void PrintEp0Pkt(U8 *pt) {
+void PrintEp0Pkt(u8_t *pt) {
 	DbgPrintf("[RCV:");
 	for (int i = 0; i < EP0_PKT_SIZE; i++)
 		DbgPrintf("%02x,", pt[i]);

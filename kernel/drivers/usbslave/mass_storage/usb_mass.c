@@ -18,7 +18,7 @@ void handle_mass_class(struct usb_ctrlrequest ctrlreq) {
 			DbgPrintf("[MAX_LUN]");
 			char lun = MASS_STORAGE_MAX_LUN;
 			CLR_EP0_OUT_PKT_RDY();
-			usb_send_init(EP0, (U8 *)&lun, 1);
+			usb_send_init(EP0, (u8_t *)&lun, 1);
 			ep0State = EP0_STATE_TRANSMIT;
 			break;
 		}
@@ -67,9 +67,9 @@ char ReadCap_rpy[] = {
 	(char)(MASS_STORAGE_BLOCK_SIZE >> 8) , (char)(MASS_STORAGE_BLOCK_SIZE),
 };
 struct mass_data_write_struct {
-	U32 spread_size;
-	U32 recvd_size;
-	U32 block_addr;
+	u32_t spread_size;
+	u32_t recvd_size;
+	u32_t block_addr;
 } write_req = {0};
 struct mass_req_fsm {
 	struct cbw tcbw;
@@ -91,7 +91,7 @@ int handle_mass_bulk_in() {
 		g_mass_req.tcsw.dCSWTag = g_mass_req.tcbw.dCBWTag;
 		g_mass_req.tcsw.dCSWDataResidue = 0;
 		g_mass_req.tcsw.dCSWStatus = g_mass_req.exec_status;
-		usb_send_init(EP2, (U8 *)&g_mass_req.tcsw, sizeof(struct csw));
+		usb_send_init(EP2, (u8_t *)&g_mass_req.tcsw, sizeof(struct csw));
 		usb_send_message(EP2);
 		g_mass_req.flg_req = 0;
 		g_mass_req.exec_status = 0;
@@ -130,7 +130,7 @@ void handle_mass_bulk_cmd(char *buf, int size) {
 			DbgPrintf("[INQUIRY]");
 			//in
 			if (pcbw->bmCBWFlags & (1 << 7)) {
-				usb_send_init(EP2, (U8 *)Inquiry_rpy, sizeof(Inquiry_rpy));
+				usb_send_init(EP2, (u8_t *)Inquiry_rpy, sizeof(Inquiry_rpy));
 				usb_send_message(EP2);
 			}
 			break;
@@ -139,25 +139,25 @@ void handle_mass_bulk_cmd(char *buf, int size) {
 			if (pcbw->bmCBWFlags & (1 << 7)) {
 				//	unsigned int t_size = (((char *)&pcbd->parameter)[0]<<8) | ((char *)&pcbd->parameter)[1];
 				//	DbgPrintf("size:%d\n",t_size);
-				usb_send_init(EP2, (U8 *)ReadFmtCap_rpy, sizeof(ReadFmtCap_rpy));
+				usb_send_init(EP2, (u8_t *)ReadFmtCap_rpy, sizeof(ReadFmtCap_rpy));
 				usb_send_message(EP2);
 			}
 			break;
 		case ReadCap:
 			DbgPrintf("[READ CAP]");
 			if (pcbw->bmCBWFlags & (1 << 7)) {
-				usb_send_init(EP2, (U8 *)ReadCap_rpy, sizeof(ReadCap_rpy));
+				usb_send_init(EP2, (u8_t *)ReadCap_rpy, sizeof(ReadCap_rpy));
 				usb_send_message(EP2);
 			}
 			break;
 		case Read:
 			DbgPrintf("[READ]");
 			if (pcbw->bmCBWFlags & (1 << 7)) {
-				U32 block_addr = (((U8 *)&pcbd->logic_address)[0] << 24)
-								|(((U8 *)&pcbd->logic_address)[1] << 16)
-								|(((U8 *)&pcbd->logic_address)[2] <<  8)
-								|(((U8 *)&pcbd->logic_address)[3] <<  0);
-				U32 t_size = (((char *)&pcbd->parameter)[0] << 8) | ((char *)&pcbd->parameter)[1];
+				u32_t block_addr = (((u8_t *)&pcbd->logic_address)[0] << 24)
+								|(((u8_t *)&pcbd->logic_address)[1] << 16)
+								|(((u8_t *)&pcbd->logic_address)[2] <<  8)
+								|(((u8_t *)&pcbd->logic_address)[3] <<  0);
+				u32_t t_size = (((char *)&pcbd->parameter)[0] << 8) | ((char *)&pcbd->parameter)[1];
 
 				t_size *= MASS_STORAGE_BLOCK_SIZE;
 				if (pcbw->dCBWDataTransferLength == 0) {
@@ -178,10 +178,10 @@ void handle_mass_bulk_cmd(char *buf, int size) {
 		case Write:
 			if (!(pcbw->bmCBWFlags & (1 << 7))) {
 				DbgPrintf("[WRITE]");
-				U32 block_addr = (((U8 *)&pcbd->logic_address)[0] << 24)
-								|(((U8 *)&pcbd->logic_address)[1] << 16)
-								|(((U8 *)&pcbd->logic_address)[2] <<  8)
-								|(((U8 *)&pcbd->logic_address)[3] <<  0);
+				u32_t block_addr = (((u8_t *)&pcbd->logic_address)[0] << 24)
+								|(((u8_t *)&pcbd->logic_address)[1] << 16)
+								|(((u8_t *)&pcbd->logic_address)[2] <<  8)
+								|(((u8_t *)&pcbd->logic_address)[3] <<  0);
 				write_req.spread_size = pcbw->dCBWDataTransferLength;
 				write_req.block_addr = 	block_addr * MASS_STORAGE_BLOCK_SIZE;
 				write_req.recvd_size = 0;
@@ -194,7 +194,7 @@ void handle_mass_bulk_cmd(char *buf, int size) {
 		case ModeSense:
 			DbgPrintf("[MODESENSE %d]", pcbw->dCBWDataTransferLength);
 			if (pcbw->bmCBWFlags & (1 << 7)) {
-				usb_send_init(EP2, (U8 *)ModeSense_rpy, pcbw->dCBWDataTransferLength);
+				usb_send_init(EP2, (u8_t *)ModeSense_rpy, pcbw->dCBWDataTransferLength);
 				usb_send_message(EP2);
 			}
 			break;
@@ -221,9 +221,9 @@ error:
 }
 
 void handle_mass_bulk_out() {
-	U8 buf[64];
-	U8 out_csr = usbdevregs->OUT_CSR1_REG;
-	U32 size;
+	u8_t buf[64];
+	u8_t out_csr = usbdevregs->OUT_CSR1_REG;
+	u32_t size;
 	if (out_csr & EPO_OUT_PKT_READY){
 		size = ep_rx_fifo(EP3, buf, sizeof(buf));
 	}else{

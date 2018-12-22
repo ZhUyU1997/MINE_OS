@@ -9,12 +9,12 @@
 #define __U241MON_H__
 
 extern volatile unsigned char *downPt;
-extern volatile U32 totalDmaCount;
-extern volatile U32 downloadFileSize;
-extern volatile U32 downloadAddress;
-extern volatile U16 checkSum;
+extern volatile u32_t totalDmaCount;
+extern volatile u32_t downloadFileSize;
+extern volatile u32_t downloadAddress;
+extern volatile u16_t checkSum;
 
 extern int download_run;
-extern U32 tempDownloadAddress;
+extern u32_t tempDownloadAddress;
 
 #endif /*__U241MON_H__*/
