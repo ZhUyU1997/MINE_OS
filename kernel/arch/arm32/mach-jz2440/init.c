@@ -135,10 +135,10 @@ void copy_steppingstone_to_sdram(void)
 
 void clean_bss(void)
 {
-    extern int __bss_start, __bss_end;
-    int *p = &__bss_start;
+    extern int _bss, _ebss;
+    int *p = &_bss;
     
-    for (; p < &__bss_end; p++)
+    for (; p < &_ebss; p++)
         *p = 0;
 }
 

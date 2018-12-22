@@ -1,4 +1,3 @@
-#include <global_config.h>
 #include <stdio.h>
 #include <assert.h>
 #include <pgtable.h>
@@ -112,7 +111,7 @@ static void alloc_init_pgd(pgd_t *pgd, U32 virtuladdr, U32 physicaladdr, U32 cou
  * 设置页表
  */
 void create_page_table(void) {
-	pgd_t *pgd = (pgd_t *)MUM_TLB_BASE_ADDR;
+	pgd_t *pgd = (pgd_t *)CONFIG_MUM_TLB_BASE_ADDR;
 	memset(pgd, 0, 16*1024);
 	/*
 	 * Steppingstone的起始物理地址为0，第一部分程序的起始运行地址也是0，
@@ -127,14 +126,14 @@ void create_page_table(void) {
 	 * 将虚拟地址0x48000000～0x5FFFFFFF映射到物理地址0x48000000～0x5FFFFFFF上，
 	 */
 	printf("正在创建特殊寄存器页表项\n");
-	alloc_init_pgd(pgd, VIRTUAL_IO_ADDR, VIRTUAL_IO_ADDR, IO_MAP_SIZE >> PGDIR_SHIFT, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_DISABLE, MMU_BUFFER_DISABLE);
+	alloc_init_pgd(pgd, CONFIG_VIRTUAL_IO_ADDR,CONFIG_VIRTUAL_IO_ADDR, CONFIG_IO_MAP_SIZE >> PGDIR_SHIFT, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_DISABLE, MMU_BUFFER_DISABLE);
 	/*
 	 * SDRAM的物理地址范围是0x30000000～0x33FFFFFF，
 	 * 将虚拟地址0x30000000～0x33FFFFFF映射到物理地址0x30000000～0x33FFFFFF上，
 	 * 总共64M，涉及64个段描述符
 	 */
 	printf("正在创建SDRAM页表项\n");
-	alloc_init_pgd(pgd, VIRTUAL_MEM_ADDR, PHYSICAL_MEM_ADDR, MEM_MAP_SIZE >> PGDIR_SHIFT, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
+	alloc_init_pgd(pgd, CONFIG_VIRTUAL_MEM_ADDR, CONFIG_PHYSICAL_MEM_ADDR, CONFIG_MEM_MAP_SIZE >> PGDIR_SHIFT, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
 	//关闭framebuffer的cache
 	//set_SECTION(0x33c00000, 0x33c00000, 1, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_DISABLE, MMU_BUFFER_DISABLE);
 	//设置BANK4
@@ -145,7 +144,7 @@ void create_page_table(void) {
 extern void arm920_flush_kern_cache_all();
 
 void set_vector_map(){
-	pgd_t *pgd = (pgd_t *)MUM_TLB_BASE_ADDR;
+	pgd_t *pgd = (pgd_t *)CONFIG_MUM_TLB_BASE_ADDR;
 
 	memcpy((void *)0x33fff000, (void *)0x30100000, 4096);
 	pmd_t *pmd = (pmd_t *)(pgd + pgd_index(0xffff0000));
@@ -161,7 +160,7 @@ void set_vector_map(){
  * 启动MMU
  */
 void mmu_init(void) {
-	unsigned long ttb = (unsigned long)MUM_TLB_BASE_ADDR;
+	unsigned long ttb = (unsigned long)CONFIG_MUM_TLB_BASE_ADDR;
 	//创建页表
 	printf("正在创建页表\n");
 	create_page_table();
@@ -244,7 +243,7 @@ void mmu_test(){
 	p[0] = 0x12345678;
 	
 	p = (int *)0xe2000000;
-	pgd = (pgd_t *)MUM_TLB_BASE_ADDR + pgd_index(0xe2000000);
+	pgd = (pgd_t *)CONFIG_MUM_TLB_BASE_ADDR + pgd_index(0xe2000000);
 	//set_pgd(pgd, 0x32400000, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
 	//flush_pmd_entry(pgd);
 	//printf("[0xe2000000] = %#X\n", *(int *)0xe2000000);
@@ -255,7 +254,7 @@ void mmu_test(){
 
 	p = (int *)0x32200000;
 	printf("[0x32200000] = %#X\n", *(int *)0x32200000);
-	pgd = (pgd_t *)MUM_TLB_BASE_ADDR + pgd_index(0x32000000);
+	pgd = (pgd_t *)CONFIG_MUM_TLB_BASE_ADDR + pgd_index(0x32000000);
 	set_pgd(pgd, (U32)p, MMU_FULL_ACCESS, MMU_DOMAIN(0), MMU_CACHE_ENABLE, MMU_BUFFER_ENABLE);
 	
 	flush_tlb();

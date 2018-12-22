@@ -1,4 +1,3 @@
-#include <global_config.h>
 #include <asm_offset.h>
 #include <ptrace.h>
 #include <linkage.h>

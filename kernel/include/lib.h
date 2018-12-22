@@ -16,9 +16,8 @@
 #ifndef __LIB_H__
 #define __LIB_H__
 
-#include <irqflags.h>
 #include <string.h>
-#include <global_config.h>
+#include <irqflags.h>
 
 #ifndef NULL
 #define NULL					((void*)0)

@@ -18,7 +18,6 @@
 #include <printk.h>
 #include <ldscript.h>
 #include <sys/err.h>
-#include <global_config.h>
 #include <assert.h>
 #include <pgtable.h>
 #include <mmu.h>
@@ -446,7 +445,7 @@ int kernel_thread(unsigned long(* fn)(unsigned long), unsigned long arg, unsigne
 }
 
 void task_init() {
-	init_mm.pgd = (pgd_t *)MUM_TLB_BASE_ADDR;
+	init_mm.pgd = (pgd_t *)CONFIG_MUM_TLB_BASE_ADDR;
 	//init_mm.start_code = mms.start_code;
 	//init_mm.end_code = mms.end_code;
 	//init_mm.start_data = (unsigned long)&_data;

@@ -1,38 +1,39 @@
+OUTPUT_FORMAT("elf32-littlearm", "elf32-bigarm", "elf32-littlearm")
+OUTPUT_ARCH(arm)
 ENTRY(_start)
+
 SECTIONS { 
 	. = 0x800000;
     .text :
 	{
-		_text = .;
+		PROVIDE(_text = .);
 		arch/arm32/mach-jz2440/head.o;
 		*(.text*);
-		_etext = .;
+		PROVIDE(_etext = .);
 	}
 	
     . = ALIGN(4);
     .data :
 	{
-		_data = .;
+		PROVIDE(_data = .);
 		*(.data);
-		_edata = .;
+		PROVIDE(_edata = .);
 	}
 	
 	. = ALIGN(4);
     .rodata :
 	{
-		_rodata = .;
+		PROVIDE(_rodata = .);
 		*(.rodata);
-		_erodata = .;
+		PROVIDE(_erodata = .);
 	}
     . = ALIGN(4);
 	.bss :
 	{
-		__bss_start = .;
-		_bss = .;
+		PROVIDE(_bss = .);
 		*(.bss);
 		*(COMMON);
-		_ebss = .;
-		__bss_end = .;
+		PROVIDE(_ebss = .);
 	}
 	
 	_end = .;
