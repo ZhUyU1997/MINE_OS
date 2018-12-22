@@ -54,8 +54,8 @@ PLATFORM		?=
 
 srctree		:= $(if $(BUILD_SRC),$(BUILD_SRC),$(CURDIR))
 objtree		:= $(CURDIR)
-src			:= $(srctree)
-obj			:= $(objtree)
+src			:= .
+obj			:= .
 
 VPATH		:= $(srctree)
 
@@ -165,6 +165,8 @@ export ARCH MACH
 export AS AR CC LD CPP CXX
 export X_ASFLAGS X_INCDIRS X_CFLAGS X_CPPFLAGS DEFINES
 
+include $(srctree)/scripts/Makefile.conf
+
 PHONY	+=	all clean xbegin xend xclean conf fixdep dis dnw $(SRCDIRS)
 
 
@@ -176,9 +178,6 @@ xend : $(X_NAME).bin
 $(SRCDIRS):	xbegin
 
 xbegin: scripts/fixdep$(SUFFIX) conf
-
-conf:
-	@$(MAKE) $(build)=include conf
 
 scripts/fixdep$(SUFFIX): $(srctree)/scripts/fixdep.c
 	@$(MKDIR) scripts
