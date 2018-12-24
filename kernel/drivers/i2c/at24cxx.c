@@ -4,7 +4,7 @@
 #define AT24CXX_ADDR 0x50
 
 int at24cxx_write(unsigned int addr, unsigned char *data, int len) {
-	i2c_msg msg;
+	struct i2c_msg msg;
 	int i;
 	int err;
 	unsigned char buf[2];
@@ -34,7 +34,7 @@ int at24cxx_write(unsigned int addr, unsigned char *data, int len) {
 
 
 int at24cxx_read(unsigned int addr, unsigned char *data, int len) {
-	i2c_msg msg[2];
+	struct i2c_msg msg[2];
 	int err;
 
 	/* 构造i2c_msg */

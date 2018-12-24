@@ -16,12 +16,9 @@
 #ifndef __LIB_H__
 #define __LIB_H__
 
+#include <sys/types.h>
 #include <string.h>
 #include <irqflags.h>
-
-#ifndef NULL
-#define NULL					((void*)0)
-#endif
 
 #define sti() local_irq_enable()
 #define cli() local_irq_disable()

@@ -3,7 +3,7 @@
 
 #define LCD_FB_BASE 0x33c00000
 
-lcd_params lcd_4_3_params = {
+struct lcd_params lcd_4_3_params = {
 	.name = "lcd_4.3",
 	.pins_pol = {
 		.de    = NORMAL,	/* normal: 高电平时可以传输数据 */
@@ -15,16 +15,16 @@ lcd_params lcd_4_3_params = {
 	},
 	.time_seq = {
 		/* 垂直方向 */
-		.tvp=	10, /* vysnc脉冲宽度 */
-		.tvb=	2,  /* 上边黑框, Vertical Back porch */
-		.tvf=	2,  /* 下边黑框, Vertical Front porch */
+		.tvp =	10, /* vysnc脉冲宽度 */
+		.tvb =	2, /* 上边黑框, Vertical Back porch */
+		.tvf =	2, /* 下边黑框, Vertical Front porch */
 
 		/* 水平方向 */
-		.thp=	41, /* hsync脉冲宽度 */
-		.thb=	2,  /* 左边黑框, Horizontal Back porch */
-		.thf=	2,  /* 右边黑框, Horizontal Front porch */
+		.thp =	41, /* hsync脉冲宽度 */
+		.thb =	2, /* 左边黑框, Horizontal Back porch */
+		.thf =	2, /* 右边黑框, Horizontal Front porch */
 
-		.vclk=	9,  /* MHz */
+		.vclk =	9, /* MHz */
 	},
 	.xres = 480,
 	.yres = 272,
@@ -33,8 +33,7 @@ lcd_params lcd_4_3_params = {
 };
 
 
-void lcd_4_3_add(void)
-{
+void lcd_4_3_add(void) {
 	register_lcd(&lcd_4_3_params);
 }
 

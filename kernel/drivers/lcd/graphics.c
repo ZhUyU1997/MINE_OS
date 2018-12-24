@@ -175,8 +175,8 @@ void DrawCircle(u32_t x, u32_t y, u32_t r, u32_t color) {
 
 void DrawFillRect(u32_t x, u32_t y, u32_t w, u32_t h, u32_t color) {
 	color = convert888_565(color);
-	for(int i = 0; i < h; i++){
-		for(int j = 0; j < w; j++){
+	for (int i = 0; i < h; i++) {
+		for (int j = 0; j < w; j++) {
 			PutPixel(x + j, y + i, color);
 		}
 	}

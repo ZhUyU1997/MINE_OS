@@ -1,9 +1,10 @@
-
 #ifndef _TPYES_H
 #define _TPYES_H
+
 #ifndef NULL
 #define NULL					((void*)0)
 #endif
+
 typedef unsigned char			UINT8;
 typedef unsigned short			UINT16;
 typedef unsigned int			UINT32;

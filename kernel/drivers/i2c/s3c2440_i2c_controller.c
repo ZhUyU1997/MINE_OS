@@ -4,10 +4,10 @@
 #include <interrupt.h>
 #include "i2c_controller.h"
 
-static p_i2c_msg p_cur_msg;
+static struct i2c_msg *cur_msg;
 
 int isLastData(void) {
-	if (p_cur_msg->cnt_transferred == p_cur_msg->len - 1)
+	if (cur_msg->cnt_transferred == cur_msg->len - 1)
 		return 1;  /* 正要开始传输最后一个数据 */
 	else
 		return 0;
@@ -26,7 +26,6 @@ void resume_iic_without_ack(void) {
 	IICCON =  iiccon;
 }
 
-
 void i2c_interrupt_func(unsigned long nr, unsigned long parameter) {
 	int index;
 	unsigned int iicstat = IICSTAT;
@@ -34,35 +33,35 @@ void i2c_interrupt_func(unsigned long nr, unsigned long parameter) {
 
 	//printf("i2c_int %s\n", p_cur_msg->flags ? "read" : "write");
 
-	p_cur_msg->cnt_transferred++;
+	cur_msg->cnt_transferred++;
 
 	/* 每传输完一个数据将产生一个中断 */
 
 	/* 对于每次传输, 第1个中断是"已经发出了设备地址" */
 
-	if (p_cur_msg->flags == 0) {	/* write */
+	if (cur_msg->flags == 0) {	/* write */
 		/* 对于第1个中断, 它是发送出设备地址后产生的
 		 * 需要判断是否有ACK
 		 * 有ACK : 设备存在
 		 * 无ACK : 无设备, 出错, 直接结束传输
 		 */
-		if (p_cur_msg->cnt_transferred == 0) { /* 第1次中断 */
+		if (cur_msg->cnt_transferred == 0) { /* 第1次中断 */
 			if (iicstat & (1 << 0)) {
 				/* no ack */
 				/* 停止传输 */
 				IICSTAT = 0xd0;
 				IICCON &= ~(1 << 4);
-				p_cur_msg->err = -1;
+				cur_msg->err = -1;
 				printf("tx err, no ack\n");
 				return;
 			}
 		}
 
-		if (p_cur_msg->cnt_transferred < p_cur_msg->len) {
+		if (cur_msg->cnt_transferred < cur_msg->len) {
 			/* 对于其他中断, 要继续发送下一个数据
 			 */
 			//printf("data = %c\n", p_cur_msg->buf[p_cur_msg->cnt_transferred]);
-			IICDS = p_cur_msg->buf[p_cur_msg->cnt_transferred];
+			IICDS = cur_msg->buf[cur_msg->cnt_transferred];
 			IICCON &= ~(1 << 4);
 		} else {
 			/* 停止传输 */
@@ -75,13 +74,13 @@ void i2c_interrupt_func(unsigned long nr, unsigned long parameter) {
 		 * 有ACK : 设备存在, 恢复I2C传输, 这样在下一个中断才可以得到第1个数据
 		 * 无ACK : 无设备, 出错, 直接结束传输
 		 */
-		if (p_cur_msg->cnt_transferred == 0) { /* 第1次中断 */
+		if (cur_msg->cnt_transferred == 0) { /* 第1次中断 */
 			if (iicstat & (1 << 0)) {
 				/* no ack */
 				/* 停止传输 */
 				IICSTAT = 0x90;
 				IICCON &= ~(1 << 4);
-				p_cur_msg->err = -1;
+				cur_msg->err = -1;
 				printf("rx err, no ack\n\r");
 				return;
 			} else { /* ack */
@@ -99,9 +98,9 @@ void i2c_interrupt_func(unsigned long nr, unsigned long parameter) {
 		/* 非第1个中断, 表示得到了一个新数据
 		 * 从IICDS读出、保存
 		 */
-		if (p_cur_msg->cnt_transferred < p_cur_msg->len) {
-			index = p_cur_msg->cnt_transferred - 1;
-			p_cur_msg->buf[index] = IICDS;
+		if (cur_msg->cnt_transferred < cur_msg->len) {
+			index = cur_msg->cnt_transferred - 1;
+			cur_msg->buf[index] = IICDS;
 
 			/* 如果是最后一个数据, 启动传输时要设置为不回应ACK */
 			/* 恢复I2C传输 */
@@ -117,7 +116,6 @@ void i2c_interrupt_func(unsigned long nr, unsigned long parameter) {
 		}
 	}
 }
-
 
 int s3c2440_i2c_con_init(void) {
 	/* 配置引脚用于I2C*/
@@ -139,8 +137,8 @@ int s3c2440_i2c_con_init(void) {
 	return 1;
 }
 
-int do_master_tx(p_i2c_msg msg) {
-	p_cur_msg = msg;
+int do_master_tx(struct i2c_msg *msg) {
+	cur_msg = msg;
 
 	msg->cnt_transferred = -1;
 	msg->err = 0;
@@ -168,8 +166,8 @@ int do_master_tx(p_i2c_msg msg) {
 		return 0;
 }
 
-int do_master_rx(p_i2c_msg msg) {
-	p_cur_msg = msg;
+int do_master_rx(struct i2c_msg *msg) {
+	cur_msg = msg;
 
 	msg->cnt_transferred = -1;
 	msg->err = 0;
@@ -197,7 +195,7 @@ int do_master_rx(p_i2c_msg msg) {
 		return 0;
 }
 
-int s3c2440_master_xfer(p_i2c_msg msgs, int num) {
+int s3c2440_master_xfer(struct i2c_msg *msgs, int num) {
 	int i;
 	int err;
 
@@ -218,7 +216,7 @@ int s3c2440_master_xfer(p_i2c_msg msgs, int num) {
           .name
  */
 
-static i2c_controller s3c2440_i2c_con = {
+static struct i2c_controller s3c2440_i2c_con = {
 	.name = "s3c2440",
 	.init = s3c2440_i2c_con_init,
 	.master_xfer = s3c2440_master_xfer,
