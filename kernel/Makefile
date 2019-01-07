@@ -1,4 +1,5 @@
 PHONY		:=
+all:
 
 # Do not:
 # o  use make's built-in rules and variables
