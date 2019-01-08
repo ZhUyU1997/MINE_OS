@@ -348,7 +348,7 @@ static void do_config_file(const char *filename)
 	close(fd);
 	map = mmap(filename, st.st_size, &fMap);
 	if ((long) map == NULL) {
-		printf("fixdep: mmap");
+		perror("fixdep: mmap");
 		return;
 	}	
 #endif
@@ -400,6 +400,12 @@ static void parse_dep_file(void *map, size_t len)
 				break;
 		}
 		memcpy(s, m, p-m); s[p-m] = 0;
+
+#ifdef OS_WIN32
+		for (int i = 0;i < p-m; i++)
+			if (s[i] == '\\') s[i] = '/';
+#endif
+
 		if (strrcmp(s, "include/config/autoconf.h")) {
 			/*
 			 * Do not list the source file as dependency, so that
@@ -456,7 +462,7 @@ static void print_deps(void)
 	close(fd);
 	map = mmap(depfile, st.st_size, &fMap);
 	if ((long) map == NULL) {
-		printf("fixdep: mmap");
+		perror("fixdep: mmap");
 		return;
 	}	
 #endif

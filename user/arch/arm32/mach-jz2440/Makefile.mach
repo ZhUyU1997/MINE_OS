@@ -1,10 +1,10 @@
 DEFINES		+= -D__ARM32_ARCH__=4
 
-ASFLAGS		:= -Wall -O3
-CFLAGS		:= -Wall -O3
-LDFLAGS		:= -T arch/$(ARCH)/$(MACH)/user.lds -nostdlib
+ASFLAGS		:= -Wall
+CFLAGS		:= -Wall
+LDFLAGS		:= -T $(srctree)/arch/$(ARCH)/$(MACH)/user.lds -nostdlib
 
-MCFLAGS		:= -std=gnu99 -O2 \
+MCFLAGS		:= -std=gnu99 -O3 \
 				-march=armv4t -mtune=arm920t \
 				-ffreestanding -msoft-float -fsigned-char \
 				-fno-omit-frame-pointer \

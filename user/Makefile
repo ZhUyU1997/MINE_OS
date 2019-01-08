@@ -136,11 +136,13 @@ INCDIRS		+=	include	drivers					\
 				arch/$(ARCH)/include			\
 				arch/$(ARCH)/$(MACH)/include
 
+HEAD_FILES	:=	arch/$(ARCH)/$(MACH)/head.S
+
 sinclude $(srctree)/arch/$(ARCH)/$(MACH)/Makefile.head
 
-HEAD_FILES	+=	arch/$(ARCH)/$(MACH)/head.S
-HEAD_OBJS	+=	$(patsubst %.S, %.o, $(filter %.S, $(wildcard $(HEAD_FILES))))
-HEAD_OBJS	+=	$(patsubst %.c, %.o, $(filter %.c, $(wildcard $(HEAD_FILES))))
+HEAD_FILES	:=	$(foreach f,$(HEAD_FILES),$(wildcard $(srctree)/$(f)))
+HEAD_OBJS	+=	$(patsubst $(srctree)/%.S, %.o, $(filter %.S, $(HEAD_FILES))) \
+				$(patsubst $(srctree)/%.c, %.o, $(filter %.c, $(HEAD_FILES)))
 
 X_ASFLAGS	:=	$(ARCH_CFLAGS) $(MCFLAGS) $(MASFLAGS) $(ASFLAGS)
 X_CFLAGS	:=	$(ARCH_CFLAGS) $(MCFLAGS) $(CFLAGS)
