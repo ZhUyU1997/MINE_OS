@@ -350,7 +350,7 @@ static void do_config_file(const char *filename)
 	if ((long) map == NULL) {
 		perror("fixdep: mmap");
 		return;
-	}	
+	}
 #endif
 
 	parse_config_file(map, st.st_size);
@@ -464,7 +464,7 @@ static void print_deps(void)
 	if ((long) map == NULL) {
 		perror("fixdep: mmap");
 		return;
-	}	
+	}
 #endif
 
 	parse_dep_file(map, st.st_size);
