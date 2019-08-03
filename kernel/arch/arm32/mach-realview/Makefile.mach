@@ -26,17 +26,25 @@ LIBDIRS		:= -L $(dir $(shell $(CC) -march=armv7-a -mtune=cortex-a9 -mfpu=neon -f
 LIBS		:= -lgcc
 
 ifeq ($(strip $(HOSTOS)),windows)
-	QEMU	:= $(srctree)/../tools/qemu-system/windows/qemu-system-arm
+	QEMU_DIR	:= $(srctree)/../tools/qemu-system/windows
+	QEMU		:= $(QEMU_DIR)/qemu-system-arm
+	UNZIP		:= $(QEMU_DIR)/unzip
 else
-	QEMU	:= qemu-system-arm
+	QEMU_DIR	:= $(srctree)/../tools/qemu-system/linux
+	QEMU		:= qemu-system-arm
+	UNZIP		:= unzip
 endif
 
 xend:
+	if [ ! -e $(QEMU_DIR)/sdcard/sdcard.img ]; then \
+		mkdir -p $(QEMU_DIR)/sdcard; \
+		$(UNZIP) $(QEMU_DIR)/sdcard.zip -d $(QEMU_DIR)/sdcard; \
+	fi
 ifneq ($(G),on)
 	-@$(QEMU) -M realview-pb-a8 -m 256M \
 		-name "ARM RealView Platform Baseboard for Cortex-A8" \
 		-show-cursor -rtc base=localtime -serial stdio \
-		-sd "$(srctree)/../tools/qemu-system/windows/sdcard/sdcard.img" \
+		-sd "$(QEMU_DIR)/sdcard/sdcard.img" \
 		-net nic,macaddr=88:88:88:11:22:33,model=lan9118 -net user \
 		-kernel system || true
 else
@@ -44,7 +52,7 @@ else
 		-name "ARM RealView Platform Baseboard for Cortex-A8" \
 		-S -gdb tcp::10001,ipv4 \
 		-show-cursor -rtc base=localtime -serial stdio \
-		-sd "$(srctree)/../tools/qemu-system/windows/sdcard/sdcard.img" \
+		-sd "$(QEMU_DIR)/sdcard/sdcard.img" \
 		-net nic,macaddr=88:88:88:11:22:33,model=lan9118 -net user \
 		-kernel system || true
 endif
