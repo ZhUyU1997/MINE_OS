@@ -36,7 +36,6 @@ static void disp_flush(mu_Rect dst, mu_Rect src, mu_Color color)
 {
     int32_t x;
     int32_t y;
-	mu_Color old,new;
 	float factor_x = ((float)src.w) / (dst.w);
 	float factor_y = ((float)src.h) / (dst.h);
 	int sx = dst.x < 0 ? 0 : dst.x >= width ? width - 1:dst.x;
@@ -45,15 +44,15 @@ static void disp_flush(mu_Rect dst, mu_Rect src, mu_Color color)
 	int ey = dst.y + dst.h < 0 ? 0 : dst.y + dst.h >= height ? height - 1: dst.y + dst.h;
 
     for(y = sy; y < ey; y++) {
+		mu_Color *base = (mu_Color *)&((u32_t *)render->pixels)[y * width];
         for(x = sx; x < ex; x++) {
-			int src_x = src.x + (x - dst.x) * factor_x;
-			int src_y = src.y + (y - dst.y) * factor_y;
-			old = *(mu_Color *)&((u32_t *)render->pixels)[y * width + x];
-			float a = color.a * atlas_texture[src_y * ATLAS_HEIGHT + src_x] / (255.0 * 255.0);
-			new.r = a * (color.r - old.r) + old.r;
-			new.g = a * (color.g - old.g) + old.g;
-			new.b = a * (color.b - old.b) + old.b;
-			((u32_t *)render->pixels)[y * width + x] = *(int *)&new;
+			mu_Color *c = &base[x];
+			int src_x = src.x + ((int)((x - dst.x) * factor_x));
+			int src_y = src.y + ((int)((y - dst.y) * factor_y));
+			int a = color.a * atlas_texture[src_y * ATLAS_HEIGHT + src_x];
+			c->r = ((int) (a * (color.r - c->r)) >> 16) + c->r;
+			c->g = ((int) (a * (color.g - c->g)) >> 16) + c->g;
+			c->b = ((int) (a * (color.b - c->b)) >> 16) + c->b;
         }
     }
 }
