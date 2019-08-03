@@ -25,7 +25,7 @@ MLDFLAGS	:=
 LIBDIRS		:= -L $(dir $(shell $(CC) -march=armv7-a -mtune=cortex-a9 -mfpu=vfpv3-d16 -ffreestanding -mfloat-abi=hard -print-libgcc-file-name))
 LIBS		:= -lgcc
 
-NSIH		:= arch/$(ARCH)/$(MACH)/tools/images/nsih.txt
+NSIH		:= $(srctree)/arch/$(ARCH)/$(MACH)/tools/images/nsih.txt
 
 xend:
 	@echo [USB DOWNLOAD]
