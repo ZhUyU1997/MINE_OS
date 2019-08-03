@@ -1,7 +1,7 @@
 #ifndef _SYS_TIMES_H
 #define _SYS_TIMES_H
 
-#include <sys/types.h>
+#include <types.h>
 
 struct tms {
 	clock_t tms_utime;

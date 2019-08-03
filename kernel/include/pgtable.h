@@ -1,7 +1,7 @@
 #ifndef _ASMARM_PGTABLE_H
 #define _ASMARM_PGTABLE_H
 
-#include <sys/types.h>
+#include <types.h>
 #include <pgtable-2level-types.h>
 #include <pgtable_2level.h>
 #include <tlbflush.h>

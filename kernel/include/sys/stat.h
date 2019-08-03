@@ -1,7 +1,7 @@
 #ifndef _SYS_STAT_H
 #define _SYS_STAT_H
 
-#include <sys/types.h>
+#include <types.h>
 
 struct stat {
 	dev_t   st_dev;		/* Device ID of device containing file.	*/

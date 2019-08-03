@@ -50,7 +50,7 @@ endif #ifeq ($(BUILD_SRC),)
 
 ifeq ($(skip-makefile),)
 
-CROSS_COMPILE	?=arm-none-linux-gnueabi-
+CROSS_COMPILE	?=arm-linux-gnueabihf-
 PLATFORM		?=
 
 srctree		:= $(if $(BUILD_SRC),$(BUILD_SRC),$(CURDIR))
@@ -68,7 +68,7 @@ ARCH		:= $(word 1, $(subst -, , $(PLATFORM)))
 MACH		:= mach-$(word 2, $(subst -, , $(PLATFORM)))
 else
 ARCH		:= arm32
-MACH		:= mach-jz2440
+MACH		:= mach-realview
 endif
 
 ifeq ($(wildcard $(srctree)/arch/$(ARCH)/$(MACH)),)
@@ -131,7 +131,7 @@ sinclude $(srctree)/arch/$(ARCH)/Makefile.arch
 include $(srctree)/scripts/Makefile.include
 
 # Add necessary directory for INCDIRS and SRCDIRS.
-SRCDIRS		+=	arch/$(ARCH) init mm kernel fs drivers lib sound
+SRCDIRS		+=	arch/$(ARCH) init mm kernel fs drivers lib
 INCDIRS		+=	include	drivers					\
 				arch/$(ARCH)/include			\
 				arch/$(ARCH)/$(MACH)/include

@@ -16,6 +16,7 @@
 #include "assert.h"
 #include "task.h"
 #include "memory.h"
+#include "malloc.h"
 #include "printk.h"
 #include "lib.h"
 #include "errno.h"
@@ -98,8 +99,8 @@ void init_memory() {
 	color_printk(BLUE, BLACK, "Display Physics Address MAP,Type(1:RAM,2:ROM or Reserved,3:ACPI Reclaim Memory,4:ACPI NVS Memory,Others:Undefine)\n");
 	p = (struct E820[2]) {
 		[0] = {
-			.address = 0x30000000,
-			.length = 0x04000000,
+			.address = &__text_start,
+			.length = (&__heap_end - &__text_start),
 			.type = 1,
 		},
 		[1] = {
@@ -109,11 +110,11 @@ void init_memory() {
 		},
 	};
 
-	mms.start_code = (unsigned long)& _text;
-	mms.end_code   = (unsigned long)& _etext;
-	mms.end_data   = (unsigned long)& _edata;
-	mms.end_rodata = (unsigned long)& _erodata;
-	mms.start_brk  = (unsigned long)& _end;
+	mms.start_code = (unsigned long)& __text_start;
+	mms.end_code   = (unsigned long)& __text_end;
+	mms.end_data   = (unsigned long)& __data_end;
+	mms.end_rodata = (unsigned long)& __rodata_end;
+	mms.start_brk  = (unsigned long)& __heap_start;
 
 	
 	for (i = 0; i < 32; i++) {
@@ -247,7 +248,7 @@ void init_memory() {
 
 	color_printk(ORANGE, BLACK, "start_code:%#010lx,end_code:%#010lx,end_data:%#010lx,start_brk:%#010lx,end_of_struct:%#010lx\n", mms.start_code, mms.end_code, mms.end_data, mms.start_brk, mms.end_of_struct);
 
-	i = PAGE_2M_NUM(Virt_To_Phy(mms.end_of_struct));
+	i = PAGE_2M_NUM(virt_to_phy(mms.end_of_struct));
 
 	for (j = 1; j <= i; j++) {
 		struct Page *tmp_page = mms.pages_struct + j;
@@ -335,6 +336,7 @@ struct Page *alloc_pages(int zone_select, int number, unsigned long page_flags) 
 				for (int i = 0; i < number; i++) {
 					BIT_SET(mms.bits_map, PAGE_2M_NUM(pageptr[i].PHY_address));
 					pageptr[i].attribute = attribute;
+					pageptr[i].number = number;
 				}
 				z->page_using_count += number;
 				z->page_free_count -= number;
@@ -354,6 +356,18 @@ find_free_pages:
 	return &(mms.pages_struct[page]);
 }
 
+void *_alloc_pages(int zone_select, unsigned long size, unsigned long page_flags) {
+	int number = ALIGN(size, PAGE_2M_SIZE) >> PAGE_2M_SHIFT;
+	struct Page *page = alloc_pages(zone_select, number, page_flags);
+	if(page == NULL) return NULL;
+	return phy_to_virt(page->PHY_address);
+}
+
+void _free_pages(void * addr) {
+	int index = PAGE_2M_NUM(virt_to_phy(addr));
+	struct Page *page = mms.pages_struct + index;
+	free_pages(page, page->number);
+}
 /*
 
 	page: free page start from this pointer
@@ -363,12 +377,12 @@ find_free_pages:
 
 void free_pages(struct Page *page, int number) {
 	if (page == NULL) {
-		color_printk(RED, BLACK, "free_pages() ERROR: page is invalid\n");
+		color_printk(RED, BLACK, "free_pages() ERROR: page is invalid.\n");
 		return ;
 	}
 
 	if (number >= BITS_PER_LONG || number <= 0) {
-		color_printk(RED, BLACK, "free_pages() ERROR: number is invalid\n");
+		color_printk(RED, BLACK, "free_pages() ERROR: number is invalid. number = %d\n", number);
 		return ;
 	}
 
@@ -377,6 +391,8 @@ void free_pages(struct Page *page, int number) {
 		page->zone_struct->page_using_count--;
 		page->zone_struct->page_free_count++;
 		page->attribute = 0;
+		page->number = 0;
+		page->slab = NULL;
 	}
 }
 
@@ -389,8 +405,13 @@ void *kmalloc(unsigned long size, unsigned long gfp_flages) {
 	int i;
 	struct Slab *slab = NULL;
 	if (size > 1048576) {
-		color_printk(RED, BLACK, "kmalloc() ERROR: kmalloc size too long:%08d\n", size);
-		goto ret_null;
+		//color_printk(RED, BLACK, "kmalloc() ERROR: kmalloc size too long:%08d\n", size);
+		//goto ret_null;
+		void * addr = _alloc_pages(ZONE_NORMAL, size, 0);
+		if (addr == NULL) {
+			color_printk(RED, BLACK, "kmalloc() ERROR: _alloc_pages :%08d\n", size);
+		}
+		return addr;
 	}
 	for (i = 0; i < ARRAY_SIZE(kmalloc_cache_size); i++)
 		if (kmalloc_cache_size[i].size >= size)
@@ -400,7 +421,7 @@ void *kmalloc(unsigned long size, unsigned long gfp_flages) {
 	if (kmalloc_cache_size[i].total_free != 0) {
 		while (1) {
 			if (slab->free_count == 0)
-				slab = container_of(list_next(&slab->list), struct Slab, list);
+				slab = list_next_entry(slab, list);
 			else
 				break;
 			if (slab == kmalloc_cache_size[i].cache_pool) {
@@ -420,7 +441,7 @@ void *kmalloc(unsigned long size, unsigned long gfp_flages) {
 
 		color_printk(BLUE, BLACK, "kmalloc()->kmalloc_create()<=size:%#010x\n", kmalloc_cache_size[i].size); ///////
 
-		list_add_to_before(&kmalloc_cache_size[i].cache_pool->list, &slab->list);
+		list_add_tail(&slab->list, &kmalloc_cache_size[i].cache_pool->list);
 	}
 
 	for (int j = 0; j < slab->color_count; j++) {
@@ -446,6 +467,16 @@ ret_null:
 	assert(0);
 	return NULL;
 }
+
+
+void * kzalloc(size_t size, unsigned long gfp_flages) {
+	void * m = NULL;
+
+	if((m = kmalloc(size, gfp_flages)))
+		memset(m, 0, size);
+	return m;
+}
+
 
 /*
 
@@ -475,7 +506,7 @@ struct Slab *kmalloc_create(unsigned long size) {
 		case 256:
 		case 512:
 
-			vaddresss = Phy_To_Virt(page->PHY_address);
+			vaddresss = phy_to_virt(page->PHY_address);
 			structsize = sizeof(struct Slab) + PAGE_2M_SIZE / size / 8;
 
 			slab = (struct Slab *)((unsigned char *)vaddresss + PAGE_2M_SIZE - structsize);
@@ -521,12 +552,13 @@ struct Slab *kmalloc_create(unsigned long size) {
 			return NULL;
 	}
 
-	slab->Vaddress = Phy_To_Virt(page->PHY_address);
+	slab->Vaddress = phy_to_virt(page->PHY_address);
 	slab->page = page;
+	page->slab = slab; //TODO:降低page 和 slab 耦合 或者封装
 	memset(slab->color_map, 0xff, slab->color_length);
 	for (int i = 0; i < slab->color_count; i++)
 		BIT_NOT(slab->color_map, i);
-	list_init(&slab->list);
+	init_list_head(&slab->list);
 
 	return slab;
 }
@@ -536,9 +568,17 @@ struct Slab *kmalloc_create(unsigned long size) {
 */
 
 unsigned long kfree(void *address) {
+	if(!address)
+		return 0;
 	struct Slab *slab = NULL;
 	void *page_base_address = (void *)((unsigned long)address & PAGE_2M_MASK);
 
+	int index = PAGE_2M_NUM(virt_to_phy(address));
+	struct Page *page = mms.pages_struct + index;
+	if (page->slab == NULL && (ALIGN(virt_to_phy(address), PAGE_2M_SIZE) == virt_to_phy(address))) {
+		free_pages(page, page->number);
+		return 1;
+	}
 	for (int i = 0; i < ARRAY_SIZE(kmalloc_cache_size); i++) {
 		slab = kmalloc_cache_size[i].cache_pool;
 		do {
@@ -583,13 +623,14 @@ unsigned long kfree(void *address) {
 				}
 				return 1;
 			} else
-				slab = container_of(list_next(&slab->list), struct Slab, list);
+				slab = list_next_entry(slab, list);
 		} while(slab != kmalloc_cache_size[i].cache_pool);
 	}
 
 	color_printk(RED, BLACK, "kfree() ERROR: can`t free memory\n");
 	return 0;
 }
+
 /*
 
 */
@@ -623,7 +664,7 @@ struct Slab_cache *slab_create(unsigned long size, void * (* constructor)(void *
 	slab_cache->constructor = constructor;
 	slab_cache->destructor = destructor;
 
-	list_init(&slab_cache->cache_pool->list);
+	init_list_head(&slab_cache->cache_pool->list);
 
 	slab_cache->cache_pool->page = alloc_pages(ZONE_NORMAL, 1, 0);
 
@@ -639,7 +680,7 @@ struct Slab_cache *slab_create(unsigned long size, void * (* constructor)(void *
 	slab_cache->cache_pool->using_count = 0;
 	slab_cache->cache_pool->free_count = PAGE_2M_SIZE / slab_cache->size;
 	slab_cache->total_free = slab_cache->cache_pool->free_count;
-	slab_cache->cache_pool->Vaddress = Phy_To_Virt(slab_cache->cache_pool->page->PHY_address);
+	slab_cache->cache_pool->Vaddress = phy_to_virt(slab_cache->cache_pool->page->PHY_address);
 	slab_cache->cache_pool->color_count = slab_cache->cache_pool->free_count;
 	slab_cache->cache_pool->color_length = ALIGN(ALIGN(slab_cache->cache_pool->color_count, 8) / 8, sizeof(unsigned long));
 	slab_cache->cache_pool->color_map = (unsigned long *)kmalloc(slab_cache->cache_pool->color_length, 0);
@@ -670,14 +711,14 @@ unsigned long slab_destroy(struct Slab_cache *slab_cache) {
 		return 0;
 	}
 
-	while (!list_is_empty(&slab->list)) {
+	while (!list_empty(&slab->list)) {
 		list_del(&slab->list);
 		kfree(slab->color_map);
 
 		page_clean(slab->page);
 		free_pages(slab->page, 1);
 		kfree(slab);
-		slab = container_of(list_next(&slab->list), struct Slab, list);
+		slab = list_next_entry(slab, list);
 	}
 
 	kfree(slab->color_map);
@@ -708,7 +749,7 @@ void *slab_malloc(struct Slab_cache *slab_cache, unsigned long arg) {
 
 		memset(slab, 0, sizeof(struct Slab));
 
-		list_init(&slab->list);
+		init_list_head(&slab->list);
 
 		slab->page = alloc_pages(ZONE_NORMAL, 1, 0);
 
@@ -722,7 +763,7 @@ void *slab_malloc(struct Slab_cache *slab_cache, unsigned long arg) {
 
 		slab->using_count = 0;
 		slab->free_count = PAGE_2M_SIZE / slab_cache->size;
-		slab->Vaddress = Phy_To_Virt(slab->page->PHY_address);
+		slab->Vaddress = phy_to_virt(slab->page->PHY_address);
 
 		slab->color_count = slab->free_count;
 		slab->color_length = ALIGN(ALIGN(slab->color_count , 8) / 8, sizeof(unsigned long));
@@ -736,14 +777,14 @@ void *slab_malloc(struct Slab_cache *slab_cache, unsigned long arg) {
 		}
 
 		memset(slab->color_map, 0, slab->color_length);
-		list_add_to_behind(&slab_cache->cache_pool->list, &slab->list);
+		list_add(&slab->list, &slab_cache->cache_pool->list);
 
 		slab_cache->total_free  += slab->color_count;
 
 	} else {
 		while (1) {
 			if (slab->free_count == 0) {
-				slab = container_of(list_next(&slab->list), struct Slab, list);
+				slab = list_next_entry(slab, list);
 				continue;
 			} else
 				break;
@@ -825,7 +866,7 @@ unsigned long slab_free(struct Slab_cache *slab_cache, void *address, unsigned l
 
 			return 1;
 		} else {
-			slab = container_of(list_next(&slab->list), struct Slab, list);
+			slab = list_next_entry(slab, list);
 			continue;
 		}
 
@@ -851,7 +892,7 @@ unsigned long slab_init() {
 		kmalloc_cache_size[i].cache_pool = (struct Slab *)mms.end_of_struct;
 		mms.end_of_struct = mms.end_of_struct + sizeof(struct Slab) + sizeof(long) * 10;
 
-		list_init(&kmalloc_cache_size[i].cache_pool->list);
+		init_list_head(&kmalloc_cache_size[i].cache_pool->list);
 
 		//////////// init sizeof struct Slab of cache size
 
@@ -876,9 +917,9 @@ unsigned long slab_init() {
 
 	////////////	init page for kernel code and memory management struct
 
-	i = PAGE_2M_NUM(Virt_To_Phy(mms.end_of_struct));
+	i = PAGE_2M_NUM(virt_to_phy(mms.end_of_struct));
 
-	for (j = PAGE_2M_NUM(PAGE_2M_ALIGN(Virt_To_Phy(tmp_address))); j <= i; j++) {
+	for (j = PAGE_2M_NUM(PAGE_2M_ALIGN(virt_to_phy(tmp_address))); j <= i; j++) {
 		page =  &mms.pages_struct[j];
 		BIT_SET(mms.bits_map, PAGE_2M_NUM(page->PHY_address));
 		page->zone_struct->page_using_count++;
@@ -890,7 +931,7 @@ unsigned long slab_init() {
 
 	for (i = 0; i < ARRAY_SIZE(kmalloc_cache_size); i++) {
 		virtual = (unsigned long *)ALIGN(mms.end_of_struct + PAGE_2M_SIZE * i, PAGE_2M_SIZE);
-		page = Virt_To_2M_Page(virtual);
+		page = virt_to_2M_page(virtual);
 
 		BIT_SET(mms.bits_map, PAGE_2M_NUM(page->PHY_address));
 		page->zone_struct->page_using_count++;
@@ -900,6 +941,7 @@ unsigned long slab_init() {
 
 		kmalloc_cache_size[i].cache_pool->page = page;
 		kmalloc_cache_size[i].cache_pool->Vaddress = virtual;
+		page->slab = kmalloc_cache_size[i].cache_pool;
 	}
 
 	color_printk(ORANGE, BLACK, "3.mms.bits_map:%#010lx\tzone_struct->page_using_count:%d\tzone_struct->page_free_count:%d\n", *mms.bits_map, mms.zones_struct->page_using_count, mms.zones_struct->page_free_count);
@@ -911,6 +953,7 @@ unsigned long slab_init() {
 
 
 unsigned long do_brk(unsigned long addr, unsigned long len) {
+	/*
 	unsigned long * tmp = NULL;
 	struct Page * p = NULL;
 	unsigned long i = 0;
@@ -931,4 +974,5 @@ unsigned long do_brk(unsigned long addr, unsigned long len) {
 	flush_tlb();
 
 	return i;
+	*/
 }

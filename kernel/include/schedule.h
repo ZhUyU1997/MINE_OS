@@ -18,17 +18,25 @@
 
 #include "task.h"
 
-struct schedule {
-	long running_task_count;
-	long CPU_exec_task_jiffies;
-	struct task_struct task_queue;
+struct scheduler_t {
+	struct rb_root_cached ready;
+	struct list_head suspend;
+	struct task_t * running;
+	uint64_t min_vtime;
+	uint64_t weight;
+	spinlock_t lock;
 };
 
-extern struct schedule task_schedule[NR_CPUS];
+extern struct scheduler_t __sched[NR_CPUS];
 
 void schedule();
-void schedule_init();
-struct task_struct *get_next_task();
-void insert_task_queue(struct task_struct *tsk);
+void do_init_sched();
+
+struct task_t * task_create(struct scheduler_t * sched, const char * name, size_t stksz, int nice);
+void task_destroy(struct task_t * task);
+void task_zombie(struct task_t * task);
+void task_renice(struct task_t * task, int nice);
+void task_suspend(struct task_t * task);
+void task_resume(struct task_t * task);
 
 #endif

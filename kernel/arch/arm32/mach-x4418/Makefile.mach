@@ -1,0 +1,32 @@
+DEFINES		+= -D__ARM32_ARCH__=7 -D__CORTEX_A9__ -D__ARM32_NEON__
+
+WFLAGS		:= -w
+OPTFLAGS	:= -O3
+
+ifeq ("$(origin G)", "command line")
+ifeq ($(G),on)
+OPTFLAGS		:= -O0 -g -ggdb
+endif
+endif
+
+ASFLAGS		:= -ffunction-sections -fdata-sections -fno-PIE $(WFLAGS) $(OPTFLAGS)
+CFLAGS		:= -ffunction-sections -fdata-sections -fno-PIE $(WFLAGS) $(OPTFLAGS)
+LDFLAGS		:= -T $(srctree)/arch/$(ARCH)/$(MACH)/kernel.lds -nostdlib --build-id=none -gc-sections
+
+MCFLAGS		:= -std=gnu99 \
+				-march=armv7-a -mtune=cortex-a9 -mfpu=vfpv3-d16 \
+				-ffreestanding -mfloat-abi=hard -fsigned-char \
+				-fno-omit-frame-pointer \
+				-marm -mno-thumb-interwork -mno-unaligned-access
+
+MASFLAGS	:= -D__ASSEMBLY__
+MLDFLAGS	:=
+
+LIBDIRS		:= -L $(dir $(shell $(CC) -march=armv7-a -mtune=cortex-a9 -mfpu=vfpv3-d16 -ffreestanding -mfloat-abi=hard -print-libgcc-file-name))
+LIBS		:= -lgcc
+
+NSIH		:= arch/$(ARCH)/$(MACH)/tools/images/nsih.txt
+
+xend:
+	@echo [USB DOWNLOAD]
+	@udown $(NSIH) $(X_NAME).bin

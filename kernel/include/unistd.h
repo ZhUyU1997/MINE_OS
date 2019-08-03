@@ -37,4 +37,6 @@
 #define __NR_chdir	14
 #define __NR_getdents	15
 
+#define __NR_stat	16
+#define __NR_fstat	16
 #endif

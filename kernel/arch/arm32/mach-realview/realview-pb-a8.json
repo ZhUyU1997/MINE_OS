@@ -1,0 +1,238 @@
+{
+	"clk-fixed@0": { "name": "xtal", "rate": 12000000 },
+	"clk-fixed@1": { "name": "uclk", "rate": 24000000 },
+	"clk-fixed@2": { "name": "kclk", "rate": 24000000 },
+	"clk-fixed@3": { "name": "mclk", "rate": 24000000 },
+	"clk-fixed@4": { "name": "timclk", "rate": 1000000 },
+	"clk-fixed@5": { "name": "refclk", "rate": 32768 },
+
+	"irq-gic@0x1e000000": {
+		"interrupt-base": 32,
+		"interrupt-count": 32
+	},
+
+	"gpio-pl061@0x10013000": {
+		"gpio-base": 0,
+		"gpio-count": 8,
+		"interrupt-offset": -1
+	},
+
+	"gpio-pl061@0x10014000": {
+		"gpio-base": 8,
+		"gpio-count": 8,
+		"interrupt-offset": -1
+	},
+
+	"gpio-pl061@0x10015000": {
+		"gpio-base": 16,
+		"gpio-count": 8,
+		"interrupt-offset": -1
+	},
+
+	"ce-sp804@0x10011000": {
+		"clock-name": "timclk",
+		"interrupt": 36,
+		"timer-channel": 0
+	},
+
+	"cs-sp804@0x10012000": {
+		"clock-name": "timclk",
+		"timer-channel": 0
+	},
+
+	"uart-pl011@0x10009000": {
+		"clock-name": "uclk",
+		"txd-gpio": -1,
+		"txd-gpio-config": -1,
+		"rxd-gpio": -1,
+		"rxd-gpio-config": -1,
+		"baud-rates": 115200,
+		"data-bits": 8,
+		"parity-bits": 0,
+		"stop-bits": 1
+	},
+
+	"uart-pl011@0x1000a000": {
+		"clock-name": "uclk",
+		"txd-gpio": -1,
+		"txd-gpio-config": -1,
+		"rxd-gpio": -1,
+		"rxd-gpio-config": -1,
+		"baud-rates": 115200,
+		"data-bits": 8,
+		"parity-bits": 0,
+		"stop-bits": 1
+	},
+	
+	"uart-pl011@0x1000b000": {
+		"clock-name": "uclk",
+		"txd-gpio": -1,
+		"txd-gpio-config": -1,
+		"rxd-gpio": -1,
+		"rxd-gpio-config": -1,
+		"baud-rates": 115200,
+		"data-bits": 8,
+		"parity-bits": 0,
+		"stop-bits": 1
+	},
+	
+	"uart-pl011@0x1000c000": {
+		"clock-name": "uclk",
+		"txd-gpio": -1,
+		"txd-gpio-config": -1,
+		"rxd-gpio": -1,
+		"rxd-gpio-config": -1,
+		"baud-rates": 115200,
+		"data-bits": 8,
+		"parity-bits": 0,
+		"stop-bits": 1
+	},
+
+	"i2c-versatile@0x10002000": {
+		"delay-us": 5
+	},
+
+	"sdhci-pl180@0x10005000": {
+	},
+
+	"key-gpio-polled@0": {
+		"keys": [
+			{ "gpio": 5, "active-low": true, "key-code": 146 },
+			{ "gpio": 6, "active-low": true, "key-code": 159 }
+		],
+		"poll-interval-ms": 100
+	},
+
+	"rc-gpio@0": {
+		"gpio": 7,
+		"active-low": true,
+		"maps": [
+			{ "scan-code": 4259584, "key-code": 48 },
+			{ "scan-code": 4259585, "key-code": 49 },
+			{ "scan-code": 4259586, "key-code": 50 },
+			{ "scan-code": 4259587, "key-code": 51 },
+			{ "scan-code": 4259588, "key-code": 52 },
+			{ "scan-code": 4259589, "key-code": 53 },
+			{ "scan-code": 4259590, "key-code": 54 },
+			{ "scan-code": 4259591, "key-code": 55 },
+			{ "scan-code": 4259592, "key-code": 56 },
+			{ "scan-code": 4259593, "key-code": 57 },
+			{ "scan-code": 4259661, "key-code": 1 },
+			{ "scan-code": 4259595, "key-code": 2 },
+			{ "scan-code": 4259598, "key-code": 3 },
+			{ "scan-code": 4259600, "key-code": 4 },
+			{ "scan-code": 4259601, "key-code": 5 },
+			{ "scan-code": 4259612, "key-code": 6 },
+			{ "scan-code": 4259605, "key-code": 7 },
+			{ "scan-code": 4259650, "key-code": 8 },
+			{ "scan-code": 4259651, "key-code": 9 },
+			{ "scan-code": 4259602, "key-code": 10 },
+			{ "scan-code": 4259597, "key-code": 11 },
+			{ "scan-code": 4259610, "key-code": 20 },
+			{ "scan-code": 4259653, "key-code": 21 },
+			{ "scan-code": 4259664, "key-code": 22 },
+			{ "scan-code": 4259654, "key-code": 23 },
+			{ "scan-code": 4259700, "key-code": 24 }
+		]
+	},
+
+	"rotary-encoder@0": {
+		"a-gpio": 2,
+		"a-gpio-config": -1,
+		"b-gpio": 3,
+		"b-gpio-config": -1,
+		"c-gpio": 4,
+		"c-gpio-config": -1,
+		"a-inverted": false,
+		"b-inverted": false,
+		"c-inverted": false,
+		"step-per-period": 1
+	},
+
+	"keyboard-pl050@0x10006000": {
+		"clock-name": "kclk",
+		"interrupt": 52
+	},
+
+	"mouse-pl050@0x10007000": {
+		"clock-name": "kclk",
+		"interrupt": 53,
+		"x-pos-max": 640,
+		"y-pos-max": 480,
+		"simulate-touch-event": false
+	},
+
+	"led-gpio@0": {
+		"gpio": 0,
+		"active-low": true,
+		"default-brightness": 0
+	},
+
+	"led-gpio@1": {
+		"gpio": 1,
+		"active-low": true,
+		"default-brightness": 0
+	},
+
+	"ledtrigger-heartbeat@0": {
+		"led-name": "led-gpio.0",
+		"period-ms": 1260
+	},
+
+	"ledtrigger-general@0": {
+		"led-name": "led-gpio.1"
+	},
+
+	"buzzer-gpio@0": {
+		"gpio": 8,
+		"active-low": true
+	},
+
+	"vibrator-gpio@0": {
+		"gpio": 9,
+		"active-low": true
+	},
+
+	"rtc-pl031@0x10017000": {
+	},
+
+	"rtc-ds1338@0": {
+		"i2c-bus": "i2c-versatile.0",
+		"square-wave-output": 0
+	},
+
+	"fb-pl111@0x10020000": {
+		"width": 640,
+		"height": 480,
+		"physical-width": 216,
+		"physical-height": 135,
+		"bits-per-pixel": 32,
+		"clock-frequency": 50000000,
+		"hfront-porch": 1,
+		"hback-porch": 1,
+		"hsync-len": 1,
+		"vfront-porch": 1,
+		"vback-porch": 1,
+		"vsync-len": 1,
+		"hsync-active": false,
+		"vsync-active": false,
+		"de-active":false,
+		"pixelclk-active":false
+	},
+
+	"console-uart@0": {
+		"uart-bus": "uart-pl011.0"
+	},
+
+	"console-uart@1": {
+		"uart-bus": "uart-pl011.1"
+	},
+
+	"console-uart@2": {
+		"uart-bus": "uart-pl011.2"
+	},
+
+	"console-uart@3": {
+		"uart-bus": "uart-pl011.3"
+	}
+}

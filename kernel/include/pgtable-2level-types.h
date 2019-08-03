@@ -1,7 +1,7 @@
 #ifndef _ASM_PGTABLE_2LEVEL_TYPES_H
 #define _ASM_PGTABLE_2LEVEL_TYPES_H
 
-#include <sys/types.h>
+#include <types.h>
 
 typedef u32 pteval_t;
 typedef u32 pmdval_t;

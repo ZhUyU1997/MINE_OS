@@ -1,0 +1,8 @@
+*.[od]
+*.[oc]~
+.*.cmd
+.cproject
+.project
+/.settings
+/.vscode
+/tools

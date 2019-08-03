@@ -1,0 +1,19 @@
+DEFINES		+= -D__ARM32_ARCH__=7 -D__CORTEX_A9__ -D__ARM32_NEON__
+
+WFLAGS		:= -Wall -Wno-unused
+
+ASFLAGS		:= $(WFLAGS)
+CFLAGS		:= $(WFLAGS)
+LDFLAGS		:= -T $(srctree)/arch/$(ARCH)/$(MACH)/user.lds -nostdlib
+
+MCFLAGS		:= -std=gnu99 -O3 \
+				-march=armv7-a -mtune=cortex-a9 -mfpu=vfpv3-d16 \
+				-ffreestanding -mfloat-abi=hard -fsigned-char \
+				-fno-omit-frame-pointer \
+				-marm -mno-thumb-interwork -mno-unaligned-access
+
+MASFLAGS	:= -D__ASSEMBLY__
+MLDFLAGS	:=
+
+LIBDIRS		:=
+LIBS		:=

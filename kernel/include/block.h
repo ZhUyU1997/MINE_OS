@@ -13,10 +13,7 @@
 *
 ***************************************************/
 
-#ifndef __BLOCK_H__
-#define __BLOCK_H__
-
-
+#pragma once
 
 struct block_device_operation {
 	long (*open)();
@@ -25,4 +22,3 @@ struct block_device_operation {
 	long (*transfer)(long cmd, unsigned long blocks, long count, unsigned char * buffer);
 };
 
-#endif

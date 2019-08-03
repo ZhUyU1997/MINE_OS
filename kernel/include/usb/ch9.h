@@ -33,7 +33,7 @@
 #ifndef __LINUX_USB_CH9_H
 #define __LINUX_USB_CH9_H
 
-#include <sys/types.h>	/* __u8 etc */
+#include <types.h>	/* __u8 etc */
 typedef unsigned short __le16;
 /*-------------------------------------------------------------------------*/
 

@@ -1,6 +1,7 @@
 #ifndef _SYS_ERRNO_H
 #define _SYS_ERRNO_H
 
+#define ENOERR		 0
 #define	EPERM		 1	/* Operation not permitted */
 #define	ENOENT		 2	/* No such file or directory */
 #define	ESRCH		 3	/* No such process */
@@ -144,4 +145,6 @@
 #define ERFKILL		132	/* Operation not possible due to RF-kill */
 
 #define EHWPOISON	133	/* Memory page has hardware error */
+
+extern int errno;
 #endif

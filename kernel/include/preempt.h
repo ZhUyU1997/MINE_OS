@@ -1,15 +1,21 @@
 #ifndef __PREEMPT_H__
-
 #define __PREEMPT_H__
 
-#include "task.h"
-#include "compiler.h"
+#include <compiler.h>
+
+#if 1
+extern void add_preempt_count(int val);
+extern void sub_preempt_count(int val);
+extern long preempt_count();
+
+#else
 
 #define preempt_count()	(current->preempt_count)
 
 #define add_preempt_count(val)	do { preempt_count() += (val); } while (0)
 #define sub_preempt_count(val)	do { preempt_count() -= (val); } while (0)
 
+#endif
 #define inc_preempt_count() add_preempt_count(1)
 #define dec_preempt_count() sub_preempt_count(1)
 

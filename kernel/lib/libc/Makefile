@@ -1,0 +1,9 @@
+obj-y += charset/
+obj-y += ctype/
+obj-y += exit/
+obj-y += malloc/
+obj-y += stdlib/
+obj-y += crypto/
+obj-y += errno/
+obj-y += stdio/
+obj-y += string/

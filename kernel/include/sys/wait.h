@@ -8,7 +8,7 @@
 #ifndef _SYS_WAIT_H
 #define _SYS_WAIT_H
 
-#include <sys/types.h>
+#include <types.h>
 
 #define	WNOHANG		0x01	/* Not hang if no status, return immediately. */
 #define WUNTRACED	0x02	/* Report status of stopped child process.    */

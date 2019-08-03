@@ -49,7 +49,9 @@
 #define PURPLE	"128;0;255"		//紫
 
 #endif
+
 #define color_printk(a,b,fmt,arg...) printf("\033[38;2;" a ";48;2;" b "m" fmt "\033[0m",##arg)
+void print_hex(char *data, int len);
 
 #endif
 

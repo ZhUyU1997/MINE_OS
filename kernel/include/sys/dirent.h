@@ -14,13 +14,12 @@
 ***************************************************/
 
 #ifndef __DIRENT_H__
-
 #define __DIRENT_H__
 
 struct dirent {
-	long d_offset;
+	long d_off;
 	long d_type;
-	long d_namelen;
+	long d_reclen;
 	char d_name[];
 };
 

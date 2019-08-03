@@ -19,6 +19,7 @@
 int main(int argc,char *argv[])
 {
 	int i = 0;
+	putstring("Hello World!\n");
 	printf("Hello World!\n");
 	printf("argc:%d,argv:%#018lx\n",argc,argv);
 	for(i = 0;i<argc;i++)

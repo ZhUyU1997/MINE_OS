@@ -25,7 +25,7 @@
 
 typedef struct {
 	atomic_T counter;
-	wait_queue_T wait;
+	wait_queue_t wait;
 } semaphore_T;
 
 void semaphore_init(semaphore_T * semaphore, unsigned long count);

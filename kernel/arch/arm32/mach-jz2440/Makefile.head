@@ -1,1 +1,0 @@
-HEAD_FILES	+= arch/$(ARCH)/$(MACH)/init.c arch/$(ARCH)/$(MACH)/nand_ll.c

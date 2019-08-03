@@ -13,9 +13,7 @@
 *
 ***************************************************/
 
-#ifndef __DISK_H__
-
-#define __DISK_H__
+#pragma once
 
 #include "lib.h"
 #include "block.h"
@@ -61,12 +59,12 @@ struct block_buffer_node {
 	unsigned char * buffer;
 	void(* end_handler)(unsigned long nr, unsigned long parameter);
 
-	wait_queue_T wait_queue;
+	wait_queue_t wait_queue;
 };
 
 struct request_queue {
 //	struct List queue_list;
-	wait_queue_T wait_queue_list;
+	wait_queue_t wait_queue_list;
 	struct block_buffer_node *in_using;
 	long block_request_count;
 };
@@ -379,22 +377,4 @@ struct Disk_Identify_Info {
 	unsigned short Integrity_word;
 } __attribute__((packed));
 
-/*
 
-*/
-
-void disk_init();
-
-void disk_exit();
-
-void write_handler(unsigned long nr, unsigned long parameter);
-void read_handler(unsigned long nr, unsigned long parameter);
-void other_handler(unsigned long nr, unsigned long parameter);
-
-struct block_buffer_node * make_request(long cmd, unsigned long blocks, long count, unsigned char * buffer);
-void add_request(struct block_buffer_node * node);
-long cmd_out();
-void end_request();
-
-
-#endif

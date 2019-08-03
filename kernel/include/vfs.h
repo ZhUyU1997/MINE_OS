@@ -14,132 +14,191 @@
 ***************************************************/
 
 #ifndef __VFS_H__
-
 #define __VFS_H__
+
 #include "lib.h"
+#include <types.h>
+#include <block/block.h>
 
-struct Disk_Partition_Table_Entry {
-	unsigned char flags;
-	unsigned char start_head;
-	unsigned short  start_sector	: 6,	//0~5
-				start_cylinder	: 10;	//6~15
-	unsigned char type;
-	unsigned char end_head;
-	unsigned short  end_sector	: 6,	//0~5
-			  end_cylinder	: 10;	//6~15
-	unsigned int start_LBA;
-	unsigned int sectors_limit;
-} __attribute__((packed));
+#define O_RDONLY			(1 << 0)
+#define O_WRONLY			(1 << 1)
+#define O_RDWR				(O_RDONLY | O_WRONLY)
+#define O_ACCMODE			(O_RDWR)
 
-struct Disk_Partition_Table {
-	unsigned char BS_Reserved[446];
-	struct Disk_Partition_Table_Entry DPTE[4];
-	unsigned short BS_TrailSig;
-} __attribute__((packed));
+#define O_CREAT				(1 << 8)
+#define O_EXCL				(1 << 9)
+#define O_NOCTTY			(1 << 10)
+#define O_TRUNC				(1 << 11)
+#define O_APPEND			(1 << 12)
+#define O_DSYNC				(1 << 13)
+#define O_NONBLOCK			(1 << 14)
+#define O_SYNC				(1 << 15)
 
-struct file_system_type {
-	char * name;
-	int fs_flags;
-	struct super_block * (*read_superblock)(struct Disk_Partition_Table_Entry * DPTE, void * buf);
-	struct file_system_type * next;
+#define S_IXOTH				(1 << 0)
+#define S_IWOTH				(1 << 1)
+#define S_IROTH				(1 << 2)
+#define S_IRWXO				(S_IROTH | S_IWOTH | S_IXOTH)
+
+#define S_IXGRP				(1 << 3)
+#define S_IWGRP				(1 << 4)
+#define S_IRGRP				(1 << 5)
+#define S_IRWXG				(S_IRGRP | S_IWGRP | S_IXGRP)
+
+#define S_IXUSR				(1 << 6)
+#define S_IWUSR				(1 << 7)
+#define S_IRUSR				(1 << 8)
+#define S_IRWXU				(S_IRUSR | S_IWUSR | S_IXUSR)
+
+#define	S_IFDIR				(1 << 16)
+#define	S_IFCHR				(1 << 17)
+#define	S_IFBLK				(1 << 18)
+#define	S_IFREG				(1 << 19)
+#define	S_IFLNK				(1 << 20)
+#define	S_IFIFO				(1 << 21)
+#define	S_IFSOCK			(1 << 22)
+#define	S_IFMT				(S_IFDIR | S_IFCHR | S_IFBLK | S_IFREG | S_IFLNK | S_IFIFO | S_IFSOCK)
+
+#define S_ISDIR(m)			((m) & S_IFDIR )
+#define S_ISCHR(m)			((m) & S_IFCHR )
+#define S_ISBLK(m)			((m) & S_IFBLK )
+#define S_ISREG(m)			((m) & S_IFREG )
+#define S_ISLNK(m)			((m) & S_IFLNK )
+#define S_ISFIFO(m)			((m) & S_IFIFO )
+#define S_ISSOCK(m)			((m) & S_IFSOCK )
+
+#define	R_OK				(1 << 2)
+#define	W_OK				(1 << 1)
+#define	X_OK				(1 << 0)
+
+struct stat {
+	u64_t st_ino;
+	s64_t st_size;
+	u32_t st_mode;
+	u64_t st_dev;
+	u32_t st_uid;
+	u32_t st_gid;
+	u64_t st_ctime;
+	u64_t st_atime;
+	u64_t st_mtime;
 };
 
-struct super_block * mount_fs(char * name, struct Disk_Partition_Table_Entry * DPTE, void * buf);
-unsigned long register_filesystem(struct file_system_type * fs);
-unsigned long unregister_filesystem(struct file_system_type * fs);
+struct filesystem_t {
+	struct kobj_t * kobj;
+	struct list_head list;
+	const char * name;
+	int fs_flags;
+	struct super_block *(*read_superblock)(struct block_t * block);
+};
+
+bool_t mount_fs(char * path, char *dev, char * name);
+bool_t register_filesystem(struct filesystem_t * fs);
+bool_t unregister_filesystem(struct filesystem_t * fs);
 
 struct super_block_operations;
-struct index_node_operations;
-struct dir_entry_operations;
+struct inode_operations;
+struct dentry_operations;
 struct file_operations;
 
 struct super_block {
-	struct dir_entry * root;
+	struct dentry *root;
 
-	struct super_block_operations * sb_ops;
+	struct super_block_operations *sb_ops;
 
-	void * private_sb_info;
+	void *s_private;
 };
 
-struct index_node {
-	unsigned long file_size;
-	unsigned long blocks;
-	unsigned long attribute;
+struct inode {
+	s64_t i_size;
+	u32_t i_mode;
+	u64_t i_ctime;
+	u64_t i_atime;
+	u64_t i_mtime;
 
-	struct super_block * sb;
+	struct dentry *i_dentry;
+	struct super_block *sb;
 
-	struct file_operations * f_ops;
-	struct index_node_operations * inode_ops;
+	struct file_operations *f_ops;
+	struct inode_operations *inode_ops;
 
-	void * private_index_info;
+	void *i_private;
 };
 
-#define FS_ATTR_FILE	(1UL << 0)
-#define FS_ATTR_DIR		(1UL << 1)
-#define	FS_ATTR_DEVICE	(1UL << 2)
+struct vfs_mount_t {
+	char m_path[512];
+	int mount_type;
+	struct super_block  * m_sb;
+	struct filesystem_t * m_fs;
+	
+};
 
-struct dir_entry {
-	char * name;
-	int name_length;
-	struct List child_node;
-	struct List subdirs_list;
+//TODO: fat32文件名能达到256，应设为257 ？？
+#define VFS_MAX_PATH	4096
+#define VFS_MAX_NAME	257
 
-	struct index_node * dir_inode;
-	struct dir_entry * parent;
+struct dentry {
+	char name[VFS_MAX_NAME];
+	struct list_head child_node;
+	struct list_head subdirs_list;
 
-	struct dir_entry_operations * dir_ops;
+	struct inode *d_inode;
+	struct dentry *d_parent;
+
+	struct dentry_operations *dir_ops;
+	struct vfs_mount_t *vfs_mount;
 };
 
 struct file {
-	long position;
-	unsigned long mode;
+	long f_pos;
+	unsigned long flags;
 
-	struct dir_entry * dentry;
+	struct dentry *dentry;
 
-	struct file_operations * f_ops;
+	struct file_operations *f_ops;
 
-	void * private_data;
+	void *private_data;
 };
 
 struct super_block_operations {
-	void(*write_superblock)(struct super_block * sb);
-	void(*put_superblock)(struct super_block * sb);
+	void (*write_superblock)(struct super_block *sb);
+	void (*put_superblock)(struct super_block *sb);
 
-	void(*write_inode)(struct index_node * inode);
+	void (*write_inode)(struct inode *inode);
 };
 
-struct index_node_operations {
-	long(*create)(struct index_node * inode, struct dir_entry * dentry, int mode);
-	struct dir_entry* (*lookup)(struct index_node * parent_inode, struct dir_entry * dest_dentry);
-	long(*mkdir)(struct index_node * inode, struct dir_entry * dentry, int mode);
-	long(*rmdir)(struct index_node * inode, struct dir_entry * dentry);
-	long(*rename)(struct index_node * old_inode, struct dir_entry * old_dentry, struct index_node * new_inode, struct dir_entry * new_dentry);
-	long(*getattr)(struct dir_entry * dentry, unsigned long * attr);
-	long(*setattr)(struct dir_entry * dentry, unsigned long * attr);
+struct inode_operations {
+	long (*create)(struct inode *inode, struct dentry *dentry, int mode);
+	struct dentry *(*lookup)(struct inode *parent_inode, struct dentry *dest_dentry);
+	long (*mkdir)(struct inode *inode, char *name, int mode);
+	long (*mknod)(struct inode *inode, char *name, int mode, dev_t dev);
+	long (*rmdir)(struct inode *inode, struct dentry *dentry);
+	long (*rename)(struct dentry * old_dentry, struct dentry * new_dir_dentry, char *new_name);
+	long (*getattr)(struct dentry *dentry, unsigned long *attr);
+	long (*setattr)(struct dentry *dentry, unsigned long *attr);
 };
 
-struct dir_entry_operations {
-	long(*compare)(struct dir_entry * parent_dentry, char * source_filename, char * destination_filename);
-	long(*hash)(struct dir_entry * dentry, char * filename);
-	long(*release)(struct dir_entry * dentry);
-	long(*iput)(struct dir_entry * dentry, struct index_node * inode);
+struct dentry_operations {
+	long (*compare)(struct dentry *parent_dentry, char *source_filename, char *destination_filename);
+	long (*hash)(struct dentry *dentry, char *filename);
+	long (*release)(struct dentry *dentry);
+	long (*iput)(struct dentry *dentry, struct inode *inode);
 };
 
 typedef int (*filldir_t)(void *buf, char *name, long namelen, long type, long offset);
 
 struct file_operations {
-	long(*open)(struct index_node * inode, struct file * filp);
-	long(*close)(struct index_node * inode, struct file * filp);
-	long(*read)(struct file * filp, char * buf, unsigned long count, long * position);
-	long(*write)(struct file * filp, char * buf, unsigned long count, long * position);
-	long(*lseek)(struct file * filp, long offset, long origin);
-	long(*ioctl)(struct index_node * inode, struct file * filp, unsigned long cmd, unsigned long arg);
+	long (*read)(struct file *filp, char *buf, unsigned long count, long *position);
+	long (*write)(struct file *filp, char *buf, unsigned long count, long *position);
+	long (*lseek)(struct file *filp, long offset, long origin);
+	long (*ioctl)(struct inode *inode, struct file *filp, unsigned long cmd, unsigned long arg);
 
-	long(*readdir)(struct file * filp, void * dirent, filldir_t filler);
+	long (*readdir)(struct file *filp, void *dirent, filldir_t filler);
 };
 
-struct dir_entry * path_walk(char * name, unsigned long flags);
+struct dentry * path_walk(char * name, unsigned long flags, char *basename);
 int fill_dentry(void *buf, char *name, long namelen, long type, long offset);
-extern struct super_block * root_sb;
+
+struct dentry *d_alloc(struct dentry * parent, const char *name);
+struct dentry * d_lookup(struct dentry * parent, char *name);
+int d_delete(struct dentry * dent);
 
 #endif

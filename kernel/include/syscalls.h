@@ -32,5 +32,11 @@ SYSCALL_COMMON(__NR_brk, sys_brk)
 SYSCALL_COMMON(__NR_reboot, sys_reboot)
 
 SYSCALL_COMMON(__NR_chdir, sys_chdir)
-SYSCALL_COMMON(__NR_getdents, sys_getdents)
 
+SYSCALL_COMMON(__NR_getdents, sys_getdents)
+SYSCALL_COMMON(__NR_stat, sys_stat)
+SYSCALL_COMMON(__NR_fstat, sys_fstat)
+SYSCALL_COMMON(__NR_fstat, sys_mkdir)
+SYSCALL_COMMON(__NR_fstat, sys_rmdir)
+SYSCALL_COMMON(__NR_fstat, sys_rename)
+SYSCALL_COMMON(__NR_fstat, sys_mknod)

@@ -1,7 +1,7 @@
 #ifndef _GRAPHICS_H_
 #define _GRAPHICS_H_
 
-#include <sys/types.h>
+#include <types.h>
 
 u16_t convert888_565(u32_t rgb);
 void ClearScr(u32_t color);

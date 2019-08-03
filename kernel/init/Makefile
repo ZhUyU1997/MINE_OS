@@ -1,2 +1,2 @@
 obj-y += main.o
-obj-y += initcall.o
+obj-y += version.o

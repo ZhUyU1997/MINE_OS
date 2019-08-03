@@ -38,11 +38,11 @@ int read_symbol(FILE *filp, struct symbol_entry *sym_entry) {
 		}
 		return -1;
 	}
-	if (sym_entry->type == 't'){
-		if(strcmp(string, "$a") == 0)
+	if (sym_entry->type == 't' || sym_entry->type == 'T'){
+		if(string[0] == '$')
 			return -1;
-		if(strcmp(string, "$d") == 0)
-			return -1;
+	} else {
+		return -1;
 	}
 		
 	sym_entry->symbol = strdup(string);
@@ -62,9 +62,9 @@ void read_map(FILE *filp) {
 			count++;
 	}
 	for (i = 0; i < count; i++) {
-		if (strcmp(table[i].symbol, "_text") == 0)
+		if (strcmp(table[i].symbol, "__text_start") == 0 || strcmp(table[i].symbol, "_text") == 0)
 			_text = table[i].address;
-		if (strcmp(table[i].symbol, "_etext") == 0)
+		if (strcmp(table[i].symbol, "__text_end") == 0 || strcmp(table[i].symbol, "_etext") == 0)
 			_etext = table[i].address;
 	}
 }

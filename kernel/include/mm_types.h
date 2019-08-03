@@ -1,7 +1,7 @@
 #ifndef __MM_TYPES_H__
 #define __MM_TYPES_H__
 
-#include <sys/types.h>
+#include <types.h>
 #include <pgtable-2level-types.h>
 
 struct vm_area_struct {

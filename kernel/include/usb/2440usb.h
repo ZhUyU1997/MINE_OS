@@ -1,6 +1,6 @@
 #ifndef __24XUSB_H__
 #define __24XUSB_H__
-#include <sys/types.h>
+#include <types.h>
 #include <s3c24x0.h>
 #include <usb/ch9.h>
 /*

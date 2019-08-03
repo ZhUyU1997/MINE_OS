@@ -2,6 +2,7 @@
 #ifndef _IRQFLAGS_H
 #define _IRQFLAGS_H
 
+#include <types.h>
 #include <typecheck.h>
 #include <ptrace.h>
 /*
@@ -121,22 +122,22 @@ static inline int arch_irqs_disabled_flags(unsigned long flags)
 #define raw_local_irq_enable()		arch_local_irq_enable()
 #define raw_local_irq_save(flags)			\
 	do {						\
-		typecheck(unsigned long, flags);	\
+		typecheck(irq_flags_t, flags);	\
 		flags = arch_local_irq_save();		\
 	} while (0)
 #define raw_local_irq_restore(flags)			\
 	do {						\
-		typecheck(unsigned long, flags);	\
+		typecheck(irq_flags_t, flags);	\
 		arch_local_irq_restore(flags);		\
 	} while (0)
 #define raw_local_save_flags(flags)			\
 	do {						\
-		typecheck(unsigned long, flags);	\
+		typecheck(irq_flags_t, flags);	\
 		flags = arch_local_save_flags();	\
 	} while (0)
 #define raw_irqs_disabled_flags(flags)			\
 	({						\
-		typecheck(unsigned long, flags);	\
+		typecheck(irq_flags_t, flags);	\
 		arch_irqs_disabled_flags(flags);	\
 	})
 

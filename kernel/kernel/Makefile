@@ -1,7 +1,10 @@
-obj-y += interrupt.o
-obj-y += command.o
+obj-y += core/
+obj-y += time/
+obj-y += command/
+obj-y += shell/
 obj-y += softirq.o
-obj-y += timer.o
 obj-y += task.o
 obj-y += schedule.o
+obj-y += semaphore.o
 obj-y += waitqueue.o
+obj-y += preempt.o

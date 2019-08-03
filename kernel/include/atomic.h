@@ -30,7 +30,7 @@ typedef struct {
 
 static inline int atomic_add_return(int i, atomic_t *v)
 {
-	unsigned long flags;
+	irq_flags_t flags;
 	int val;
 
 	raw_local_irq_save(flags);
@@ -47,7 +47,7 @@ static inline void atomic_add(atomic_T * atomic, long value) {
 
 static inline int atomic_sub_return(int i, atomic_t *v)
 {
-	unsigned long flags;
+	irq_flags_t flags;
 	int val;
 
 	raw_local_irq_save(flags);
@@ -71,7 +71,7 @@ static inline void atomic_dec(atomic_T *atomic) {
 }
 
 static inline void atomic_set_mask(atomic_T *atomic, long mask) {
-	unsigned long flags;
+	irq_flags_t flags;
 
 	raw_local_irq_save(flags);
 	atomic->value |= mask;
@@ -79,7 +79,7 @@ static inline void atomic_set_mask(atomic_T *atomic, long mask) {
 }
 
 static inline void atomic_clear_mask(atomic_T *atomic, long mask) {
-	unsigned long flags;
+	irq_flags_t flags;
 
 	raw_local_irq_save(flags);
 	atomic->value &= ~mask;

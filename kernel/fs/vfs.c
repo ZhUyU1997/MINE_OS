@@ -13,97 +13,66 @@
 *
 ***************************************************/
 
+#include <spinlock.h>
 #include "vfs.h"
 #include "lib.h"
 #include "printk.h"
 #include "sys/dirent.h"
 #include "errno.h"
 #include "memory.h"
-struct dir_entry *d_alloc(struct dir_entry * parent, const char *name, int len)
-{
-	struct dir_entry *path = (struct dir_entry *)kmalloc(sizeof(struct dir_entry), 0);
-	if(!path) return NULL;
 
-	memset(path, 0, sizeof(struct dir_entry));
-	
-	char *temp_name = kmalloc(len + 1, 0);
-	if(!temp_name){
-		kfree(path);
-		return NULL;
-	}
-	memset(temp_name, 0, len + 1);
-	memcpy(temp_name, name, len);
 
-	path->parent = parent;
-	path->name = temp_name;
-	path->name_length = len;
-	return path;
-}
+struct super_block * root_sb = NULL;
 
-struct dir_entry * d_lookup(struct dir_entry * parent, char *name, int len){
-	struct List *i;
-	list_for_each(i,&parent->subdirs_list){
-		struct dir_entry *temp = container_of(i,struct dir_entry,child_node);
-		if(!strncmp(name, temp->name, len)){
-			return temp;
-		}
-	}
-	return NULL;
-}
-struct dir_entry * path_walk(char * name, unsigned long flags) {
-	char * tmpname = NULL;
-	int tmpnamelen = 0;
-	struct dir_entry * parent = root_sb->root;
-	struct dir_entry * path = NULL;
 
-	while (*name == '/')
-		name++;
 
-	if (!*name) {
-		return parent;
-	}
+struct dentry * path_walk(char * name, unsigned long flags, char *basename) {
+	struct dentry * parent = root_sb->root;
+	struct dentry * path = parent;
+
+	if (!name || !*name) return NULL;
+	while (*name == '/') *name++ = '\0';
 
 	for (;;) {
-		tmpname = name;
+		char *tmpname = name;
+
 		while (*name && (*name != '/'))
 			name++;
-		tmpnamelen = name - tmpname;
 
-		path = d_lookup(parent, tmpname, tmpnamelen);
+		int len = name - tmpname;
+
+		while (*name == '/') *name++ = '\0';
+
+		if(!len)
+			break;
+
+		if (len >= VFS_MAX_NAME)
+			return NULL;
+
+		if (!*name) {
+			if (flags & 1) {
+				strlcpy(basename, tmpname, VFS_MAX_NAME);
+				return parent;
+			}
+		}
+
+		path = d_lookup(parent, tmpname);
 
 		if (path == NULL) {
-			path = d_alloc(parent, tmpname, tmpnamelen);
+			path = d_alloc(parent, tmpname);
 			if (path == NULL)
 				return NULL;
+
+			struct inode *inode = parent->d_inode;
+			if (inode->inode_ops->lookup(inode, path)) {
+				//color_printk(RED, WHITE, "can not find file or dir:%s\n", path->name);
+				kfree(path);
+				return NULL;
+			}
+			list_add(&path->child_node, &parent->subdirs_list);
 		}
-		
-
-		if (parent->dir_inode->inode_ops->lookup(parent->dir_inode, path) == NULL) {
-			color_printk(RED, WHITE, "can not find file or dir:%s\n", path->name);
-			kfree(path->name);
-			kfree(path);
-			return NULL;
-		}
-
-		list_init(&path->child_node);
-		list_init(&path->subdirs_list);
-		list_add_to_behind(&parent->subdirs_list, &path->child_node);
-
-		if (!*name)
-			goto last_component;
-		while (*name == '/')
-			name++;
-		if (!*name)
-			goto last_slash;
 
 		parent = path;
-	}
-
-last_slash:
-last_component:
-
-	if (flags & 1) {
-		return parent;
 	}
 
 	return path;
@@ -111,55 +80,118 @@ last_component:
 
 int fill_dentry(void *buf, char *name, long namelen, long type, long offset) {
 	struct dirent* dent = (struct dirent*)buf;
+	int reclen = ALIGN(sizeof(struct dirent) + namelen + 1, sizeof(int));////TODO:可能多加一点，万一宽字符
 
-	if ((unsigned long)buf < TASK_SIZE && !verify_area(buf, sizeof(struct dirent) + namelen))
+	if ((unsigned long)buf < CONFIG_TASK_SIZE && !verify_area(buf, sizeof(struct dirent) + namelen))
 		return -EFAULT;
 
-	memcpy(dent->d_name, name, namelen);
-	dent->d_namelen = namelen;
+	memcpy(dent->d_name, name, reclen);
+	dent->d_reclen = reclen;
 	dent->d_type = type;
-	dent->d_offset = offset;
-	return sizeof(struct dirent) + namelen;
+	dent->d_off = offset;
+	return sizeof(struct dirent) + reclen;
 }
 
-//function mount_root
-struct super_block * root_sb = NULL;
-struct file_system_type filesystem = {"filesystem", 0};
 
-struct super_block* mount_fs(char * name, struct Disk_Partition_Table_Entry * DPTE, void * buf) {
-	struct file_system_type * p = NULL;
+static struct list_head __filesystem_list = {
+	.next = &__filesystem_list,
+	.prev = &__filesystem_list,
+};
+static spinlock_t __filesystem_lock = SPIN_LOCK_INIT();
 
-	for (p = &filesystem; p; p = p->next)
-		if (!strcmp(p->name, name)) {
-			return p->read_superblock(DPTE, buf);
+static struct kobj_t * search_class_filesystem_kobj(void)
+{
+	struct kobj_t * kclass = kobj_search_directory_with_create(kobj_get_root(), "class");
+	return kobj_search_directory_with_create(kclass, "filesystem");
+}
+
+struct filesystem_t * search_filesystem(const char * name)
+{
+	struct filesystem_t * pos, * n;
+
+	if(!name)
+		return NULL;
+
+	list_for_each_entry_safe(pos, n, &__filesystem_list, list)
+	{
+		if(strcmp(pos->name, name) == 0)
+			return pos;
+	}
+	return NULL;
+}
+
+
+bool_t mount_fs(char * path, char *dev, char * name) {
+	struct block_t * bdev = NULL;
+	struct filesystem_t * p = search_filesystem(name);
+	if (p) {
+		if(dev) {
+			while(1){
+				if(bdev = search_block(dev))
+					break;	
+			}
 		}
-	return 0;
+
+		struct super_block *sb = p->read_superblock(bdev);
+		if(!strcmp(path, "/"))
+		{
+			if(root_sb == NULL)
+				root_sb = sb;
+			else
+				return FALSE;
+			return FALSE;
+		}
+		
+		struct dentry * dent = path_walk(path, 0, NULL);
+		if(!dent) {
+			printf("failed to mount %s on %s\n", name, path);
+			return FALSE;
+		}
+		//TODO:dent的child计数为零才可以mount
+		struct vfs_mount_t *vfs_mount = calloc(1, sizeof(struct vfs_mount_t));
+		vfs_mount->m_sb = sb;
+		vfs_mount->m_fs = p;
+		dent->vfs_mount = vfs_mount;
+		dent->d_inode = sb->root->d_inode;
+		return TRUE;
+	} else
+		return FALSE;
 }
 
-unsigned long register_filesystem(struct file_system_type * fs) {
-	struct file_system_type * p = NULL;
+bool_t register_filesystem(struct filesystem_t * fs)
+{
+	irq_flags_t flags;
 
-	for (p = &filesystem; p; p = p->next)
-		if (!strcmp(fs->name, p->name))
-			return 0;
+	if(!fs || !fs->name)
+		return FALSE;
 
-	fs->next = filesystem.next;
-	filesystem.next = fs;
+	if(search_filesystem(fs->name))
+		return FALSE;
 
-	return 1;
+	fs->kobj = kobj_alloc_directory(fs->name);
+	kobj_add(search_class_filesystem_kobj(), fs->kobj);
+
+	spin_lock_irqsave(&__filesystem_lock, flags);
+	list_add_tail(&fs->list, &__filesystem_list);
+	spin_unlock_irqrestore(&__filesystem_lock, flags);
+
+	return TRUE;
 }
 
-unsigned long unregister_filesystem(struct file_system_type * fs) {
-	struct file_system_type * p = &filesystem;
+bool_t unregister_filesystem(struct filesystem_t * fs)
+{
+	irq_flags_t flags;
 
-	while (p->next)
-		if (p->next == fs) {
-			p->next = p->next->next;
-			fs->next = NULL;
-			return 1;
-		} else
-			p = p->next;
-	return 0;
+	if(!fs || !fs->name)
+		return FALSE;
+
+	spin_lock_irqsave(&__filesystem_lock, flags);
+	list_del(&fs->list);
+	spin_unlock_irqrestore(&__filesystem_lock, flags);
+	kobj_remove(search_class_filesystem_kobj(), fs->kobj);
+	kobj_remove_self(fs->kobj);
+
+	return TRUE;
 }
 
 

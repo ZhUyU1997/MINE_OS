@@ -1,7 +1,7 @@
 #ifndef _SYS_TIME_H
 #define _SYS_TIME_H
 
-#include <sys/types.h>
+#include <types.h>
 #include <sys/param.h>
 
 #define CLOCKS_PER_SEC 	HZ

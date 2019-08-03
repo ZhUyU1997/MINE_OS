@@ -23,7 +23,7 @@
 
 #ifndef __COMMON_H_
 #define __COMMON_H_
-#include <sys/types.h>
+#include <types.h>
 
 #define CONFIG_S3C2440
 #define CONFIG_S3C2410

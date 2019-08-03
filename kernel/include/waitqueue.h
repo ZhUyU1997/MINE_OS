@@ -20,16 +20,14 @@
 #include "lib.h"
 
 typedef struct {
-	struct List wait_list;
-	struct task_struct *tsk;
-} wait_queue_T;
+	struct list_head wait_list;
+	struct task_t *tsk;
+} wait_queue_t;
 
-void wait_queue_init(wait_queue_T * wait_queue, struct task_struct *tsk);
+void wait_queue_init(wait_queue_t * wait_queue, struct task_t *tsk);
 
-void sleep_on(wait_queue_T * wait_queue_head);
+void sleep_on(wait_queue_t * wait_queue_head);
 
-void interruptible_sleep_on(wait_queue_T *wait_queue_head);
-
-void wakeup(wait_queue_T * wait_queue_head, long state);
+void wakeup(wait_queue_t * wait_queue_head);
 
 #endif

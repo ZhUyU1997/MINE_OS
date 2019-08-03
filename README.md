@@ -1,69 +1,52 @@
 # MINE操作系统内核
 ## 简介
-本项目将《一个64位操作系统的设计与实现》（田宇）一书中的MINE操作系统内核移植到ARM9处理器上
+本项目将《一个64位操作系统的设计与实现》（田宇）一书中的MINE操作系统内核移植到ARM处理器上。
 ## 使用指南
 ### 准备
-1. 一台Windows电脑  
-2. JZ2440开发板
-3. 一张2-32g的sd卡
-### 环境搭建
+一台PC
+### 运行环境搭建
 #### windows
-1. 安装XShell ，MobaXterm（推荐）等拥有串口通讯功能的软件 
-2. 安装DNW(控制台版本，用于下载代码)  
-安装教程：http://blog.chinaunix.net/uid-29641438-id-4462545.html  
-3. 安装git shell（建议安装）
-4. 安装工具链
-https://blog.csdn.net/alan00000/article/details/51724252
-#### linux
-1. 同样安装串口工具
-2. 由于dnw linux版本安装比较困难，所以可以linux编译，windows用dnw下载。如果纯linux环境，可以考虑ftp，nfs等。
-3. 安装git工具（建议安装）
-#### 其他平台
-告辞
+- [安装git shell](https://gitforwindows.org/)
+- [安装MinGW](http://www.mingw.org/)  
+由于编译MINE需要实现编译一些本地应用，所以这是必须的，最后将bin目录添加入环境变量
+- [安装工具链](https://pan.baidu.com/s/18nwU9GWxeKk57CfIWhW0ng )
+提取码：3zas   
+解压，并将bin,arm-linux-gnieabihf/bin目录添加入环境变量。
+bin目录包含常用的Linux基础命令，**必须放在第一个**，否则编译会失败。  
+原因如下：编译需要find命令，但Linux和Windows的find命令用法不同，当然git shell内置了find，或许不会出现这种问题。  
+另外这种方式可能会导致一些应用不能正常工作，可以通过恢复环境变量修复。
+- [安装qemu](https://pan.baidu.com/s/17vjjLS7i70nGXm_ZLGWv5A)
+提取码：h5kg   
+解压到项目根目录下的tools文件夹，没有请自己创建
+#### WSL & Linux
+```sh
+sudo apt-get install git
+sudo apt-get install build-essential
+sudo apt-get install gcc-arm-linux-gnueabihf
+sudo apt-get install qemu-system-arm
+```
+WSL默认没有安装图形界面，需要你手动安装。这里自行百度。
 ### 编译
-进入项目目录
+Windows右击打开git bash运行以下命令
 ```sh
-make
-make user
+make -j4 CROSS_COMPILE=arm-linux-gnueabihf- PLATFORM=arm32-realview
 ```
-- 将user目录下的app.bin更名为init.bin。
-- 将sd卡格式化为fat32文件系统，并将init.bin放在根目录
-- 将sd卡插在开发板上
-### 下载
-为简化操作，先设置uboot，将代码直接下载到内存0x30100000位置。
-```sh
-make dnw
-```
-## 移植建议
-考虑jz2440开发板比较小众，如果各位手头恰好有其他如mini2440,tq2440之类的开发板，那么请看下面内容。
-1. 先让代码启动起来，并能看到串口输出（比对开发板的串口是否与代码设置的移植，不一致请调整）
-2. 根据需要调整LCD驱动的设置，以适应自己的LCD。如果嫌麻烦，也可以将LCD相关代码直接移除。
-3. 调试你的sd控制器
+### 运行
+- 以Windows为例，运行tools/qemu-system/windows/realview-run.bat
+### 调试环境搭建
+* [安装eclipse CDT](https://pan.baidu.com/s/1jM5nixlzl3XwzxNH0sI1sQ)
+提取码：yrw7 
+* [调试环境搭建指南](/doc/debug-guide.md)
 ## TODO
-1. 完善vfs，支持多文件系统
-2. 开发类似devfs的东东，存储设备文件
-3. 完全移植书中的用户空间代码（现在的只是hello world），
-所以现在是3万行代码写了一个hello world？(笑。。)
-4. 完善Makefile，现在的问题：
-- 当删除一个头文件，编译会失败（因为旧的依赖文件还依赖这个头文件），参考linux内核fixdep.c解决
-
-
-- 不能检查依赖的变化，如:
-
-```makfile
-obj-y +=a.o
-obj-y +=b.o
-
-built-in.o: $(obj-y)
-```
-当删除obj-y +=b.o时，built-in.o并不会发生变化
-- 不能检查工具链和编译参数的生变化
-- 不支持多架构，参考xboot
-- 不支持配置编译
-5. 支持armv7架构
-
-
+- [x] 完善vfs，支持多文件系统
+- [ ] 开发devfs，抽象设备文件
+- [ ] 移植C库
+- [ ] 移植基础命令
+- [ ] 支持RISC-V
+- [x] 支持armv7
+- [ ] 移植字体引擎
+- [ ] 移植GUI
 
 ## 联系
 - MINE官方QQ群：144571173
-- 个人QQ: 891085309（备注：内核）
+- 个人QQ：891085309
