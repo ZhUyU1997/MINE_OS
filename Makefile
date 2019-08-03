@@ -1,4 +1,4 @@
-.PHONY : all kernel user dis dnw clean distclean
+.PHONY : all kernel user dis clean
 
 all:kernel
 
@@ -8,8 +8,6 @@ user:
 	@$(MAKE) -s -C ./user all
 dis:
 	@$(MAKE) -s -C ./kernel dis
-dnw:
-	@$(MAKE) -s -C ./kernel dnw
 clean:
 	@$(MAKE) -s -C ./kernel clean
 	@$(MAKE) -s -C ./user clean
