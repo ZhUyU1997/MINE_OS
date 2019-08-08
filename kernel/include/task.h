@@ -55,7 +55,7 @@ struct cpu_context_save {
 	__u32	fp;
 	__u32	sp;
 	__u32	pc;
-	__u32	extra[2];		/* Xscale 'acc' register, etc */
+	__u32	extra[16];
 };
 
 /*
@@ -152,7 +152,7 @@ extern void __switch_to(struct cpu_context_save *, struct cpu_context_save *);
 	do {									\
 		struct task_t *temp = prev;	\
 		current = next;						\
-		__switch_to(&temp->cpu_context, &next->cpu_context);	\
+		__switch_to(&temp->cpu_context, &next->cpu_context + 1);	\
 	} while (0)
 
 long get_pid();

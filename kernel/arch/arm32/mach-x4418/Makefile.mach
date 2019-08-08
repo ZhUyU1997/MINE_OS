@@ -14,7 +14,7 @@ CFLAGS		:= -ffunction-sections -fdata-sections -fno-PIE $(WFLAGS) $(OPTFLAGS)
 LDFLAGS		:= -T $(srctree)/arch/$(ARCH)/$(MACH)/kernel.lds -nostdlib --build-id=none -gc-sections
 
 MCFLAGS		:= -std=gnu99 \
-				-march=armv7-a -mtune=cortex-a9 -mfpu=vfpv3-d16 \
+				-march=armv7-a -mtune=cortex-a9 -mfpu=neon-fp16 \
 				-ffreestanding -mfloat-abi=hard -fsigned-char \
 				-fno-omit-frame-pointer \
 				-marm -mno-thumb-interwork -mno-unaligned-access
@@ -22,7 +22,7 @@ MCFLAGS		:= -std=gnu99 \
 MASFLAGS	:= -D__ASSEMBLY__
 MLDFLAGS	:=
 
-LIBDIRS		:= -L $(dir $(shell $(CC) -march=armv7-a -mtune=cortex-a9 -mfpu=vfpv3-d16 -ffreestanding -mfloat-abi=hard -print-libgcc-file-name))
+LIBDIRS		:= -L $(dir $(shell $(CC) -march=armv7-a -mtune=cortex-a9 -mfpu=neon-fp16 -ffreestanding -mfloat-abi=hard -print-libgcc-file-name))
 LIBS		:= -lgcc
 
 NSIH		:= $(srctree)/arch/$(ARCH)/$(MACH)/tools/images/nsih.txt

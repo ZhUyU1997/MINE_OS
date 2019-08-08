@@ -9,8 +9,8 @@
 #include "microui.h"
 
 
-static  char logbuf[64000];
-static   int logbuf_updated = 0;
+static char logbuf[64000];
+static int logbuf_updated = 0;
 static float bg[3] = { 90, 95, 100 };
 
 
@@ -269,6 +269,15 @@ static bool_t ex_tp_read(mu_Context *ctx)
 		case EVENT_TYPE_MOUSE_MOVE:
 			mu_input_mousemove(ctx, e.e.mouse_move.x, e.e.mouse_move.y);
 			break;
+		case EVENT_TYPE_TOUCH_BEGIN:
+			mu_input_mousedown(ctx, e.e.touch_begin.x, e.e.touch_begin.y, MU_MOUSE_LEFT);
+			break;
+		case EVENT_TYPE_TOUCH_MOVE:
+			mu_input_mousemove(ctx, e.e.touch_begin.x, e.e.touch_begin.y);
+			break;
+		case EVENT_TYPE_TOUCH_END:
+			mu_input_mouseup(ctx, e.e.touch_begin.x, e.e.touch_begin.y, MU_MOUSE_LEFT);
+			break;
 		default:
 			return FALSE;
 	}
@@ -294,7 +303,7 @@ int microui() {
     /* render */
     r_clear(mu_color(bg[0], bg[1], bg[2], 255));
     mu_Command *cmd = NULL;
-    while (mu_next_command(ctx, &cmd)) {
+    while (cmd = mu_next_command(ctx, cmd)) {
       switch (cmd->type) {
         case MU_COMMAND_TEXT: r_draw_text(cmd->text.str, cmd->text.pos, cmd->text.color); break;
         case MU_COMMAND_RECT: r_draw_rect(cmd->rect.rect, cmd->rect.color); break;

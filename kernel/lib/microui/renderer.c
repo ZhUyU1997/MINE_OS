@@ -32,6 +32,60 @@ void r_init(void) {
 }
 #define BIT_GET(x,p)	(((char *)(x))[(p) / (sizeof(char) * 8)] & (1<<((p) % (sizeof(char) * 8))))
 
+#if 0
+static u32_t neon(u32_t src, u32_t color, u32_t factor)
+{
+	u32_t ret;
+	asm (
+		"vmov d0,%1,%2\n\t"
+		"vmovl.u8 q0,d0\n\t"
+		"vsub.u16 d1,d1,d0\n\t"
+		"vmov d2,%3,%3\n\t"
+		"vmov.u16 d2[1],%3\n\t"
+		"vmov.u16 d2[3],%3\n\t"
+		"vmull.u16 q1,d2,d1\n\t"
+		"vshrn.u32 d2,q1,#16\n\t"
+		"vadd.u16 d0,d2,d0\n\t"
+		"vmovn.u16 d0,q0\n\t"
+		"vmov.u32 %0,d0[0]\n\t"
+		: "+r" (ret) 
+		: "r" (src), "r" (color), "r" (factor)
+		: "memory", "d0", "d1", "d2", "d3"
+	);
+	return ret;
+}
+#endif
+
+static void disp_fill(mu_Rect dst, mu_Rect src, mu_Color color)
+{
+    int32_t x;
+    int32_t y;
+	float factor_x = ((float)src.w) / (dst.w);
+	float factor_y = ((float)src.h) / (dst.h);
+	int sx = dst.x < 0 ? 0 : dst.x >= width ? width - 1:dst.x;
+	int sy = dst.y < 0 ? 0 : dst.y >= height ? height - 1:dst.y;
+	int ex = dst.x + dst.w < 0 ? 0 : dst.x + dst.w >= width ? width - 1: dst.x + dst.w;
+	int ey = dst.y + dst.h < 0 ? 0 : dst.y + dst.h >= height ? height - 1: dst.y + dst.h;
+
+	if(color.a == 0xff) {
+		for(y = sy; y < ey; y++) {
+			mu_Color *base = (mu_Color *)&((u32_t *)render->pixels)[y * width];
+			for(x = sx; x < ex; x++) base[x] = color;
+		}
+	} else {
+	    for(y = sy; y < ey; y++) {
+			mu_Color *base = (mu_Color *)&((u32_t *)render->pixels)[y * width];
+			for(x = sx; x < ex; x++) {
+				mu_Color *c = &base[x];
+				int a = color.a;
+				c->r = ((int) (a * (color.r - c->r)) >> 8) + c->r;
+				c->g = ((int) (a * (color.g - c->g)) >> 8) + c->g;
+				c->b = ((int) (a * (color.b - c->b)) >> 8) + c->b;
+			}
+		}
+	}
+}
+
 static void disp_flush(mu_Rect dst, mu_Rect src, mu_Color color)
 {
     int32_t x;
@@ -50,9 +104,13 @@ static void disp_flush(mu_Rect dst, mu_Rect src, mu_Color color)
 			int src_x = src.x + ((int)((x - dst.x) * factor_x));
 			int src_y = src.y + ((int)((y - dst.y) * factor_y));
 			int a = color.a * atlas_texture[src_y * ATLAS_HEIGHT + src_x];
+#if 1
 			c->r = ((int) (a * (color.r - c->r)) >> 16) + c->r;
 			c->g = ((int) (a * (color.g - c->g)) >> 16) + c->g;
 			c->b = ((int) (a * (color.b - c->b)) >> 16) + c->b;
+#else
+			*(u32_t *)c = neon(*(u32_t *)c, *(u32_t *)&color, a);
+#endif
         }
     }
 }
@@ -62,7 +120,7 @@ static void disp_clear(mu_Color color)
     int32_t x;
     int32_t y;
     for(y = 0; y < height; y++) {
-        for(x = 0; x < width; x++) {
+        for(x = 0; x < width - 1; x++) {
 			((u32_t *)render->pixels)[y * width + x] = *(int *)&color;
         }
     }
@@ -72,7 +130,10 @@ static void flush(void) {
   if (buf_idx == 0) { return; }
 
   for(int i = 0; i < buf_idx; i++){
-	  disp_flush(vert_buf[i], tex_buf[i], color_buf[i]);
+    if(tex_buf[i].x == 125)
+      disp_fill(vert_buf[i], tex_buf[i], color_buf[i]);
+    else
+      disp_flush(vert_buf[i], tex_buf[i], color_buf[i]);
   }
   buf_idx = 0;
 }

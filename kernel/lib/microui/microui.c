@@ -207,10 +207,10 @@ void mu_end(mu_Context *ctx) {
     ** otherwise set the previous container's tail to jump to this one */
     if (i == 0) {
       mu_Command *cmd = (mu_Command*) ctx->command_list.items;
-      cmd->jump.dst = (char*) cnt->head + sizeof(mu_JumpCommand);
+      cmd->jump.dst = cnt->head + 1;
     } else {
       mu_Container *prev = ctx->root_list.items[i - 1];
-      prev->tail->jump.dst = (char*) cnt->head + sizeof(mu_JumpCommand);
+      prev->tail->jump.dst = cnt->head + 1;
     }
     /* make the last container's tail jump to the end of command list */
     if (i == n - 1) {
@@ -389,26 +389,26 @@ void mu_input_text(mu_Context *ctx, const char *text) {
 **============================================================================*/
 
 mu_Command* mu_push_command(mu_Context *ctx, int type, int size) {
-  mu_Command *cmd = (mu_Command*) (ctx->command_list.items + ctx->command_list.idx);
-  expect(ctx->command_list.idx + size < MU_COMMANDLIST_SIZE);
+  mu_Command *cmd = ctx->command_list.items + ctx->command_list.idx;
   cmd->base.type = type;
-  cmd->base.size = size;
-  ctx->command_list.idx += size;
+  cmd->base.size = (size + sizeof(mu_Command) - 1) / sizeof(mu_Command);
+  ctx->command_list.idx += cmd->base.size;
+  expect(ctx->command_list.idx < MU_COMMANDLIST_SIZE);
   return cmd;
 }
 
 
-int mu_next_command(mu_Context *ctx, mu_Command **cmd) {
-  if (*cmd) {
-    *cmd = (mu_Command*) (((char*) *cmd) + (*cmd)->base.size);
+mu_Command* mu_next_command(mu_Context *ctx, mu_Command *cmd) {
+  if (cmd) {
+    cmd = cmd + cmd->base.size;
   } else {
-    *cmd = (mu_Command*) ctx->command_list.items;
+    cmd = ctx->command_list.items;
   }
-  while ((char*) *cmd != ctx->command_list.items + ctx->command_list.idx) {
-    if ((*cmd)->type != MU_COMMAND_JUMP) { return 1; }
-    *cmd = (*cmd)->jump.dst;
+  while (cmd != ctx->command_list.items + ctx->command_list.idx) {
+    if (cmd->type != MU_COMMAND_JUMP) { return cmd; }
+    cmd = cmd->jump.dst;
   }
-  return 0;
+  return NULL;
 }
 
 

@@ -58,11 +58,14 @@ ENTRY(vector_\name)
 	@
 	stmia	r7, {r2 - r6}
 
+	vstmdb  sp!, {d0 - d15}
+	vstmdb  sp!, {d16 - d31}
 	mov	r0, sp
-
 	mov	lr, pc
     ldr pc,	=\func
-	
+	vldmia  sp!, {d16 - d31}
+	vldmia  sp!, {d0 - d15}
+
 	msr	spsr_cxsf, r5
 	ldmia	sp, {r0 - pc}^			@ load r0 - pc, cpsr
 ENDPROC(vector_\name)
@@ -96,11 +99,15 @@ ENTRY(vector_swi)
 
 	mov fp, #0
 	//TODO:安全检查
+	vstmdb  sp!, {d0 - d15}
+	vstmdb  sp!, {d16 - d31}
 	stmdb	sp!, {r4, r5}
 	ldr r9, = system_call_table
 	mov lr, pc
 	ldr pc, [r9, r7, lsl #2]
 	ldmia	sp!, {r4, r5}
+	vldmia  sp!, {d16 - d31}
+	vldmia  sp!, {d0 - d15}
 	str r0, [sp, #S_R0]
 	msr	spsr_cxsf, r8
 	ldmia	sp, {r0 - pc}^			@ load r0 - pc, cpsr

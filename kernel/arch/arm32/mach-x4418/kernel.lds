@@ -24,6 +24,7 @@ SECTIONS {
 		*(.text*);
 		*(.init.text);
 		*(.exit.text);
+		*(.glue*);
 		PROVIDE(__text_end = .);
 	} > ram
 
@@ -62,7 +63,7 @@ SECTIONS {
     .data ALIGN(8) :
 	{
 		PROVIDE(__data_start = .);
-		*(.data);
+		*(.data*)
 		PROVIDE(__data_end = .);
 	} > ram
 	
@@ -76,7 +77,7 @@ SECTIONS {
     .rodata ALIGN(8) :
 	{
 		PROVIDE(__rodata_start = .);
-		*(.rodata);
+		*(.rodata*);
 		PROVIDE(__rodata_end = .);
 		PROVIDE(__image_end = .);
 	} > ram
@@ -84,7 +85,7 @@ SECTIONS {
 	.bss ALIGN(8) (NOLOAD) :
 	{
 		PROVIDE(__bss_start = .);
-		*(.bss);
+		*(.bss*);
 		*(COMMON);
 		PROVIDE(__bss_end = .);
 	} > ram

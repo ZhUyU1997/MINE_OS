@@ -219,9 +219,6 @@ dis: system
 	@echo [OD] $(X_NAME).dis
 	@$(OD) -D -m arm system > $(X_NAME).dis
 
-dnw: $(X_NAME).bin
-	dnw $(X_NAME).bin
-
 clean:
 	@echo [RM] system system_tmp
 	@$(RM) system system_tmp

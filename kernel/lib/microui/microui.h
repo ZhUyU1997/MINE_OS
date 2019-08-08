@@ -193,7 +193,7 @@ struct mu_Context {
   char number_buf[MU_MAX_FMT];
   mu_Id number_editing;
   /* stacks */
-  mu_stack(char, MU_COMMANDLIST_SIZE) command_list;
+  mu_stack(mu_Command, MU_COMMANDLIST_SIZE) command_list;
   mu_stack(mu_Container*, MU_ROOTLIST_SIZE) root_list;
   mu_stack(mu_Container*, MU_CONTAINERSTACK_SIZE) container_stack;
   mu_stack(mu_Rect, MU_CLIPSTACK_SIZE) clip_stack;
@@ -240,7 +240,7 @@ void mu_input_keyup(mu_Context *ctx, int key);
 void mu_input_text(mu_Context *ctx, const char *text);
 
 mu_Command* mu_push_command(mu_Context *ctx, int type, int size);
-int mu_next_command(mu_Context *ctx, mu_Command **cmd);
+mu_Command* mu_next_command(mu_Context *ctx, mu_Command *cmd);
 void mu_set_clip(mu_Context *ctx, mu_Rect rect);
 void mu_draw_rect(mu_Context *ctx, mu_Rect rect, mu_Color color);
 void mu_draw_box(mu_Context *ctx, mu_Rect rect, mu_Color color);

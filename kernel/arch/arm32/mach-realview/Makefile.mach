@@ -22,7 +22,7 @@ MCFLAGS		:= -std=gnu99 \
 MASFLAGS	:= -D__ASSEMBLY__
 MLDFLAGS	:=
 
-LIBDIRS		:= -L $(dir $(shell $(CC) -march=armv7-a -mtune=cortex-a9 -mfpu=neon -ffreestanding -mfloat-abi=hard -print-libgcc-file-name))
+LIBDIRS		:= -L $(dir $(shell $(CC) -march=armv7-a -mtune=cortex-a8 -mfpu=neon -ffreestanding -mfloat-abi=hard -print-libgcc-file-name))
 LIBS		:= -lgcc
 
 ifeq ($(strip $(HOSTOS)),windows)
@@ -35,19 +35,27 @@ else
 	UNZIP		:= unzip
 endif
 
+ifneq ($(G),on)
 xend:
 	if [ ! -e $(QEMU_DIR)/sdcard/sdcard.img ]; then \
 		mkdir -p $(QEMU_DIR)/sdcard; \
 		$(UNZIP) $(QEMU_DIR)/sdcard.zip -d $(QEMU_DIR)/sdcard; \
 	fi
-ifneq ($(G),on)
 	-@$(QEMU) -M realview-pb-a8 -m 256M \
 		-name "ARM RealView Platform Baseboard for Cortex-A8" \
 		-show-cursor -rtc base=localtime -serial stdio \
 		-sd "$(QEMU_DIR)/sdcard/sdcard.img" \
 		-net nic,macaddr=88:88:88:11:22:33,model=lan9118 -net user \
 		-kernel system || true
+
 else
+
+PNONY	+= run
+run:
+	if [ ! -e $(QEMU_DIR)/sdcard/sdcard.img ]; then \
+		mkdir -p $(QEMU_DIR)/sdcard; \
+		$(UNZIP) $(QEMU_DIR)/sdcard.zip -d $(QEMU_DIR)/sdcard; \
+	fi
 	-@$(QEMU) -M realview-pb-a8 -m 256M \
 		-name "ARM RealView Platform Baseboard for Cortex-A8" \
 		-S -gdb tcp::10001,ipv4 \
