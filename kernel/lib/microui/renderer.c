@@ -127,86 +127,86 @@ static void disp_clear(mu_Color color)
 }
 
 static void flush(void) {
-  if (buf_idx == 0) { return; }
+	if (buf_idx == 0) { return; }
 
-  for(int i = 0; i < buf_idx; i++){
-    if(tex_buf[i].x == 125)
-      disp_fill(vert_buf[i], tex_buf[i], color_buf[i]);
-    else
-      disp_flush(vert_buf[i], tex_buf[i], color_buf[i]);
-  }
-  buf_idx = 0;
+	for(int i = 0; i < buf_idx; i++){
+		if(tex_buf[i].x == 125)
+			disp_fill(vert_buf[i], tex_buf[i], color_buf[i]);
+		else
+			disp_flush(vert_buf[i], tex_buf[i], color_buf[i]);
+	}
+	buf_idx = 0;
 }
 
 
 static void push_quad(mu_Rect dst, mu_Rect src, mu_Color color) {
-  if (buf_idx == BUFFER_SIZE) { flush(); }
-  /* update texture buffer */
-  tex_buf[buf_idx] = src;
-  /* update vertex buffer */
-  vert_buf[buf_idx] = dst;
-  /* update color buffer */
-  color_buf[buf_idx] = color;
-  buf_idx++;
+	if (buf_idx == BUFFER_SIZE) { flush(); }
+	/* update texture buffer */
+	tex_buf[buf_idx] = src;
+	/* update vertex buffer */
+	vert_buf[buf_idx] = dst;
+	/* update color buffer */
+	color_buf[buf_idx] = color;
+	buf_idx++;
 }
 
 
 void r_draw_rect(mu_Rect rect, mu_Color color) {
-  push_quad(rect, atlas[ATLAS_WHITE], color);
+	push_quad(rect, atlas[ATLAS_WHITE], color);
 }
 
 
 void r_draw_text(const char *text, mu_Vec2 pos, mu_Color color) {
-  mu_Rect dst = { pos.x, pos.y, 0, 0 };
-  for (const char *p = text; *p; p++) {
-    if ((*p & 0xc0) == 0x80) { continue; }
-    int chr = mu_min((unsigned char) *p, 127);
-    mu_Rect src = atlas[ATLAS_FONT + chr];
-    dst.w = src.w;
-    dst.h = src.h;
-    push_quad(dst, src, color);
-    dst.x += dst.w;
-  }
+	mu_Rect dst = { pos.x, pos.y, 0, 0 };
+	for (const char *p = text; *p; p++) {
+		if ((*p & 0xc0) == 0x80) { continue; }
+		int chr = mu_min((unsigned char) *p, 127);
+		mu_Rect src = atlas[ATLAS_FONT + chr];
+		dst.w = src.w;
+		dst.h = src.h;
+		push_quad(dst, src, color);
+		dst.x += dst.w;
+	}
 }
 
 
 void r_draw_icon(int id, mu_Rect rect, mu_Color color) {
-  mu_Rect src = atlas[id];
-  int x = rect.x + (rect.w - src.w) / 2;
-  int y = rect.y + (rect.h - src.h) / 2;
-  push_quad(mu_rect(x, y, src.w, src.h), src, color);
+	mu_Rect src = atlas[id];
+	int x = rect.x + (rect.w - src.w) / 2;
+	int y = rect.y + (rect.h - src.h) / 2;
+	push_quad(mu_rect(x, y, src.w, src.h), src, color);
 }
 
 
 int r_get_text_width(const char *text, int len) {
-  int res = 0;
-  for (const char *p = text; *p && len--; p++) {
-    if ((*p & 0xc0) == 0x80) { continue; }
-    int chr = mu_min((unsigned char) *p, 127);
-    res += atlas[ATLAS_FONT + chr].w;
-  }
-  return res;
+	int res = 0;
+	for (const char *p = text; *p && len--; p++) {
+		if ((*p & 0xc0) == 0x80) { continue; }
+		int chr = mu_min((unsigned char) *p, 127);
+		res += atlas[ATLAS_FONT + chr].w;
+	}
+	return res;
 }
 
 
 int r_get_text_height(void) {
-  return 18;
+	return 18;
 }
 
 
 void r_set_clip_rect(mu_Rect rect) {
-  flush();
-  //glScissor(rect.x, height - (rect.y + rect.h), rect.w, rect.h);
+	flush();
+	//glScissor(rect.x, height - (rect.y + rect.h), rect.w, rect.h);
 }
 
 
 void r_clear(mu_Color clr) {
-  flush();
-  disp_clear(clr);
+	flush();
+	disp_clear(clr);
 }
 
 
 void r_present(void) {
-  flush();
-  framebuffer_present_render(fb, render, NULL, 0);
+	flush();
+	framebuffer_present_render(fb, render, NULL, 0);
 }
