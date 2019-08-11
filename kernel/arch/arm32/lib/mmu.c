@@ -112,6 +112,18 @@ static void alloc_init_pgd(pgd_t *pgd, u32_t virtuladdr, u32_t physicaladdr, u32
 	}
 }
 
+void set_vector_map(pgd_t *pgd){
+	pmd_t *pmd = (pmd_t *)(pgd + pgd_index(0xffff0000));
+	pte_t *pte = alloc_pte(pmd);
+	pte = pte + pte_index(0xffff0000);
+	set_pte(pte, &__text_start, MMU_FULL_ACCESS, MAP_TYPE_CB);
+	printf("[异常向量映射]\n");
+	printf("<%08X %08X> ==> <%08X %08X>\n", 0xffff0000, 0xffff0000 + 0x1000, &__text_start, &__text_start + 0x1000);
+	//flush_cache();
+	//flush_tlb();
+	//mmu_test();
+}
+
 void create_page_table(struct machine_t * mach, pgd_t *pgd) {
 	memset(pgd, 0, 16 * 1024);
 
@@ -127,18 +139,6 @@ void create_page_table(struct machine_t * mach, pgd_t *pgd) {
 		}
 	}
 	set_vector_map(pgd);
-}
-
-void set_vector_map(pgd_t *pgd){
-	pmd_t *pmd = (pmd_t *)(pgd + pgd_index(0xffff0000));
-	pte_t *pte = alloc_pte(pmd);
-	pte = pte + pte_index(0xffff0000);
-	set_pte(pte, &__text_start, MMU_FULL_ACCESS, MAP_TYPE_CB);
-	printf("[异常向量映射]\n");
-	printf("<%08X %08X> ==> <%08X %08X>\n", 0xffff0000, 0xffff0000 + 0x1000, &__text_start, &__text_start + 0x1000);
-	//flush_cache();
-	//flush_tlb();
-	//mmu_test();
 }
 
 void mmu_setup(struct machine_t * mach) {

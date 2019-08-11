@@ -27,6 +27,7 @@
  */
 #include <types.h>
 #include <ptrace.h>
+#include <stdio.h>
 
 static void show_regs(struct pt_regs * regs)
 {

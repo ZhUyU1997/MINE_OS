@@ -27,6 +27,8 @@
  */
 
 #include <clocksource/clocksource.h>
+#include <malloc.h>
+#include <stdio.h>
 
 /*
  * Dummy clocksource, 10us - 100KHZ

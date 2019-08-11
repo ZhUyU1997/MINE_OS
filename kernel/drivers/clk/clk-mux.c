@@ -28,6 +28,7 @@
 
 #include <clk/clk.h>
 #include <core/initcall.h>
+#include <malloc.h>
 
 struct clk_mux_parent_t {
 	char * name;

@@ -30,6 +30,7 @@
 #include <i2c/i2c.h>
 #include <rtc/rtc.h>
 #include <bcd.h>
+#include <malloc.h>
 
 /*
  * Dallas DS1338 - I2C Serial Real-Time Clock

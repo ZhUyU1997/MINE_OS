@@ -28,6 +28,7 @@
 
 #include <sd/sdcard.h>
 #include <sd/sdhci.h>
+#include <malloc.h>
 
 struct sdhci_t * search_sdhci(const char * name)
 {

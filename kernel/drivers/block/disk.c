@@ -29,6 +29,8 @@
 #include <block/disk.h>
 #include <block/partition.h>
 #include <core/machine.h>
+#include <stdio.h>
+#include <malloc.h>
 
 struct disk_block_t
 {

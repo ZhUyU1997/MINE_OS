@@ -29,6 +29,7 @@
 #include <gpio/gpio.h>
 #include <regulator/regulator.h>
 #include <core/initcall.h>
+#include <malloc.h>
 
 /*
  * GPIO Regulator - Regulator Driver Using Generic Purpose Input Output

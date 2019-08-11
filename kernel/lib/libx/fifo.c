@@ -8,6 +8,7 @@
 #include <log2.h>
 #include <string.h>
 #include <fifo.h>
+#include <malloc.h>
 
 #define min(x,y) ({			\
 	typeof(x) _x = (x);		\

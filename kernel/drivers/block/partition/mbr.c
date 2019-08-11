@@ -28,6 +28,7 @@
 
 #include <block/partition.h>
 #include <core/initcall.h>
+#include <malloc.h>
 
 struct mbr_entry_t
 {

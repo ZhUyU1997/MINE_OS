@@ -20,7 +20,7 @@
 #include <smp.h>
 #include <compiler.h>
 #include <clocksource/clocksource.h>
-
+#include <malloc.h>
 
 struct scheduler_t __sched[NR_CPUS];
 

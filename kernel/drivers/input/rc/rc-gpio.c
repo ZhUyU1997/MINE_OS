@@ -31,7 +31,9 @@
 #include <input/rc/rc-core.h>
 #include <core/initcall.h>
 #include <core/ktime.h>
+#include <core/event.h>
 #include <clocksource/clocksource.h>
+#include <malloc.h>
 
 struct rc_gpio_pdata_t {
 	struct rc_decoder_t decoder;

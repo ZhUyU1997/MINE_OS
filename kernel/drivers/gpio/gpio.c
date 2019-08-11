@@ -27,6 +27,8 @@
  */
 
 #include <gpio/gpio.h>
+#include <malloc.h>
+#include <stdio.h>
 
 static ssize_t gpiochip_read_base(struct kobj_t * kobj, void * buf, size_t size)
 {

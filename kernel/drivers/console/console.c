@@ -27,6 +27,8 @@
  */
 
 #include <console/console.h>
+#include <malloc.h>
+#include <stdio.h>
 
 static ssize_t __console_dummy_read(struct console_t * console, unsigned char * buf, size_t count)
 {

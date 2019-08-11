@@ -27,6 +27,7 @@
  */
 
 #include <led/ledtrigger.h>
+#include <malloc.h>
 
 static ssize_t ledtrigger_write_activity(struct kobj_t * kobj, void * buf, size_t size)
 {

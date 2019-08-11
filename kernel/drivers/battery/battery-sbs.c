@@ -29,6 +29,8 @@
 #include <i2c/i2c.h>
 #include <battery/battery.h>
 #include <core/initcall.h>
+#include <stdio.h>
+#include <malloc.h>
 
 /*
  * SBS - Smart Battery System

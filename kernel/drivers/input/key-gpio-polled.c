@@ -32,6 +32,7 @@
 #include <core/initcall.h>
 #include <core/event.h>
 #include <time/timer.h>
+#include <malloc.h>
 
 struct gpio_key_t {
 	int gpio;

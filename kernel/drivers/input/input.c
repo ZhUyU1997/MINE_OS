@@ -27,6 +27,8 @@
  */
 
 #include <input/input.h>
+#include <stdio.h>
+#include <malloc.h>
 
 static ssize_t input_read_type(struct kobj_t * kobj, void * buf, size_t size)
 {

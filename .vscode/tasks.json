@@ -11,7 +11,7 @@
             ],
             "problemMatcher": {
                 "owner": "cpp",
-                "fileLocation":"absolute",
+                "fileLocation":["relative","${workspaceFolder}/kernel"],
                 "base": "$gcc"
             },
             "presentation": {
@@ -34,7 +34,7 @@
             ],
             "problemMatcher": {
                 "owner": "cpp",
-                "fileLocation":"absolute",
+                "fileLocation":["relative","${workspaceFolder}/kernel"],
                 "base": "$gcc"
             },
             "presentation": {

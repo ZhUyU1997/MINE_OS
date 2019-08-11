@@ -29,6 +29,7 @@
 #include <core/driver.h>
 #include <core/initcall.h>
 #include <core/machine.h>
+#include <stdlib.h>
 
 static struct hlist_head __driver_hash[CONFIG_DRIVER_HASH_SIZE];
 static spinlock_t __driver_lock = SPIN_LOCK_INIT();

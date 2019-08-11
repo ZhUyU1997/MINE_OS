@@ -4,6 +4,7 @@
 
 #include <command/command.h>
 #include <kernel.h>
+#include <stdio.h>
 
 #define CPU_ARCH_UNKNOWN		0
 #define CPU_ARCH_ARMv3			1

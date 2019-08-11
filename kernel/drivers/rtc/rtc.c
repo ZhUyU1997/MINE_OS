@@ -27,6 +27,9 @@
  */
 
 #include <rtc/rtc.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <malloc.h>
 
 static int rtc_month_days(int year, int month)
 {

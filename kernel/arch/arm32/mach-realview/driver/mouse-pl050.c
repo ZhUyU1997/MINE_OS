@@ -31,6 +31,7 @@
 #include <interrupt/interrupt.h>
 #include <input/input.h>
 #include <core/event.h>
+#include <malloc.h>
 
 enum {
 	MOUSE_CR		= 0x00,

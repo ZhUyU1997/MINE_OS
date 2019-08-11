@@ -31,6 +31,7 @@
 #include <regulator/regulator.h>
 #include <led/led.h>
 #include <core/initcall.h>
+#include <malloc.h>
 
 struct led_pwm_bl_pdata_t {
 	struct pwm_t * pwm;

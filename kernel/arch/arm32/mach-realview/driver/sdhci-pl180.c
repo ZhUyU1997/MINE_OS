@@ -29,6 +29,7 @@
 #include <core/initcall.h>
 #include <sd/sdhci.h>
 #include <io.h>
+#include <malloc.h>
 
 #define PL180_POWER				(0x00)
 #define PL180_CLOCK				(0x04)

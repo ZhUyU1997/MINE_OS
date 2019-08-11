@@ -28,6 +28,8 @@
 
 #include <command/command.h>
 #include <vfs.h>
+#include <malloc.h>
+#include <stdio.h>
 
 static void usage(void)
 {

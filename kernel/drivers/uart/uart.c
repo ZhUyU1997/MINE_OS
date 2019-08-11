@@ -27,6 +27,9 @@
  */
 
 #include <uart/uart.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <malloc.h>
 
 static ssize_t uart_read_baud(struct kobj_t * kobj, void * buf, size_t size)
 {

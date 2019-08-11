@@ -29,6 +29,7 @@
 #include <core/initcall.h>
 #include <gpio/gpio.h>
 #include <led/led.h>
+#include <malloc.h>
 
 /*
  * GPIO LED - LED Driver Using Generic Purpose Input Output

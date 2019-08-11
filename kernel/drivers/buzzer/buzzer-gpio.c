@@ -31,6 +31,7 @@
 #include <buzzer/buzzer.h>
 #include <core/initcall.h>
 #include <time/timer.h>
+#include <malloc.h>
 
 struct beep_param_t {
 	int frequency;

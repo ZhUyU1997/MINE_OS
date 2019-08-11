@@ -31,6 +31,9 @@
 #include <core/machine.h>
 #include <core/ktime.h>
 #include <clocksource/clocksource.h>
+#include <stdio.h>
+#include <string.h>
+#include <malloc.h>
 
 static struct list_head __machine_list = {
 	.next = &__machine_list,

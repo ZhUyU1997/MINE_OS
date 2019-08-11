@@ -27,6 +27,8 @@
  */
 
 #include <battery/battery.h>
+#include <stdio.h>
+#include <malloc.h>
 
 static ssize_t battery_read_supply(struct kobj_t * kobj, void * buf, size_t size)
 {

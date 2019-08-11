@@ -29,6 +29,7 @@
 #include <core/initcall.h>
 #include <led/ledtrigger.h>
 #include <time/timer.h>
+#include <malloc.h>
 
 struct ledtrigger_general_pdata_t {
 	struct timer_t timer;

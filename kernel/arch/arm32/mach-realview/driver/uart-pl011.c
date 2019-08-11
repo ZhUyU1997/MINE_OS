@@ -31,6 +31,7 @@
 #include <gpio/gpio.h>
 #include <uart/uart.h>
 #include <io.h>
+#include <malloc.h>
 
 /*
  * PrimeCell PL011 - Universal Asynchronous Receiver Transmitter

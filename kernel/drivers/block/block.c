@@ -27,6 +27,8 @@
  */
 
 #include <block/block.h>
+#include <stdio.h>
+#include <malloc.h>
 
 static ssize_t block_read_size(struct kobj_t * kobj, void * buf, size_t size)
 {

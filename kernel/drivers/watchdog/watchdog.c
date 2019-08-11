@@ -27,6 +27,9 @@
  */
 
 #include <watchdog/watchdog.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <malloc.h>
 
 static ssize_t watchdog_read_timeout(struct kobj_t * kobj, void * buf, size_t size)
 {

@@ -28,6 +28,8 @@
 
 #include <command/command.h>
 #include <slist.h>
+#include <stdio.h>
+#include <string.h>
 
 static void usage(void)
 {

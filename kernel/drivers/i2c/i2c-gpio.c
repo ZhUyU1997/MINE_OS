@@ -30,6 +30,8 @@
 #include <i2c/i2c.h>
 #include <i2c/i2c-algo-bit.h>
 #include <core/initcall.h>
+#include <stdio.h>
+#include <malloc.h>
 
 /*
  * GPIO I2C - I2C Master Driver Using Generic Bitbanged GPIO

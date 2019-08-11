@@ -27,6 +27,9 @@
  */
 
 #include <regulator/regulator.h>
+#include <malloc.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 static ssize_t regulator_read_summary(struct kobj_t * kobj, void * buf, size_t size)
 {

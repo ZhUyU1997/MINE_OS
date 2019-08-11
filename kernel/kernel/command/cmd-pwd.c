@@ -27,6 +27,7 @@
  */
 
 #include <command/command.h>
+#include <stdio.h>
 
 static void usage(void)
 {

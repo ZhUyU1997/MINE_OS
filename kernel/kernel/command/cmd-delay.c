@@ -28,6 +28,8 @@
 
 #include <command/command.h>
 #include <time/delay.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 static void usage(void)
 {

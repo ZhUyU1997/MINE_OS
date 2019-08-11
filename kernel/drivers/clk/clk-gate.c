@@ -28,6 +28,7 @@
 
 #include <clk/clk.h>
 #include <core/initcall.h>
+#include <malloc.h>
 
 struct clk_gate_pdata_t {
 	virtual_addr_t virt;

@@ -82,7 +82,7 @@ typedef struct spinlock {
 
 static inline raw_spinlock_t *spinlock_check(spinlock_t *lock)
 {
-	return &lock->rlock;
+	return (raw_spinlock_t *)&lock->rlock;
 }
 
 #define SPIN_LOCK_INIT()	{ 0 }

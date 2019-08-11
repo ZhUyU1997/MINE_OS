@@ -28,6 +28,7 @@
 
 #include <block/partition.h>
 #include <core/machine.h>
+#include <stdio.h>
 
 static struct list_head __partition_map_list = {
 	.next = &__partition_map_list,

@@ -32,6 +32,9 @@
 #include <list.h>
 #include <kernel.h>
 #include <shell/readline.h>
+#include <malloc.h>
+#include <string.h>
+#include <charset.h>
 
 enum esc_state_t {
 	ESC_STATE_NORMAL,

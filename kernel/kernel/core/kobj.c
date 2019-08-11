@@ -27,6 +27,8 @@
  */
 
 #include <core/kobj.h>
+#include <string.h>
+#include <malloc.h>
 
 static struct kobj_t * __kobj_root = NULL;
 
@@ -37,7 +39,7 @@ static struct kobj_t * __kobj_alloc(const char * name, enum kobj_type_t type, ko
 	if(!name)
 		return NULL;
 
-	kobj = kmalloc(sizeof(struct kobj_t), 0);
+	kobj = malloc(sizeof(struct kobj_t));
 	if(!kobj)
 		return NULL;
 
@@ -132,8 +134,8 @@ bool_t kobj_free(struct kobj_t * kobj)
 	if(!kobj)
 		return FALSE;
 
-	kfree(kobj->name);
-	kfree(kobj);
+	free(kobj->name);
+	free(kobj);
 	return TRUE;
 }
 

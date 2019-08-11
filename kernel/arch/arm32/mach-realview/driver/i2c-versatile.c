@@ -30,6 +30,7 @@
 #include <i2c/i2c-algo-bit.h>
 #include <core/initcall.h>
 #include <io.h>
+#include <malloc.h>
 
 /*
  * Versatile i2c - I2C Controller On ARM Versatile Platform

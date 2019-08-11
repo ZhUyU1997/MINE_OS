@@ -27,11 +27,13 @@
  */
 
 #include <core/initcall.h>
+#include <core/event.h>
 #include <clk/clk.h>
 #include <interrupt/interrupt.h>
 #include <input/input.h>
 #include <input/keyboard.h>
 #include <kernel.h>
+#include <malloc.h>
 
 enum{
 	KEYBOARD_CR		= 0x00,

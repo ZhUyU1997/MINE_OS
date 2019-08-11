@@ -31,6 +31,7 @@
 #include <framebuffer/framebuffer.h>
 #include <core/initcall.h>
 #include <io.h>
+#include <malloc.h>
 
 enum {
 	CLCD_TIM0	= 0x000,

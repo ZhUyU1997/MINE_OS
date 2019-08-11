@@ -27,6 +27,8 @@
  */
 
 #include <clockevent/clockevent.h>
+#include <stdio.h>
+#include <malloc.h>
 
 /*
  * Dummy clockevent, 1us - 1MHZ

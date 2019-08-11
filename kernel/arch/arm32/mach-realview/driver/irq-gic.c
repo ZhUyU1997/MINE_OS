@@ -31,6 +31,7 @@
 #include <arm32.h>
 #include <io.h>
 #include <smp.h>
+#include <malloc.h>
 
 enum {
 	CPU_CTRL 			= 0x0000,

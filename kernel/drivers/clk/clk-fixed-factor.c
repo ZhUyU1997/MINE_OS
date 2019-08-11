@@ -28,6 +28,7 @@
 
 #include <clk/clk.h>
 #include <core/initcall.h>
+#include <malloc.h>
 
 struct clk_fixed_factor_pdata_t {
 	char * parent;

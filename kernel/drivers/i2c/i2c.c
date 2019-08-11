@@ -27,6 +27,8 @@
  */
 
 #include <i2c/i2c.h>
+#include <malloc.h>
+#include <stdio.h>
 
 static bool_t detect(struct i2c_device_t * dev, u8_t reg, u8_t * val)
 {

@@ -29,6 +29,8 @@
 #include <command/command.h>
 #include <vfs.h>
 #include <slist.h>
+#include <stdio.h>
+#include <malloc.h>
 #include "sys/dirent.h"
 
 enum {

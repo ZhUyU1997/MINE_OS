@@ -30,6 +30,7 @@
 #include <pwm/pwm.h>
 #include <time/timer.h>
 #include <core/initcall.h>
+#include <malloc.h>
 
 struct pwm_gpio_pdata_t
 {

@@ -27,6 +27,8 @@
  */
 
 #include <interrupt/interrupt.h>
+#include <stdio.h>
+#include <malloc.h>
 
 static void null_interrupt_function(void * data)
 {

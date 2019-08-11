@@ -29,6 +29,7 @@
 #include <gpio/gpio.h>
 #include <core/initcall.h>
 #include <io.h>
+#include <malloc.h>
 
 enum {
 	GPIO_DIR	= 0x400,

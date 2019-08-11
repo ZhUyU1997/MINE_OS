@@ -27,6 +27,9 @@
  */
 
 #include <led/led.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <malloc.h>
 
 static ssize_t led_read_brightness(struct kobj_t * kobj, void * buf, size_t size)
 {

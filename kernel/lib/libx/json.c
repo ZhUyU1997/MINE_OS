@@ -7,6 +7,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <json.h>
+#include <malloc.h>
 
 enum {
 	FLAG_NEXT             = 1 << 0,
@@ -811,7 +812,7 @@ e_failed:
 	while(alloc)
 	{
 		top = alloc->reserved.next_alloc;
-		kfree(alloc);
+		free(alloc);
 		alloc = top;
 	}
 	if(!state.first_pass)

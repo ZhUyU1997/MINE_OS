@@ -30,6 +30,7 @@
 #include <task.h>
 #include <schedule.h>
 #include <slist.h>
+#include <stdio.h>
 
 static void usage(void)
 {

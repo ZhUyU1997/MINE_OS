@@ -27,6 +27,8 @@
  */
 
 #include <reset/reset.h>
+#include <malloc.h>
+#include <stdio.h>
 
 static ssize_t resetchip_read_base(struct kobj_t * kobj, void * buf, size_t size)
 {

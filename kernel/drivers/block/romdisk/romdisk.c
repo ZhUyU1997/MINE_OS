@@ -29,6 +29,9 @@
 #include <block/block.h>
 #include <sizes.h>
 #include <core/initcall.h>
+#include <stdio.h>
+#include <malloc.h>
+#include <stdlib.h>
 
 struct romdisk_pdata_t
 {

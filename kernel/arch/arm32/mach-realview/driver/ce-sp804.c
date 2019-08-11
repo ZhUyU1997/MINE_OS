@@ -30,6 +30,7 @@
 #include <interrupt/interrupt.h>
 #include <clockevent/clockevent.h>
 #include <core/initcall.h>
+#include <malloc.h>
 
 #define TIMER_LOAD(x)	(((x) * 0x20) + 0x00)
 #define TIMER_VALUE(x)	(((x) * 0x20) + 0x04)

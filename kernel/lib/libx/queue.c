@@ -5,6 +5,7 @@
 #include <irqflags.h>
 #include <spinlock.h>
 #include <queue.h>
+#include <malloc.h>
 
 struct queue_t * queue_alloc(void)
 {

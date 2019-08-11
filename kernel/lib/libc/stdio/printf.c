@@ -5,9 +5,10 @@
 #include <stdarg.h>
 #include <sizes.h>
 #include <stdio.h>
+#include <string.h>
 #include <core/module.h>
 
-static unsigned char buf[SZ_4K];
+static char buf[SZ_4K];
 
 int printf(const char * fmt, ...)
 {

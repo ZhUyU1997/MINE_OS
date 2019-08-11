@@ -27,6 +27,9 @@
  */
 
 #include <pwm/pwm.h>
+#include <malloc.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 static ssize_t pwm_read_enable(struct kobj_t * kobj, void * buf, size_t size)
 {

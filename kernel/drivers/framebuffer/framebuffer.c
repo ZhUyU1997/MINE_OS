@@ -27,6 +27,9 @@
  */
 
 #include <framebuffer/framebuffer.h>
+#include <malloc.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 static ssize_t framebuffer_read_width(struct kobj_t * kobj, void * buf, size_t size)
 {

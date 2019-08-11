@@ -29,6 +29,8 @@
 #include <core/device.h>
 #include <core/initcall.h>
 #include <sizes.h>
+#include <malloc.h>
+#include <stdio.h>
 
 static void * __dma_pool = NULL;
 static spinlock_t __dma_lock = SPIN_LOCK_INIT();

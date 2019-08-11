@@ -28,6 +28,7 @@
 
 #include <clk/clk.h>
 #include <core/initcall.h>
+#include <malloc.h>
 
 struct clk_fixed_pdata_t {
 	u64_t rate;

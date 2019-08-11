@@ -3,6 +3,8 @@
  */
 
 #include <command/command.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 static void usage(void)
 {

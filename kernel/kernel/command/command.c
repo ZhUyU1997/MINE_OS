@@ -27,7 +27,11 @@
  */
 
 #include <command/command.h>
+#include <shell/readline.h>
 #include <spinlock.h>
+#include <stdio.h>
+#include <string.h>
+#include <malloc.h>
 
 struct list_head __command_list = {
 	.next = &__command_list,

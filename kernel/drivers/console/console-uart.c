@@ -29,6 +29,7 @@
 #include <uart/uart.h>
 #include <core/initcall.h>
 #include <console/console.h>
+#include <malloc.h>
 
 struct console_uart_pdata_t {
 	struct uart_t * uart;

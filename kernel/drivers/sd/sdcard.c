@@ -32,6 +32,8 @@
 #include <time/timer.h>
 #include <core/machine.h>
 #include <ssize.h>
+#include <malloc.h>
+#include <stdio.h>
 
 struct sdcard_t
 {

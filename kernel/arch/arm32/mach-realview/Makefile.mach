@@ -1,5 +1,6 @@
 DEFINES		+= -D__ARM32_ARCH__=7 -D__CORTEX_A8__ -D__ARM32_NEON__
 
+#WFLAGS		:= -Wall -Wno-unused-variable -Wno-unused-function
 WFLAGS		:= -w
 OPTFLAGS	:= -O3
 

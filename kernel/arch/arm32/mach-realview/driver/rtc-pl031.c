@@ -29,6 +29,7 @@
 #include <core/initcall.h>
 #include <rtc/rtc.h>
 #include <io.h>
+#include <malloc.h>
 
 /*
  * PrimeCell PL031 - Real-Time Clock Interface For ARM AMBA
