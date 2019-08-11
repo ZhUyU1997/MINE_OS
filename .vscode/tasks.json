@@ -1,0 +1,53 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "debug-windows",
+            "type": "shell",
+            "command": "make -j16 G=on ; if($LastExitCode) {exit $LastExitCode} else {tools/qemu-system/windows/realview-dbg.bat; if($LastExitCode) {exit $LastExitCode} }",
+            "args": [
+            ],
+            "problemMatcher": {
+                "owner": "cpp",
+                "fileLocation":"absolute",
+                "base": "$gcc"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "debug-linux",
+            "type": "shell",
+            "command": "make -j16 G=on && tools/qemu-system/linux/realview-dbg.sh",
+            "args": [
+            ],
+            "problemMatcher": {
+                "owner": "cpp",
+                "fileLocation":"absolute",
+                "base": "$gcc"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}

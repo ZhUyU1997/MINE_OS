@@ -4,5 +4,10 @@
 .cproject
 .project
 /.settings
-/.vscode
-/tools
+/tools/qemu-system/windows/*
+!/tools/qemu-system/windows/*.bat
+/tools/qemu-system/linux/*
+!/tools/qemu-system/linux/*.sh
+/.vscode/*
+!/.vscode/launch.json
+!/.vscode/tasks.json

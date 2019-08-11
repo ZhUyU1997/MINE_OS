@@ -23,6 +23,7 @@ bin目录包含常用的Linux基础命令，**必须放在第一个**，否则�
 sudo apt-get install git
 sudo apt-get install build-essential
 sudo apt-get install gcc-arm-linux-gnueabihf
+sudo apt-get install gdb-multiarch
 sudo apt-get install qemu-system-arm
 ```
 WSL默认没有安装图形界面，需要你手动安装。这里自行百度。
@@ -34,9 +35,13 @@ make -j4 CROSS_COMPILE=arm-linux-gnueabihf- PLATFORM=arm32-realview
 ### 运行
 - 以Windows为例，运行tools/qemu-system/windows/realview-run.bat
 ### 调试环境搭建
+#### eclipse
 * [安装eclipse CDT](https://pan.baidu.com/s/1jM5nixlzl3XwzxNH0sI1sQ)
-提取码：yrw7 
-* [调试环境搭建指南](/doc/debug-guide.md)
+提取码：yrw7   
+eclipse官网下载亦可
+* [eclipse调试环境搭建指南](/doc/eclipse-debug-guide.md)
+#### vscode
+* 项目已包含配置文件，F5直接运行
 ## TODO
 - [x] 完善vfs，支持多文件系统
 - [ ] 开发devfs，抽象设备文件
