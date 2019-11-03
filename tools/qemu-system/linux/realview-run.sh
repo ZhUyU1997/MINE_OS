@@ -11,7 +11,7 @@ if [ ! -e ${QEMU_DIR}/sdcard/sdcard.img ]; then
 fi
 
 # Run qemu
-setsid bash -c "deepin-terminal -x qemu-system-arm -M realview-pb-a8 -m 256M \
+setsid bash -c "gnome-terminal -x qemu-system-arm -M realview-pb-a8 -m 256M \
 -name \"ARM RealView Platform Baseboard for Cortex-A8\" \
 -show-cursor -rtc base=localtime -serial stdio \
 -sd sdcard/sdcard.img \
