@@ -16,9 +16,9 @@
 #ifndef __VFS_H__
 #define __VFS_H__
 
-#include "lib.h"
 #include <types.h>
 #include <block/block.h>
+#include <class.h>
 
 #define O_RDONLY			(1 << 0)
 #define O_WRONLY			(1 << 1)
@@ -98,16 +98,14 @@ struct super_block_operations;
 struct inode_operations;
 struct dentry_operations;
 struct file_operations;
+struct inode;
 
-struct super_block {
-	struct dentry *root;
-
+CLASS_DEF(super_block) {
+	struct inode *root;
 	struct super_block_operations *sb_ops;
-
-	void *s_private;
 };
 
-struct inode {
+CLASS_DEF(inode) {
 	s64_t i_size;
 	u32_t i_mode;
 	u64_t i_ctime;
@@ -119,11 +117,9 @@ struct inode {
 
 	struct file_operations *f_ops;
 	struct inode_operations *inode_ops;
-
-	void *i_private;
 };
 
-struct vfs_mount_t {
+CLASS_DEF(vfs_mount_t) {
 	char m_path[512];
 	int mount_type;
 	struct super_block  * m_sb;
@@ -135,7 +131,7 @@ struct vfs_mount_t {
 #define VFS_MAX_PATH	4096
 #define VFS_MAX_NAME	257
 
-struct dentry {
+CLASS_DEF(dentry) {
 	char name[VFS_MAX_NAME];
 	struct list_head child_node;
 	struct list_head subdirs_list;
@@ -147,7 +143,7 @@ struct dentry {
 	struct vfs_mount_t *vfs_mount;
 };
 
-struct file {
+CLASS_DEF(file) {
 	long f_pos;
 	unsigned long flags;
 

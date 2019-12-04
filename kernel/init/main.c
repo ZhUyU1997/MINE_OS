@@ -14,6 +14,8 @@ int main() {
 	init_memory();
 	slab_init();
 
+	do_init_class();
+
 	printf("schedule_init\n");
 	do_init_sched();
 

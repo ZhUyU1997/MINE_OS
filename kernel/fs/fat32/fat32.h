@@ -17,7 +17,7 @@
 #define __FAT32_H__
 
 #include <types.h>
-
+#include <class.h>
 /*
  * Extended boot sector information for FAT12/FAT16
  */
@@ -149,7 +149,7 @@ struct fat_longname_t {
 
 /////////////FAT32 for VFS
 
-struct fat32_sb_info {
+CLASS_DEF(fat32_sb_info) {
 	/* FAT boot sector */
 	struct fat_bootsec_t bsec;
 
@@ -171,6 +171,8 @@ struct fat32_sb_info {
 	u32_t bootsector_bk_infat;
 	
 	struct fat32_fs_info * fat_fsinfo;
+
+	void (*init)(fat32_sb_info *self, struct block_t * block, struct fat_bootsec_t *fbs);
 };
 
 struct fat32_pos {
@@ -178,7 +180,8 @@ struct fat32_pos {
 	u32_t off;
 	u32_t len;
 };
-struct fat32_inode_info {
+
+CLASS_DEF(fat32_inode_info) {
 	u32_t first_cluster;
 
 	u32_t dent_off;		//dentry struct offset in cluster
@@ -196,6 +199,8 @@ struct fat32_inode_info {
 	struct fat_time write_time;
 	
 	struct fat32_sb_info * fsbi;
+
+	void (*init)(fat32_inode_info *self, fat32_sb_info *fsbi, u32_t first);
 };
 
 long fat32_read_cluster(struct fat32_sb_info * fsbi, u32_t cluster, u8_t *buf);

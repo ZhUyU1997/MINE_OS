@@ -124,7 +124,7 @@ static long _fat32_node_write(struct fat32_sb_info * fsbi, u32_t cluster, u8_t *
 }
 
 u32_t fat32_read_clusters(struct inode * inode, u8_t *buf, size_t count, off_t *pos) {
-	struct fat32_inode_info * finode = inode->i_private;
+	struct fat32_inode_info * finode = dynamic_cast(fat32_inode_info)(inode);
 	struct fat32_sb_info * fsbi = finode->fsbi;
 
 	off_t off = *pos % fsbi->bytes_per_cluster;
@@ -164,7 +164,7 @@ u32_t fat32_read_clusters(struct inode * inode, u8_t *buf, size_t count, off_t *
 }
 
 u32_t fat32_write_clusters(struct inode * inode, u8_t *buf, size_t count, off_t *pos) {
-	struct fat32_inode_info * finode = inode->i_private;
+	struct fat32_inode_info * finode = dynamic_cast(fat32_inode_info)(inode);
 	struct fat32_sb_info * fsbi = finode->fsbi;
 
 	u32_t cluster = finode->first_cluster;
@@ -208,7 +208,7 @@ u32_t fat32_write_clusters(struct inode * inode, u8_t *buf, size_t count, off_t 
 }
 
 u32_t fat32_node_read(struct inode * inode, u8_t *buf, size_t count, off_t *pos) {
-	struct fat32_inode_info * finode = inode->i_private;
+	struct fat32_inode_info * finode = dynamic_cast(fat32_inode_info)(inode);
 	struct fat32_sb_info * fsbi = finode->fsbi;
 	off_t off = *pos % fsbi->bytes_per_cluster;
 	u32_t filesize = inode->i_size;
@@ -227,8 +227,8 @@ u32_t fat32_node_write(struct inode * inode, u8_t *buf, size_t count, off_t *pos
 }
 
 int fat32_node_find_dirent(struct inode * inode, char *filename, struct fat_dirent_t *fat_dentry, struct fat32_inode_info * info) {
-	struct fat32_inode_info * finode = inode->i_private;
-	struct fat32_sb_info * fsbi = inode->sb->s_private;
+	struct fat32_inode_info * finode = dynamic_cast(fat32_inode_info)(inode);
+	struct fat32_sb_info * fsbi = finode->fsbi;
 	u32_t lfn_len = 0, lfn_off = 0;
 	off_t pos = 0;
 	int ret = -1;
@@ -352,8 +352,8 @@ int fat32_node_find_dirent(struct inode * inode, char *filename, struct fat_dire
 }
 
 int fat32_node_read_dirent_name(struct inode * inode, char *buf, off_t * pos) {
-	struct fat32_inode_info * finode = inode->i_private;
-	struct fat32_sb_info * fsbi = inode->sb->s_private;
+	struct fat32_inode_info * finode = dynamic_cast(fat32_inode_info)(inode);
+	struct fat32_sb_info * fsbi = finode->fsbi;
 	off_t off = *pos % fsbi->bytes_per_cluster;
 	int ret = -1;
 	char name[VFS_MAX_NAME] = {0};
@@ -526,7 +526,7 @@ int fat32_node_new_dirent(struct fat_dirent_t *dents, char *name, struct fat_dir
 
 int fat32_node_write_dirent(struct inode * inode, struct fat_dirent_t *dents, int dent_cnt){
 	int ret = -1;
-	struct fat32_inode_info * finode = inode->i_private;
+	struct fat32_inode_info * finode = dynamic_cast(fat32_inode_info)(inode);
 	struct fat32_sb_info * fsbi = finode->fsbi;
 
 	u32_t cluster = finode->first_cluster;

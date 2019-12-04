@@ -32,6 +32,14 @@
 #include <stdio.h>
 #include <core/initcall.h>
 #include <block/block.h>
+#include <class.h>
+
+CLASS_DEF(sys_inode)
+{
+	struct kobj_t *obj;
+};
+
+CLASS(sys_inode, inode) {};
 
 static long sys_read(struct file * filp, char * buf, size_t count, off_t * pos)
 {
@@ -41,7 +49,7 @@ static long sys_read(struct file * filp, char * buf, size_t count, off_t * pos)
 	if(!S_ISREG(n->i_mode))
 		return -1;
 
-	kobj = n->i_private;
+	kobj = dynamic_cast(sys_inode)(n)->obj;
 	if(*pos == 0)
 	{
 		if(kobj && kobj->read)
@@ -58,7 +66,7 @@ static long sys_write(struct file * filp, char * buf, size_t count, off_t * pos)
 	if(!S_ISREG(n->i_mode))
 		return -1;
 
-	kobj = n->i_private;
+	kobj = dynamic_cast(sys_inode)(n)->obj;
 	if(*pos == 0)
 	{
 		if(kobj && kobj->write)
@@ -97,7 +105,7 @@ static long sys_readdir(struct file * filp, void * dirent, filldir_t filler)
 	int namelen = 0;
 
 	off = filp->f_pos;
-	kobj = filp->dentry->d_inode->i_private;
+	kobj = dynamic_cast(sys_inode)(filp->dentry->d_inode);
 	if(list_empty(&kobj->children))
 		return -1;
 
@@ -167,19 +175,19 @@ static long sys_lookup(struct inode * parent_inode, struct dentry * dest_dentry)
 	if(*dest_dentry->name == '\0')
 		return -1;
 
-	kobj = parent_inode->i_private;
+	kobj = dynamic_cast(sys_inode)(parent_inode)->obj;
 	obj = kobj_search(kobj, dest_dentry->name);
 	if(!obj)
 		return -1;
 
-	struct inode * n = (struct inode *)kmalloc(sizeof(struct inode), 0);
-	memset(n, 0, sizeof(struct inode));
+	sys_inode * sn = NEW(sys_inode);
+	inode *n = dynamic_cast(inode)(sn);
 	n->i_atime = 0;
 	n->i_mtime = 0;
 	n->i_ctime = 0;
 	n->i_mode = 0;
 	n->i_size = 0;
-	n->i_private = (void *)obj;
+	sn->obj = obj;
 
 	if(obj->type == KOBJ_TYPE_DIR)
 	{
@@ -205,7 +213,6 @@ static long sys_lookup(struct inode * parent_inode, struct dentry * dest_dentry)
 static void write_superblock(struct super_block * sb) {}
 
 static void put_superblock(struct super_block * sb) {
-	kfree(sb->root->d_inode);
 	kfree(sb->root);
 	kfree(sb);
 }
@@ -220,26 +227,19 @@ struct super_block_operations sb_ops = {
 };
 
 static struct super_block * read_superblock(struct block_t * block) {
-	struct super_block * sbp = NULL;
-
-	sbp = (struct super_block *)kzalloc(sizeof(struct super_block), 0);
+	struct super_block * sbp = NEW(super_block);
 	sbp->sb_ops = &sb_ops;
 
-	struct dentry *root = d_alloc(NULL, "/");
-	root->d_parent = root;
-	root->dir_ops = NULL;
-
-	struct inode * inode = (struct inode *)kzalloc(sizeof(struct inode), 0);
-	inode->inode_ops = &inode_ops;
-	inode->f_ops = &file_ops;
-	inode->i_size = 0;
-	inode->i_mode |= S_IFDIR;
-	inode->sb = sbp;
-	inode->i_dentry = root;
-	inode->i_private = kobj_get_root();
-
-	root->d_inode = inode;
-	sbp->root = root;
+	struct sys_inode *si = NEW(sys_inode);
+	struct inode * in = dynamic_cast(inode)(si);
+	in->inode_ops = &inode_ops;
+	in->f_ops = &file_ops;
+	in->i_size = 0;
+	in->i_mode |= S_IFDIR;
+	in->sb = sbp;
+	in->i_dentry = NULL;
+	si->obj = kobj_get_root();
+	sbp->root = in;
 
 	return sbp;
 }

@@ -22,15 +22,25 @@
 #include "memory.h"
 
 
-struct super_block * root_sb = NULL;
+CLASS(super_block) {};
+CLASS(inode) {};
+CLASS(vfs_mount_t) {};
+CLASS(dentry) {};
+CLASS(file) {};
+
+struct dentry root_dentry = {
+	.vfs_mount = NULL,
+	.name = "/"
+};
 
 
 
 struct dentry * path_walk(char * name, unsigned long flags, char *basename) {
-	struct dentry * parent = root_sb->root;
+	struct dentry * parent = &root_dentry;
 	struct dentry * path = parent;
 
 	if (!name || !*name) return NULL;
+
 	while (*name == '/') *name++ = '\0';
 
 	for (;;) {
@@ -123,39 +133,36 @@ struct filesystem_t * search_filesystem(const char * name)
 
 bool_t mount_fs(char * path, char *dev, char * name) {
 	struct block_t * bdev = NULL;
-	struct filesystem_t * p = search_filesystem(name);
-	if (p) {
-		if(dev) {
-			while(1){
-				if(bdev = search_block(dev))
-					break;	
-			}
-		}
-
-		struct super_block *sb = p->read_superblock(bdev);
-		if(!strcmp(path, "/"))
-		{
-			if(root_sb == NULL)
-				root_sb = sb;
-			else
-				return FALSE;
-			return FALSE;
-		}
-		
-		struct dentry * dent = path_walk(path, 0, NULL);
-		if(!dent) {
-			printf("failed to mount %s on %s\n", name, path);
-			return FALSE;
-		}
-		//TODO:dent的child计数为零才可以mount
-		struct vfs_mount_t *vfs_mount = calloc(1, sizeof(struct vfs_mount_t));
-		vfs_mount->m_sb = sb;
-		vfs_mount->m_fs = p;
-		dent->vfs_mount = vfs_mount;
-		dent->d_inode = sb->root->d_inode;
-		return TRUE;
-	} else
+	struct filesystem_t * fs = search_filesystem(name);
+	if (!fs)
 		return FALSE;
+
+	if(dev)
+		while(!(bdev = search_block(dev)));
+
+	struct super_block *sb = fs->read_superblock(bdev);
+	if(!strcmp(path, "/"))
+	{
+		if(root_dentry.vfs_mount)
+			return FALSE;
+		init_list_head(&root_dentry.child_node);
+		init_list_head(&root_dentry.subdirs_list);
+	}
+	
+	struct dentry * dent = path_walk(path, 0, NULL);
+	if(!dent) {
+		printf("failed to mount %s on %s\n", name, path);
+		return FALSE;
+	}
+	//TODO:dent的child计数为零才可以mount
+	struct vfs_mount_t *mount = calloc(1, sizeof(struct vfs_mount_t));
+
+	mount->m_fs = fs;
+	mount->m_sb = sb;
+
+	dent->vfs_mount = mount;
+	dent->d_inode = sb->root;
+	return TRUE;
 }
 
 bool_t register_filesystem(struct filesystem_t * fs)

@@ -24,6 +24,42 @@
 #include <core/initcall.h>
 #include "fat32.h"
 
+void fat32_sb_info_init(fat32_sb_info *self, struct block_t * block, struct fat_bootsec_t *fbs)
+{
+	self->sector_count = block->blksz;
+	self->sector_per_cluster = fbs->sectors_per_cluster;
+	self->bytes_per_cluster = fbs->sectors_per_cluster * fbs->bytes_per_sector;
+	self->bytes_per_sector = fbs->bytes_per_sector;
+	self->first_data_sector = fbs->reserved_sector_count + fbs->e32.sectors_per_fat * fbs->number_of_fat;
+	self->first_fat_sector = fbs->reserved_sector_count;
+	self->sectors_per_fat = fbs->e32.sectors_per_fat;
+	self->number_of_fat = fbs->number_of_fat;
+	self->fsinfo_sector_infat = fbs->e32.fs_info_sector;
+	self->bootsector_bk_infat = fbs->e32.boot_sector_copy;
+}
+
+CLASS(fat32_sb_info, super_block) {
+	.init = fat32_sb_info_init
+};
+
+void fat32_inode_info_init(fat32_inode_info *self, fat32_sb_info *fsbi, u32_t first) 
+{
+	self->first_cluster = first;
+	self->fsbi = fsbi;
+	self->dent_len = 0;
+	self->dent_off = 0;
+	self->lfn_len = 0;
+	self->lfn_off = 0;
+	self->create_date = (struct fat_date){0};
+	self->create_time = (struct fat_time){0};
+	self->write_date = (struct fat_date){0};
+	self->write_time = (struct fat_time){0};
+}
+
+CLASS(fat32_inode_info, inode) {
+	.init = fat32_inode_info_init
+};
+
 static s64_t fatfs_wallclock_mktime(unsigned int year0, unsigned int mon0, unsigned int day, unsigned int hour, unsigned int min, unsigned int sec)
 {
 	unsigned int year = year0, mon = mon0;
@@ -132,8 +168,8 @@ long FAT32_ioctl(struct inode * inode, struct file * filp, unsigned long cmd, un
 }
 
 long FAT32_readdir(struct file * filp, void * dirent, filldir_t filler) {
-	struct fat32_inode_info * finode = filp->dentry->d_inode->i_private;
-	struct fat32_sb_info * fsbi = filp->dentry->d_inode->sb->s_private;
+	struct fat32_inode_info * finode = dynamic_cast(fat32_inode_info)(filp->dentry->d_inode);
+	struct fat32_sb_info * fsbi = finode->fsbi;
 
 	char name[VFS_MAX_NAME] = {0};
 
@@ -167,10 +203,10 @@ long FAT32_create(struct inode * inode, struct dentry * dentry, int mode) {
 
 
 int FAT32_lookup(struct inode * parent_inode, struct dentry * dest_dentry) {
-	struct fat32_inode_info * finode = parent_inode->i_private;
-	struct fat32_sb_info * fsbi = parent_inode->sb->s_private;
+	struct fat32_inode_info * finode = dynamic_cast(fat32_inode_info)(parent_inode);
+	struct fat32_sb_info * fsbi = finode->fsbi;
 	int ret;
-	struct fat32_inode_info * info = kzalloc(sizeof(struct fat32_inode_info), 0);
+	struct fat32_inode_info * info = NEW(fat32_inode_info);
 	if(!info)
 		return -1;
 
@@ -181,7 +217,7 @@ int FAT32_lookup(struct inode * parent_inode, struct dentry * dest_dentry) {
 	}
 
 
-	struct inode * p = kzalloc(sizeof(struct inode), 0);
+	struct inode * p = dynamic_cast(inode)(info);
 
 	p->i_size = dentry->file_size;
 	p->i_mode |= (dentry->file_attributes & ATTR_DIRECTORY) ? S_IFDIR : S_IFREG;
@@ -200,15 +236,14 @@ int FAT32_lookup(struct inode * parent_inode, struct dentry * dest_dentry) {
 	p->sb = parent_inode->sb;
 	p->f_ops = &FAT32_file_ops;
 	p->inode_ops = &FAT32_inode_ops;
-	p->i_private = info;
 
 	dest_dentry->d_inode = p;
 	return 0;
 }
 
 long FAT32_mkdir(struct inode * parent_inode, char * name, int mode) {
-	struct fat32_inode_info * finode = parent_inode->i_private;
-	struct fat32_sb_info * fsbi = parent_inode->sb->s_private;
+	struct fat32_inode_info * finode = dynamic_cast(fat32_inode_info)(parent_inode);
+	struct fat32_sb_info * fsbi = finode->fsbi;
 	struct fat_dirent_t dent = {0};
 	int ret = -1;
 
@@ -238,7 +273,7 @@ long FAT32_mkdir(struct inode * parent_inode, char * name, int mode) {
 	
 	if(ret < 0)
 		return ret;
-	if(parent_inode != parent_inode->sb->root->d_inode) {
+	if(parent_inode != parent_inode->sb->root) {
 		if(ret){
 			parent_inode->sb->sb_ops->write_inode(parent_inode);
 		}
@@ -248,8 +283,8 @@ long FAT32_mkdir(struct inode * parent_inode, char * name, int mode) {
 }
 
 long FAT32_mknod(struct inode * parent_inode, char * name, int mode, dev_t dev) {
-	struct fat32_inode_info * finode = parent_inode->i_private;
-	struct fat32_sb_info * fsbi = parent_inode->sb->s_private;
+	struct fat32_inode_info * finode = dynamic_cast(fat32_inode_info)(parent_inode);
+	struct fat32_sb_info * fsbi = finode->fsbi;
 	struct fat_dirent_t dent = {0};
 	int ret = -1;
 
@@ -282,7 +317,7 @@ long FAT32_mknod(struct inode * parent_inode, char * name, int mode, dev_t dev) 
 	
 	if(ret < 0)
 		return ret;
-	if(parent_inode != parent_inode->sb->root->d_inode) {
+	if(parent_inode != parent_inode->sb->root) {
 		if(ret){
 			parent_inode->sb->sb_ops->write_inode(parent_inode);
 		}
@@ -292,8 +327,8 @@ long FAT32_mknod(struct inode * parent_inode, char * name, int mode, dev_t dev) 
 }
 
 long FAT32_rmdir(struct inode * parent_inode, struct dentry * dentry) {
-	struct fat32_inode_info * finode = dentry->d_inode->i_private;
-	struct fat32_sb_info * fsbi = dentry->d_inode->sb->s_private;
+	struct fat32_inode_info * finode = dynamic_cast(fat32_inode_info)(dentry->d_inode);
+	struct fat32_sb_info * fsbi = finode->fsbi;
 	int ret = -1;
 
 	if(!fat_dir_is_empty(dentry->d_inode))
@@ -309,8 +344,8 @@ long FAT32_rmdir(struct inode * parent_inode, struct dentry * dentry) {
 }
 
 long FAT32_rename(struct dentry * old_dentry, struct dentry * new_dir_dentry, char *new_name) {
-	struct fat32_inode_info * finode = old_dentry->d_inode->i_private;
-	struct fat32_sb_info * fsbi = old_dentry->d_inode->sb->s_private;
+	struct fat32_inode_info * finode = dynamic_cast(fat32_inode_info)(old_dentry->d_inode);
+	struct fat32_sb_info * fsbi = finode->fsbi;
 	struct inode * new_dir_inode = new_dir_dentry->d_inode;
 	struct fat_dirent_t dent = {0};
 	int ret = -1;
@@ -335,7 +370,7 @@ long FAT32_rename(struct dentry * old_dentry, struct dentry * new_dir_dentry, ch
 	if(ret < 0)
 		return ret;
 
-	if(new_dir_inode != new_dir_inode->sb->root->d_inode) {
+	if(new_dir_inode != new_dir_inode->sb->root) {
 		if(ret){
 			new_dir_inode->sb->sb_ops->write_inode(new_dir_inode);
 		}
@@ -389,9 +424,6 @@ struct dentry_operations FAT32_dentry_ops = {
 void fat32_write_superblock(struct super_block * sb) {}
 
 void fat32_put_superblock(struct super_block * sb) {
-	kfree(sb->s_private);
-	kfree(sb->root->d_inode->i_private);
-	kfree(sb->root->d_inode);
 	kfree(sb->root);
 	kfree(sb);
 }
@@ -399,11 +431,11 @@ void fat32_put_superblock(struct super_block * sb) {
 void fat32_write_inode(struct inode * inode) {
 	struct fat_dirent_t dent;
 	struct inode * parent_inode = inode->i_dentry->d_parent->d_inode;
-	struct fat32_inode_info * finode = inode->i_private;
+	struct fat32_inode_info * finode = dynamic_cast(fat32_inode_info)(inode);
 	struct super_block *sb = inode->sb;
 	off_t pos;
 
-	if (inode == sb->root->d_inode) {
+	if (inode == sb->root) {
 		color_printk(RED, BLACK, "FS ERROR:write root inode!\n");
 		return;
 	}
@@ -432,12 +464,12 @@ void fat32_write_inode(struct inode * inode) {
 
 void fat32_del_inode(struct inode * inode) {
 	struct inode * parent_inode = inode->i_dentry->d_parent->d_inode;
-	struct fat32_inode_info * finode = inode->i_private;
+	struct fat32_inode_info * finode = dynamic_cast(fat32_inode_info)(inode);
 	struct super_block *sb = inode->sb;
 	struct fat_dirent_t dents[FAT_LONGNAME_MAXSEQ + 1] = {0};
 	off_t pos;
 
-	if (inode == sb->root->d_inode) {
+	if (inode == sb->root) {
 		color_printk(RED, BLACK, "FS ERROR:write root inode!\n");
 		return;
 	}
@@ -476,59 +508,28 @@ struct super_block_operations FAT32_sb_ops = {
 };
 
 struct super_block * fat32_read_superblock(struct block_t * block) {
-	////super block
-	struct super_block * sbp = kzalloc(sizeof(struct super_block), 0);
-	sbp->sb_ops = &FAT32_sb_ops;
+	struct fat32_sb_info * fsbi = NEW(fat32_sb_info);
+	struct super_block * sbp = dynamic_cast(super_block)(fsbi);
 
-	struct fat32_sb_info * fsbi = kzalloc(sizeof(struct fat32_sb_info), 0);
+	sbp->sb_ops = &FAT32_sb_ops;
 	fsbi->bdev = block;
 
 	struct fat_bootsec_t *fbs = &fsbi->bsec;
 	block_read(block, fbs, 0, sizeof(*fbs));
 
-	fsbi->sector_count = block->blksz;
-	fsbi->sector_per_cluster = fbs->sectors_per_cluster;
-	fsbi->bytes_per_cluster = fbs->sectors_per_cluster * fbs->bytes_per_sector;
-	fsbi->bytes_per_sector = fbs->bytes_per_sector;
-	fsbi->first_data_sector = fbs->reserved_sector_count + fbs->e32.sectors_per_fat * fbs->number_of_fat;
-	fsbi->first_fat_sector = fbs->reserved_sector_count;
-	fsbi->sectors_per_fat = fbs->e32.sectors_per_fat;
-	fsbi->number_of_fat = fbs->number_of_fat;
-	fsbi->fsinfo_sector_infat = fbs->e32.fs_info_sector;
-	fsbi->bootsector_bk_infat = fbs->e32.boot_sector_copy;
+	$(fsbi,init)(block, fbs);
 
-	////directory entry
-	struct dentry *root = d_alloc(NULL, "/");
-	root->d_parent = root;
-	root->dir_ops = &FAT32_dentry_ops;
+	struct fat32_inode_info * finode = NEW(fat32_inode_info);
+	struct inode *in = dynamic_cast(inode)(finode);
+	in->inode_ops = &FAT32_inode_ops;
+	in->f_ops = &FAT32_file_ops;
+	in->i_size = 0;
+	in->i_mode |= S_IFDIR;
+	in->sb = sbp;
+	in->i_dentry = NULL;
+	sbp->root = in;
 
-	////index node
-	struct inode *inode = kzalloc(sizeof(struct inode), 0);
-	inode->inode_ops = &FAT32_inode_ops;
-	inode->f_ops = &FAT32_file_ops;
-	inode->i_size = 0;
-	inode->i_mode |= S_IFDIR;
-	inode->sb = sbp;
-	inode->i_dentry = root;
-
-	////fat32 root inode
-	struct fat32_inode_info * finode = kzalloc(sizeof(struct fat32_inode_info), 0);
-	finode->first_cluster = fbs->e32.root_directory_cluster;
-	finode->fsbi = fsbi;
-	finode->dent_len = 0;
-	finode->dent_off = 0;
-	finode->lfn_len = 0;
-	finode->lfn_off = 0;
-	finode->create_date = (struct fat_date){0};
-	finode->create_time = (struct fat_time){0};
-	finode->write_date = (struct fat_date){0};
-	finode->write_time = (struct fat_time){0};
-
-	inode->i_private = finode;
-	root->d_inode = inode;
-	sbp->s_private = fsbi;
-	sbp->root = root;
-
+	$(finode, init) (fsbi, fbs->e32.root_directory_cluster);
 	return sbp;
 }
 

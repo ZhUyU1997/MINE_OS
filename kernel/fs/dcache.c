@@ -46,9 +46,7 @@ struct dentry * d_lookup(struct dentry * parent, char *name){
 
 int d_delete(struct dentry * dent){
 	list_del(&dent->child_node);
-
-	if(dent->d_inode->i_private && !kfree(dent->d_inode->i_private)) return -1;
-	if(dent->d_inode && !kfree(dent->d_inode)) return -1;
+	DELETE(dent->d_inode);
 	if(dent && !kfree(dent)) return -1;
 	return 0;
 }
