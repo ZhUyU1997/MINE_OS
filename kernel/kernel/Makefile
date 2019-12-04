@@ -2,6 +2,7 @@ obj-y += core/
 obj-y += time/
 obj-y += command/
 obj-y += shell/
+obj-y += class/
 obj-y += softirq.o
 obj-y += task.o
 obj-y += schedule.o

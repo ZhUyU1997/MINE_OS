@@ -76,6 +76,20 @@ SECTIONS
 		PROVIDE(__exitcall_end = .);
 	} > rom
 
+	.class.type ALIGN(8) :
+	{
+		PROVIDE(__class_type_start = .);
+		KEEP(*(.class.type))
+		PROVIDE(__class_type_end = .);
+	} > rom
+
+	.class.table ALIGN(8) :
+	{
+		PROVIDE(__class_table_start = .);
+		KEEP(*(.class.table))
+		PROVIDE(__class_table_end = .);
+	} > rom
+
 	.ksymtab ALIGN(16) :
 	{
 		PROVIDE(__ksymtab_start = .);
