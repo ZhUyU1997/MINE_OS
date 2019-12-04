@@ -12,6 +12,7 @@
 static mu_Rect tex_buf[BUFFER_SIZE];
 static mu_Rect vert_buf[BUFFER_SIZE];
 static mu_Color color_buf[BUFFER_SIZE];
+static mu_Rect clip_rect;
 
 static struct framebuffer_t * fb;
 static struct render_t * render;
@@ -27,9 +28,12 @@ void r_init(void) {
 	width = framebuffer_get_width(fb);
 	height = framebuffer_get_height(fb);
 	bpp = framebuffer_get_bpp(fb);
-	
+
 	framebuffer_set_backlight(fb, CONFIG_MAX_BRIGHTNESS);
+
+	clip_rect = (mu_Rect) { 0, 0, width, height};
 }
+
 #define BIT_GET(x,p)	(((char *)(x))[(p) / (sizeof(char) * 8)] & (1<<((p) % (sizeof(char) * 8))))
 
 #if 0
@@ -62,10 +66,16 @@ static void disp_fill(mu_Rect dst, mu_Rect src, mu_Color color)
     int32_t y;
 	float factor_x = ((float)src.w) / (dst.w);
 	float factor_y = ((float)src.h) / (dst.h);
-	int sx = dst.x < 0 ? 0 : dst.x >= width ? width - 1:dst.x;
-	int sy = dst.y < 0 ? 0 : dst.y >= height ? height - 1:dst.y;
-	int ex = dst.x + dst.w < 0 ? 0 : dst.x + dst.w >= width ? width - 1: dst.x + dst.w;
-	int ey = dst.y + dst.h < 0 ? 0 : dst.y + dst.h >= height ? height - 1: dst.y + dst.h;
+
+	int sx, sy, ex, ey;
+	if(dst.x < clip_rect.x) sx = clip_rect.x;
+	else if(dst.x >= clip_rect.x + clip_rect.w) return; else sx = dst.x;
+	if(dst.y < clip_rect.y) sy = clip_rect.y;
+	else if(dst.y >= clip_rect.y + clip_rect.h) return; else sy = dst.y;
+	if(dst.x + dst.w > clip_rect.x + clip_rect.w) ex = clip_rect.x + clip_rect.w;
+	else if(dst.x + dst.w <= clip_rect.x) return; else ex = dst.x + dst.w;
+	if(dst.y + dst.h > clip_rect.y + clip_rect.h) ey = clip_rect.y + clip_rect.h;
+	else if(dst.y + dst.h <= clip_rect.y) return; else ey = dst.y + dst.h;
 
 	if(color.a == 0xff) {
 		for(y = sy; y < ey; y++) {
@@ -86,16 +96,22 @@ static void disp_fill(mu_Rect dst, mu_Rect src, mu_Color color)
 	}
 }
 
-static void disp_flush(mu_Rect dst, mu_Rect src, mu_Color color)
+static void disp_texture(mu_Rect dst, mu_Rect src, mu_Color color)
 {
     int32_t x;
     int32_t y;
 	float factor_x = ((float)src.w) / (dst.w);
 	float factor_y = ((float)src.h) / (dst.h);
-	int sx = dst.x < 0 ? 0 : dst.x >= width ? width - 1:dst.x;
-	int sy = dst.y < 0 ? 0 : dst.y >= height ? height - 1:dst.y;
-	int ex = dst.x + dst.w < 0 ? 0 : dst.x + dst.w >= width ? width - 1: dst.x + dst.w;
-	int ey = dst.y + dst.h < 0 ? 0 : dst.y + dst.h >= height ? height - 1: dst.y + dst.h;
+
+	int sx, sy, ex, ey;
+	if(dst.x < clip_rect.x) sx = clip_rect.x;
+	else if(dst.x >= clip_rect.x + clip_rect.w) return; else sx = dst.x;
+	if(dst.y < clip_rect.y) sy = clip_rect.y;
+	else if(dst.y >= clip_rect.y + clip_rect.h) return; else sy = dst.y;
+	if(dst.x + dst.w > clip_rect.x + clip_rect.w) ex = clip_rect.x + clip_rect.w;
+	else if(dst.x + dst.w <= clip_rect.x) return; else ex = dst.x + dst.w;
+	if(dst.y + dst.h > clip_rect.y + clip_rect.h) ey = clip_rect.y + clip_rect.h;
+	else if(dst.y + dst.h <= clip_rect.y) return; else ey = dst.y + dst.h;
 
     for(y = sy; y < ey; y++) {
 		mu_Color *base = (mu_Color *)&((u32_t *)render->pixels)[y * width];
@@ -115,12 +131,41 @@ static void disp_flush(mu_Rect dst, mu_Rect src, mu_Color color)
     }
 }
 
+static void disp_custom(mu_Rect dst, mu_Color *color)
+{
+    int32_t x;
+    int32_t y;
+	int sx, sy, ex, ey;
+	if(dst.x < clip_rect.x) sx = clip_rect.x;
+	else if(dst.x >= clip_rect.x + clip_rect.w) return; else sx = dst.x;
+	if(dst.y < clip_rect.y) sy = clip_rect.y;
+	else if(dst.y >= clip_rect.y + clip_rect.h) return; else sy = dst.y;
+	if(dst.x + dst.w > clip_rect.x + clip_rect.w) ex = clip_rect.x + clip_rect.w;
+	else if(dst.x + dst.w <= clip_rect.x) return; else ex = dst.x + dst.w;
+	if(dst.y + dst.h > clip_rect.y + clip_rect.h) ey = clip_rect.y + clip_rect.h;
+	else if(dst.y + dst.h <= clip_rect.y) return; else ey = dst.y + dst.h;
+
+	for(y = sy; y < ey; y++) {
+		mu_Color *base = (mu_Color *)&((u32_t *)render->pixels)[y * width];
+		for(x = sx; x < ex; x++) {
+			mu_Color *c = &base[x];
+			int src_x = x - dst.x;
+			int src_y = y - dst.y;
+			mu_Color *cc = &color[src_y * dst.w + src_x];
+			int a = cc->a;
+			c->r = ((int) (a * (cc->r - c->r)) >> 8) + c->r;
+			c->g = ((int) (a * (cc->g - c->g)) >> 8) + c->g;
+			c->b = ((int) (a * (cc->b - c->b)) >> 8) + c->b;
+		}
+	}
+}
+
 static void disp_clear(mu_Color color)
 {
     int32_t x;
     int32_t y;
     for(y = 0; y < height; y++) {
-        for(x = 0; x < width - 1; x++) {
+        for(x = 0; x < width; x++) {
 			((u32_t *)render->pixels)[y * width + x] = *(int *)&color;
         }
     }
@@ -133,7 +178,7 @@ static void flush(void) {
 		if(tex_buf[i].x == 125)
 			disp_fill(vert_buf[i], tex_buf[i], color_buf[i]);
 		else
-			disp_flush(vert_buf[i], tex_buf[i], color_buf[i]);
+			disp_texture(vert_buf[i], tex_buf[i], color_buf[i]);
 	}
 	buf_idx = 0;
 }
@@ -177,6 +222,10 @@ void r_draw_icon(int id, mu_Rect rect, mu_Color color) {
 	push_quad(mu_rect(x, y, src.w, src.h), src, color);
 }
 
+void r_draw_custom(mu_Rect rect, mu_Color *color) {
+	flush();
+	disp_custom(rect, color);
+}
 
 int r_get_text_width(const char *text, int len) {
 	int res = 0;
@@ -196,7 +245,12 @@ int r_get_text_height(void) {
 
 void r_set_clip_rect(mu_Rect rect) {
 	flush();
-	//glScissor(rect.x, height - (rect.y + rect.h), rect.w, rect.h);
+
+	if(rect.x < 0) rect.x = 0;
+	if(rect.y < 0) rect.y = 0;
+	if(rect.x + rect.w > width) rect.w = width - rect.x;
+	if(rect.y + rect.h > height) rect.h = height - rect.y;
+	clip_rect = rect; 	// 可以注释这条语句，检查是否有组件进行了错误的裁剪
 }
 
 

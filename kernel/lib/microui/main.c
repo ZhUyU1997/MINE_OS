@@ -170,6 +170,72 @@ static void log_window(mu_Context *ctx) {
 	}
 }
 
+static void write_result(char *buf, const char *text) {
+	strcat(buf, text);
+}
+
+mu_Color pic[150][150];
+static int incrementer(mu_Context *ctx, int *value) {
+	mu_Id     id = mu_get_id(ctx, &value, sizeof(value));
+	mu_Rect r = mu_layout_next(ctx);
+	mu_update_control(ctx, id, r, 0);
+	/* draw */
+	static char buf[32];
+	/* handle input */
+	int res = 0;
+	if (ctx->focus == id) {
+		(*value)++;
+		res |= MU_RES_CHANGE;
+		int posx = ctx->mouse_pos.x - r.x;
+		int posy = ctx->mouse_pos.y - r.y;
+		sprintf(buf, "%d %d", posx, posy);
+
+		for(int y = 0;y < 150;y++)
+			for(int x = 0;x < 150;x++)
+				pic[y][x] = (mu_Color) { posx,posy,posy,255 };
+	}
+
+
+	//sprintf(buf, "%d", *value);
+	mu_Rect rect = {r.x,r.y,150,150};
+	mu_draw_custom(ctx, rect, pic);
+	//mu_draw_control_frame(ctx, id, rect, MU_COLOR_BUTTON, 0);
+	//mu_draw_control_text(ctx, buf, rect, MU_COLOR_TEXT, MU_OPT_ALIGNCENTER);
+
+	return res;
+}
+
+static void calc_window(mu_Context *ctx) {
+	static mu_Container window;
+
+	/* init window manually so we can set its position and size */
+	if (!window.inited) {
+		mu_init_window(ctx, &window, 0);
+		window.rect = mu_rect(0, 0, 200, 400);
+	}
+
+	if (mu_begin_window(ctx, &window, "Calculator")) {
+		static char buf[128];
+		// mu_layout_row(ctx, 1, (int[]) { -1 }, 44);
+		// mu_textbox(ctx, buf, sizeof(buf));
+		// mu_layout_begin_column(ctx);
+		// 	mu_layout_row(ctx, 4, (int[]) { 44, 44, 44, 44 }, 57);
+
+		// 	char label[20][10] = {"CE","C","<X]","/","7","8","9","X","4","5","6","-","1","2","3","+","+/-","0",".","="};
+
+		// 	for(int i = 0; i < 20; i++){
+		// 		if(mu_button(ctx, label[i]))
+		// 		{
+		// 			strcat(buf, label[i]);
+		// 		}
+		// 	};
+		// mu_layout_end_column(ctx);
+		mu_layout_row(ctx, 1, (int[]) { -150 }, 150);
+		static int v = 0;
+		incrementer(ctx, &v);
+		mu_end_window(ctx);
+	}
+}
 
 static int uint8_slider(mu_Context *ctx, unsigned char *value, int low, int high) {
 	static float tmp;
@@ -227,9 +293,10 @@ static void style_window(mu_Context *ctx) {
 
 static void process_frame(mu_Context *ctx) {
 	mu_begin(ctx);
-	test_window(ctx);
-	log_window(ctx);
-	style_window(ctx);
+	calc_window(ctx);
+	//test_window(ctx);
+	//log_window(ctx);
+	//style_window(ctx);
 	mu_end(ctx);
 }
 
@@ -309,6 +376,7 @@ int microui() {
 				case MU_COMMAND_RECT: r_draw_rect(cmd->rect.rect, cmd->rect.color); break;
 				case MU_COMMAND_ICON: r_draw_icon(cmd->icon.id, cmd->icon.rect, cmd->icon.color); break;
 				case MU_COMMAND_CLIP: r_set_clip_rect(cmd->clip.rect); break;
+				case MU_COMMAND_CUSTOM: r_draw_custom(cmd->custom.rect, cmd->custom.color); break;
 			}
 		}
 		mu_Rect rect = {

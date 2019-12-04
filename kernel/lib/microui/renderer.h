@@ -10,6 +10,7 @@ void r_draw_icon(int id, mu_Rect rect, mu_Color color);
  int r_get_text_width(const char *text, int len);
  int r_get_text_height(void);
 void r_set_clip_rect(mu_Rect rect);
+void r_draw_custom(mu_Rect rect, mu_Color *color);
 void r_clear(mu_Color color);
 void r_present(void);
 
