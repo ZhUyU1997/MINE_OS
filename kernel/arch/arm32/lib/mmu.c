@@ -117,8 +117,8 @@ void set_vector_map(pgd_t *pgd){
 	pte_t *pte = alloc_pte(pmd);
 	pte = pte + pte_index(0xffff0000);
 	set_pte(pte, &__text_start, MMU_FULL_ACCESS, MAP_TYPE_CB);
-	printf("[异常向量映射]\n");
-	printf("<%08X %08X> ==> <%08X %08X>\n", 0xffff0000, 0xffff0000 + 0x1000, &__text_start, &__text_start + 0x1000);
+	LOG("[exception vector map]");
+	LOG("<%08X %08X> ==> <%08X %08X>\n", 0xffff0000, 0xffff0000 + 0x1000, &__text_start, &__text_start + 0x1000);
 	//flush_cache();
 	//flush_tlb();
 	//mmu_test();
@@ -129,13 +129,13 @@ void create_page_table(struct machine_t * mach, pgd_t *pgd) {
 
 	struct mmap_t * pos, * n;
 
-	printf("[内存映射]\n");
+	LOG("[memory map]");
 	if(mach)
 	{
 		list_for_each_entry_safe(pos, n, &mach->mmap, list)
 		{
 			alloc_init_pgd(pgd, pos->virt, pos->phys, pos->size >> PGDIR_SHIFT, MMU_FULL_ACCESS, pos->type);
-			printf("<%08X %08X> ==> <%08X %08X>\n", pos->virt, pos->virt + pos->size, pos->phys, pos->phys + pos->size);
+			LOG("<%08X %08X> ==> <%08X %08X>", pos->virt, pos->virt + pos->size, pos->phys, pos->phys + pos->size);
 		}
 	}
 	set_vector_map(pgd);
@@ -169,20 +169,20 @@ void mmu_test(){
 	pgd = (pgd_t *)MUM_TLB_BASE_ADDR + pgd_index(0xe2000000);
 	//set_pgd(pgd, 0x32400000, MMU_FULL_ACCESS, MAP_TYPE_CB);
 	//flush_pmd_entry(pgd);
-	//printf("[0xe2000000] = %#X\n", *(int *)0xe2000000);
+	//LOG("[0xe2000000] = %#X", *(int *)0xe2000000);
 	set_pgd(pgd, 0x32000000, MMU_FULL_ACCESS, MAP_TYPE_CB);
 	flush_pmd_entry(pgd);
-	printf("[0xe2000000] = %#X\n", *(int *)0xe2000000);
+	LOG("[0xe2000000] = %#X", *(int *)0xe2000000);
 
 
 	p = (int *)0x32200000;
-	printf("[0x32200000] = %#X\n", *(int *)0x32200000);
+	LOG("[0x32200000] = %#X", *(int *)0x32200000);
 	pgd = (pgd_t *)MUM_TLB_BASE_ADDR + pgd_index(0x32000000);
 	set_pgd(pgd, (u32_t)p, MMU_FULL_ACCESS, MAP_TYPE_CB);
 	
 	flush_tlb();
 	flush_cache();
-	printf("[0x32000000] = %#X\n", *(int *)0x32000000);
+	LOG("[0x32000000] = %#X", *(int *)0x32000000);
 
 	while(1);
 }

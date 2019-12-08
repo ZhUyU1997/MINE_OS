@@ -146,7 +146,7 @@ void do_init_class()
 	while(info < &(*__class_table_end))
 	{
 		set_class_table_info(info);
-		printf("class: %s type: %d parent_type: %d size: %d full_size: %d\n", info->name, info->type, info->parent_type, info->size, info->full_size);
+		//LOG("class: %s type: %d parent_type: %d size: %d full_size: %d", info->name, info->type, info->parent_type, info->size, info->full_size);
 		info++;
 	}
 }

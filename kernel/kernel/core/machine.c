@@ -282,6 +282,16 @@ int machine_logger(const char * fmt, ...)
 		va_end(ap);
 		mach->logger(mach, (const char *)buf, len);
 	}
+	else
+	{
+		va_start(ap, fmt);
+		us = ktime_to_us(ktime_get());
+		len += sprintf((char *)(buf + len), "[PRIMARY INIT]");
+		len += vsnprintf((char *)(buf + len), (SZ_4K - len), fmt, ap);
+		va_end(ap);
+		mach_logger(mach, (const char *)buf, len);
+	}
+
 	return len;
 }
 

@@ -155,7 +155,7 @@ unsigned long do_execve(struct pt_regs *regs, char *name, char *argv[], char *en
 	regs->ARM_cpsr = SVC_MODE | PSR_ENDSTATE | PSR_ISETSTATE;
 	//regs->ARM_r0 = 1;
 
-	color_printk(RED, BLACK, "do_execve task is running\n");
+	color_printk(RED, BLACK, "do_execve task is running");
 
 	raw_local_irq_restore(flags);
 	return retval;
@@ -163,13 +163,13 @@ unsigned long do_execve(struct pt_regs *regs, char *name, char *argv[], char *en
 
 
 unsigned long init(unsigned long arg) {
-	color_printk(RED, BLACK, "init task is running,arg:%#018lx\n", arg);
+	color_printk(RED, BLACK, "init task is running,arg:%#018lx", arg);
 
 	struct pt_regs *regs = (struct pt_regs *)((unsigned long)current + STACK_SIZE - sizeof(struct pt_regs));
 	current->flags &= ~PF_KTHREAD;
 
 	if(IS_ERR_VALUE(do_execve(regs, "/init.bin", NULL, NULL))){
-		color_printk(RED, BLACK, "do_execve error\n");
+		color_printk(RED, BLACK, "do_execve error");
 		return 1;
 	}
 
@@ -437,12 +437,12 @@ int kernel_thread(unsigned long(* fn)(unsigned long), unsigned long arg, unsigne
 }
 
 void task_init() {
-
+	local_irq_disable();
 	kernel_thread(init, 10, CLONE_FS | CLONE_SIGHAND);
 	void microui(void);
 	kernel_thread(microui, 10, CLONE_FS | CLONE_SIGHAND);
 	int cmd_loop();
 	kernel_thread(cmd_loop, 10, CLONE_FS | CLONE_SIGHAND);
-	
+	local_irq_enable();
 }
 

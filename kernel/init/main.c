@@ -1,9 +1,6 @@
 #include <stdio.h>
-#include <interrupt.h>
-#include <serial.h>
-#include <assert.h>
 #include <printk.h>
-#include <softirq.h>
+#include <task.h>
 #include <schedule.h>
 #include <irqflags.h>
 #include <core/initcall.h>
@@ -11,12 +8,12 @@
 
 int main() {
 
-	init_memory();
-	slab_init();
+	do_init_memory();
+
+	do_init_slab();
 
 	do_init_class();
 
-	printf("schedule_init\n");
 	do_init_sched();
 
 	/* Do initial event */

@@ -153,7 +153,7 @@ long FAT32_lseek(struct file * filp, long offset, long origin) {
 	}
 
 	if (pos < 0 || pos > filp->dentry->d_inode->i_size) {
-		color_printk(GREEN, BLACK, "FAT32 FS(lseek) ERROR!! position:%d\n", filp->f_pos);
+		color_printk(GREEN, BLACK, "FAT32 FS(lseek) ERROR!! position:%d", filp->f_pos);
 		return -EOVERFLOW;
 	}
 
@@ -335,7 +335,7 @@ long FAT32_rmdir(struct inode * parent_inode, struct dentry * dentry) {
 		return -ENOTEMPTY;
 		
 	if(!fat32_truncate_clusters(fsbi, finode->first_cluster)) {
-		color_printk(RED, BLACK, "FS ERROR:fat32_truncate_clusters failed!\n");
+		color_printk(RED, BLACK, "FS ERROR:fat32_truncate_clusters failed!");
 		return -1;
 	}
 	fat32_del_inode(dentry->d_inode);
@@ -436,13 +436,13 @@ void fat32_write_inode(struct inode * inode) {
 	off_t pos;
 
 	if (inode == sb->root) {
-		color_printk(RED, BLACK, "FS ERROR:write root inode!\n");
+		color_printk(RED, BLACK, "FS ERROR:write root inode!");
 		return;
 	}
 
 	pos = finode->dent_off;
 	if(fat32_read_clusters(parent_inode, &dent, finode->dent_len, &pos) < 0) {
-		color_printk(RED, BLACK, "FS ERROR:read dentry failed!\n");
+		color_printk(RED, BLACK, "FS ERROR:read dentry failed!");
 		return;
 	}
 	//printf("write inode:read\n");
@@ -457,7 +457,7 @@ void fat32_write_inode(struct inode * inode) {
 	//print_hex(&dent, finode->dent_len);
 	pos = finode->dent_off;
 	if(fat32_write_clusters(parent_inode, &dent, finode->dent_len, &pos) < 0) {
-		color_printk(RED, BLACK, "FS ERROR:write dentry failed!\n");
+		color_printk(RED, BLACK, "FS ERROR:write dentry failed!");
 		return;
 	}
 }
@@ -470,7 +470,7 @@ void fat32_del_inode(struct inode * inode) {
 	off_t pos;
 
 	if (inode == sb->root) {
-		color_printk(RED, BLACK, "FS ERROR:write root inode!\n");
+		color_printk(RED, BLACK, "FS ERROR:write root inode!");
 		return;
 	}
 	if(finode->lfn_len)
@@ -478,7 +478,7 @@ void fat32_del_inode(struct inode * inode) {
 	else
 		pos = finode->dent_off;
 	if(fat32_read_clusters(parent_inode, dents, finode->lfn_len + finode->dent_len, &pos) < 0) {
-		color_printk(RED, BLACK, "FS ERROR:read dentry failed!\n");
+		color_printk(RED, BLACK, "FS ERROR:read dentry failed!");
 		return;
 	}
 
@@ -492,12 +492,12 @@ void fat32_del_inode(struct inode * inode) {
 	else
 		pos = finode->dent_off;
 	if(fat32_write_clusters(parent_inode, dents, finode->lfn_len + finode->dent_len, &pos) < 0) {
-		color_printk(RED, BLACK, "FS ERROR:write dentry failed!\n");
+		color_printk(RED, BLACK, "FS ERROR:write dentry failed!");
 		return;
 	}
 	//TODO:放在这里合适？
 	if(d_delete(inode->i_dentry))
-		color_printk(RED, BLACK, "FS ERROR:d_delete failed!\n");;
+		color_printk(RED, BLACK, "FS ERROR:d_delete failed!");;
 }
 
 struct super_block_operations FAT32_sb_ops = {

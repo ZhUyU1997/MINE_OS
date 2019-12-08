@@ -1,4 +1,3 @@
-#include <interrupt.h>
 #include <assert.h>
 #include <irqs.h>
 #include <kernel.h>

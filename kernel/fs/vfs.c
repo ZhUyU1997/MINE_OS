@@ -75,7 +75,7 @@ struct dentry * path_walk(char * name, unsigned long flags, char *basename) {
 
 			struct inode *inode = parent->d_inode;
 			if (inode->inode_ops->lookup(inode, path)) {
-				//color_printk(RED, WHITE, "can not find file or dir:%s\n", path->name);
+				//color_printk(RED, WHITE, "can not find file or dir:%s", path->name);
 				kfree(path);
 				return NULL;
 			}

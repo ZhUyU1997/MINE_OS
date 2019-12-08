@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <core/module.h>
+#include <console/console.h>
 
 int getchar(void)
 {

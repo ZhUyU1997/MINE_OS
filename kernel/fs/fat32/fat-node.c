@@ -80,7 +80,7 @@ static u8_t fatfs_node_lfn_checksum(const u8_t * name)
 long fat32_read_cluster(struct fat32_sb_info * fsbi, u32_t cluster, u8_t *buf){
 	u32_t sector = fsbi->first_data_sector + (cluster - 2) * fsbi->sector_per_cluster;
 	if (!block_read(fsbi->bdev, buf, sector * fsbi->bytes_per_sector, fsbi->bytes_per_cluster)) {
-		color_printk(RED, BLACK, "[FAT32] fat32_read_cluster ERROR!!!!!!!!!!\n");
+		color_printk(RED, BLACK, "[FAT32] fat32_read_cluster ERROR!!!!!!!!!!");
 		return -EIO;
 	}
 	return 0;
@@ -89,7 +89,7 @@ long fat32_read_cluster(struct fat32_sb_info * fsbi, u32_t cluster, u8_t *buf){
 long fat32_write_cluster(struct fat32_sb_info * fsbi, u32_t cluster, u8_t *buf){
 	u32_t sector = fsbi->first_data_sector + (cluster - 2) * fsbi->sector_per_cluster;
 	if (!block_write(fsbi->bdev, buf, sector * fsbi->bytes_per_sector, fsbi->bytes_per_cluster)) {
-		color_printk(RED, BLACK, "[FAT32] fat32_write_cluster ERROR!!!!!!!!!!\n");
+		color_printk(RED, BLACK, "[FAT32] fat32_write_cluster ERROR!!!!!!!!!!");
 		return -EIO;
 	}
 	return 0;

@@ -27,21 +27,21 @@
  */
 #include <types.h>
 #include <ptrace.h>
-#include <stdio.h>
+#include <core/machine.h>
 
 static void show_regs(struct pt_regs * regs)
 {
 	int i;
 
-	printf("pc : [<%08lx>] lr : [<%08lx>] cpsr: %08lx\r\n", regs->ARM_pc, regs->ARM_lr, regs->ARM_cpsr);
-	printf("sp : %08lx svc sp : %08lx\r\n", regs->ARM_sp, regs);
+	LOG("pc : [<%08lx>] lr : [<%08lx>] cpsr: %08lx", regs->ARM_pc, regs->ARM_lr, regs->ARM_cpsr);
+	LOG("sp : %08lx svc sp : %08lx", regs->ARM_sp, regs);
 	for(i = 12; i >= 0; i--)
 	{
-		printf("r%-2d: %08lx ", i, regs->uregs[i]);
+		LOG("r%-2d: %08lx ", i, regs->uregs[i]);
 		if(i % 2 == 0)
-			printf("\r\n");
+			LOG("");
 	}
-	printf("\r\n");
+	LOG("");
 }
 
 void arm32_do_undefined_instruction(struct pt_regs * regs)

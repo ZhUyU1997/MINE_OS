@@ -75,7 +75,7 @@ unsigned long page_clean(struct Page *page) {
 
 unsigned long get_page_attribute(struct Page *page) {
 	if (page == NULL) {
-		color_printk(RED, BLACK, "get_page_attribute() ERROR: page == NULL\n");
+		color_printk(RED, BLACK, "get_page_attribute() ERROR: page == NULL");
 		return 0;
 	} else
 		return page->attribute;
@@ -83,7 +83,7 @@ unsigned long get_page_attribute(struct Page *page) {
 
 unsigned long set_page_attribute(struct Page *page, unsigned long flags) {
 	if (page == NULL) {
-		color_printk(RED, BLACK, "set_page_attribute() ERROR: page == NULL\n");
+		color_printk(RED, BLACK, "set_page_attribute() ERROR: page == NULL");
 		return 0;
 	} else {
 		page->attribute = flags;
@@ -91,12 +91,12 @@ unsigned long set_page_attribute(struct Page *page, unsigned long flags) {
 	}
 }
 
-void init_memory() {
+void do_init_memory() {
 	int i, j;
 	unsigned long TotalMem = 0 ;
 	struct E820 *p = NULL;
 
-	color_printk(BLUE, BLACK, "Display Physics Address MAP,Type(1:RAM,2:ROM or Reserved,3:ACPI Reclaim Memory,4:ACPI NVS Memory,Others:Undefine)\n");
+	color_printk(BLUE, BLACK, "Display Physics Address MAP,Type(1:RAM,2:ROM or Reserved,3:ACPI Reclaim Memory,4:ACPI NVS Memory,Others:Undefine)");
 	p = (struct E820[2]) {
 		[0] = {
 			.address = &__text_start,
@@ -119,7 +119,7 @@ void init_memory() {
 	
 	for (i = 0; i < 32; i++) {
 		if (p->type == 1)
-			color_printk(ORANGE, BLACK, "Address:%#010lx\tLength:%#010lx\tType:%#010x\n", p->address, p->length, p->type);
+			color_printk(ORANGE, BLACK, "Address:%#010lx\tLength:%#010lx\tType:%#010x", p->address, p->length, p->type);
 		if (p->type == 1)
 			TotalMem +=  p->length;
 
@@ -132,7 +132,7 @@ void init_memory() {
 			break;
 	}
 
-	color_printk(ORANGE, BLACK, "OS Can Used Total RAM:%#010lx\n", TotalMem);
+	color_printk(ORANGE, BLACK, "OS Can Used Total RAM:%#010lx", TotalMem);
 
 	TotalMem = 0;
 
@@ -147,7 +147,7 @@ void init_memory() {
 		TotalMem += PAGE_2M_NUM(end - start);
 	}
 
-	color_printk(ORANGE, BLACK, "OS Can Used Total 2M PAGEs:%#010lx=%d\n", TotalMem, TotalMem);
+	color_printk(ORANGE, BLACK, "OS Can Used Total 2M PAGEs:%#010lx=%d", TotalMem, TotalMem);
 
 	TotalMem = mms.e820[mms.e820_length].address + mms.e820[mms.e820_length].length;
 
@@ -226,9 +226,9 @@ void init_memory() {
 
 	mms.zones_length = ALIGN(mms.zones_size * sizeof(struct Zone), sizeof(long));
 
-	color_printk(ORANGE, BLACK, "bits_map:%#010lx,bits_size:%#010lx,bits_length:%#010lx\n", mms.bits_map, mms.bits_size, mms.bits_length);
-	color_printk(ORANGE, BLACK, "pages_struct:%#010lx,pages_size:%#010lx,pages_length:%#010lx\n", mms.pages_struct, mms.pages_size, mms.pages_length);
-	color_printk(ORANGE, BLACK, "zones_struct:%#010lx,zones_size:%#010lx,zones_length:%#010lx\n", mms.zones_struct, mms.zones_size, mms.zones_length);
+	color_printk(ORANGE, BLACK, "bits_map:%#010lx,bits_size:%#010lx,bits_length:%#010lx", mms.bits_map, mms.bits_size, mms.bits_length);
+	color_printk(ORANGE, BLACK, "pages_struct:%#010lx,pages_size:%#010lx,pages_length:%#010lx", mms.pages_struct, mms.pages_size, mms.pages_length);
+	color_printk(ORANGE, BLACK, "zones_struct:%#010lx,zones_size:%#010lx,zones_length:%#010lx", mms.zones_struct, mms.zones_size, mms.zones_length);
 
 	ZONE_DMA_INDEX = 0;
 	ZONE_NORMAL_INDEX = 0;
@@ -236,17 +236,17 @@ void init_memory() {
 
 	for (i = 0; i < mms.zones_size; i++) {
 		struct Zone *z = mms.zones_struct + i;
-		color_printk(ORANGE, BLACK, "zone_start_address:%#010lx,zone_end_address:%#010lx,zone_length:%#010lx,pages_group:%#010lx,pages_length:%#010lx\n", z->zone_start_address, z->zone_end_address, z->zone_length, z->pages_group, z->pages_length);
+		color_printk(ORANGE, BLACK, "zone_start_address:%#010lx,zone_end_address:%#010lx,zone_length:%#010lx,pages_group:%#010lx,pages_length:%#010lx", z->zone_start_address, z->zone_end_address, z->zone_length, z->pages_group, z->pages_length);
 
 		//if (z->zone_start_address >= 0x100000000 && !ZONE_UNMAPED_INDEX)
 		//	ZONE_UNMAPED_INDEX = i;
 	}
 
-	color_printk(ORANGE, BLACK, "ZONE_DMA_INDEX:%d\tZONE_NORMAL_INDEX:%d\tZONE_UNMAPED_INDEX:%d\n", ZONE_DMA_INDEX, ZONE_NORMAL_INDEX, ZONE_UNMAPED_INDEX);
+	color_printk(ORANGE, BLACK, "ZONE_DMA_INDEX:%d\tZONE_NORMAL_INDEX:%d\tZONE_UNMAPED_INDEX:%d", ZONE_DMA_INDEX, ZONE_NORMAL_INDEX, ZONE_UNMAPED_INDEX);
 
 	mms.end_of_struct = ALIGN((unsigned long)mms.zones_struct + mms.zones_length + sizeof(long) * 32, sizeof(long));	////need a blank to separate memory_management_struct
 
-	color_printk(ORANGE, BLACK, "start_code:%#010lx,end_code:%#010lx,end_data:%#010lx,start_brk:%#010lx,end_of_struct:%#010lx\n", mms.start_code, mms.end_code, mms.end_data, mms.start_brk, mms.end_of_struct);
+	color_printk(ORANGE, BLACK, "start_code:%#010lx,end_code:%#010lx,end_data:%#010lx,start_brk:%#010lx,end_of_struct:%#010lx", mms.start_code, mms.end_code, mms.end_data, mms.start_brk, mms.end_of_struct);
 
 	i = PAGE_2M_NUM(virt_to_phy(mms.end_of_struct));
 
@@ -260,10 +260,10 @@ void init_memory() {
 
 	//tmp = Get_gdt();
 
-	//color_printk(INDIGO, BLACK, "tmp\t:%#010lx\n", tmp);
-	//color_printk(INDIGO, BLACK, "*tmp\t:%#010lx\n", *Phy_To_Virt(tmp) & (~0xff));
-	//color_printk(PURPLE, BLACK, "**tmp\t:%#010lx\n", *Phy_To_Virt(*Phy_To_Virt(tmp) & (~0xff)) & (~0xff));
-	color_printk(ORANGE, BLACK, "1.mms.bits_map:%#010lx\tzone_struct->page_using_count:%d\tzone_struct->page_free_count:%d\n", *mms.bits_map, mms.zones_struct->page_using_count, mms.zones_struct->page_free_count);
+	//color_printk(INDIGO, BLACK, "tmp\t:%#010lx", tmp);
+	//color_printk(INDIGO, BLACK, "*tmp\t:%#010lx", *Phy_To_Virt(tmp) & (~0xff));
+	//color_printk(PURPLE, BLACK, "**tmp\t:%#010lx", *Phy_To_Virt(*Phy_To_Virt(tmp) & (~0xff)) & (~0xff));
+	color_printk(ORANGE, BLACK, "1.mms.bits_map:%#010lx\tzone_struct->page_using_count:%d\tzone_struct->page_free_count:%d", *mms.bits_map, mms.zones_struct->page_using_count, mms.zones_struct->page_free_count);
 
 //	for(i = 0;i < 10;i++)
 //		*(Phy_To_Virt(Global_CR3)  + i) = 0UL;
@@ -287,7 +287,7 @@ struct Page *alloc_pages(int zone_select, int number, unsigned long page_flags) 
 	int zone_end = 0;
 
 	if (number >= BITS_PER_LONG || number <= 0) {
-		color_printk(RED, BLACK, "alloc_pages() ERROR: number is invalid\n");
+		color_printk(RED, BLACK, "alloc_pages() ERROR: number is invalid");
 		goto ret_null;
 	}
 
@@ -311,7 +311,7 @@ struct Page *alloc_pages(int zone_select, int number, unsigned long page_flags) 
 			break;
 
 		default:
-			color_printk(RED, BLACK, "alloc_pages() ERROR: zone_select index is invalid\n");
+			color_printk(RED, BLACK, "alloc_pages() ERROR: zone_select index is invalid");
 			goto ret_null;
 			break;
 	}
@@ -346,7 +346,7 @@ struct Page *alloc_pages(int zone_select, int number, unsigned long page_flags) 
 		}
 	}
 
-	color_printk(RED, BLACK, "alloc_pages() ERROR: no page can alloc\n");
+	color_printk(RED, BLACK, "alloc_pages() ERROR: no page can alloc");
 ret_null:
 	assert(0);
 	return NULL;
@@ -377,12 +377,12 @@ void _free_pages(void * addr) {
 
 void free_pages(struct Page *page, int number) {
 	if (page == NULL) {
-		color_printk(RED, BLACK, "free_pages() ERROR: page is invalid.\n");
+		color_printk(RED, BLACK, "free_pages() ERROR: page is invalid.");
 		return ;
 	}
 
 	if (number >= BITS_PER_LONG || number <= 0) {
-		color_printk(RED, BLACK, "free_pages() ERROR: number is invalid. number = %d\n", number);
+		color_printk(RED, BLACK, "free_pages() ERROR: number is invalid. number = %d", number);
 		return ;
 	}
 
@@ -405,11 +405,11 @@ void *kmalloc(unsigned long size, unsigned long gfp_flages) {
 	int i;
 	struct Slab *slab = NULL;
 	if (size > 1048576) {
-		//color_printk(RED, BLACK, "kmalloc() ERROR: kmalloc size too long:%08d\n", size);
+		//color_printk(RED, BLACK, "kmalloc() ERROR: kmalloc size too long:%08d", size);
 		//goto ret_null;
 		void * addr = _alloc_pages(ZONE_NORMAL, size, 0);
 		if (addr == NULL) {
-			color_printk(RED, BLACK, "kmalloc() ERROR: _alloc_pages :%08d\n", size);
+			color_printk(RED, BLACK, "kmalloc() ERROR: _alloc_pages :%08d", size);
 		}
 		return addr;
 	}
@@ -425,7 +425,7 @@ void *kmalloc(unsigned long size, unsigned long gfp_flages) {
 			else
 				break;
 			if (slab == kmalloc_cache_size[i].cache_pool) {
-				color_printk(BLUE, BLACK, "kmalloc() ERROR: kmalloc_cache_size[i].total_free != 0\n");
+				color_printk(BLUE, BLACK, "kmalloc() ERROR: kmalloc_cache_size[i].total_free != 0");
 				goto ret_null;
 			}
 		}
@@ -433,13 +433,13 @@ void *kmalloc(unsigned long size, unsigned long gfp_flages) {
 		slab = kmalloc_create(kmalloc_cache_size[i].size);
 
 		if (slab == NULL) {
-			color_printk(BLUE, BLACK, "kmalloc()->kmalloc_create()=>slab == NULL\n");
+			color_printk(BLUE, BLACK, "kmalloc()->kmalloc_create()=>slab == NULL");
 			goto ret_null;
 		}
 
 		kmalloc_cache_size[i].total_free += slab->color_count;
 
-		color_printk(BLUE, BLACK, "kmalloc()->kmalloc_create()<=size:%#010x\n", kmalloc_cache_size[i].size); ///////
+		color_printk(BLUE, BLACK, "kmalloc()->kmalloc_create()<=size:%#010x", kmalloc_cache_size[i].size); ///////
 
 		list_add_tail(&slab->list, &kmalloc_cache_size[i].cache_pool->list);
 	}
@@ -462,7 +462,7 @@ void *kmalloc(unsigned long size, unsigned long gfp_flages) {
 		}
 	}
 
-	color_printk(BLUE, BLACK, "kmalloc() ERROR: no memory can alloc\n");
+	color_printk(BLUE, BLACK, "kmalloc() ERROR: no memory can alloc");
 ret_null:
 	assert(0);
 	return NULL;
@@ -491,7 +491,7 @@ struct Slab *kmalloc_create(unsigned long size) {
 	page = alloc_pages(ZONE_NORMAL, 1, 0);
 
 	if (page == NULL) {
-		color_printk(RED, BLACK, "kmalloc_create()->alloc_pages()=>page == NULL\n");
+		color_printk(RED, BLACK, "kmalloc_create()->alloc_pages()=>page == NULL");
 		return NULL;
 	}
 
@@ -546,7 +546,7 @@ struct Slab *kmalloc_create(unsigned long size) {
 
 		default:
 
-			color_printk(RED, BLACK, "kmalloc_create() ERROR: wrong size:%08d\n", size);
+			color_printk(RED, BLACK, "kmalloc_create() ERROR: wrong size:%08d", size);
 			free_pages(page, 1);
 
 			return NULL;
@@ -627,7 +627,7 @@ unsigned long kfree(void *address) {
 		} while(slab != kmalloc_cache_size[i].cache_pool);
 	}
 
-	color_printk(RED, BLACK, "kfree() ERROR: can`t free memory\n");
+	color_printk(RED, BLACK, "kfree() ERROR: can`t free memory");
 	return 0;
 }
 
@@ -641,7 +641,7 @@ struct Slab_cache *slab_create(unsigned long size, void * (* constructor)(void *
 	slab_cache = (struct Slab_cache *)kmalloc(sizeof(struct Slab_cache), 0);
 
 	if (slab_cache == NULL) {
-		color_printk(RED, BLACK, "slab_create()->kmalloc()=>slab_cache == NULL\n");
+		color_printk(RED, BLACK, "slab_create()->kmalloc()=>slab_cache == NULL");
 		return NULL;
 	}
 
@@ -653,7 +653,7 @@ struct Slab_cache *slab_create(unsigned long size, void * (* constructor)(void *
 	slab_cache->cache_pool = (struct Slab *)kmalloc(sizeof(struct Slab), 0);
 
 	if (slab_cache->cache_pool == NULL) {
-		color_printk(RED, BLACK, "slab_create()->kmalloc()=>slab_cache->cache_pool == NULL\n");
+		color_printk(RED, BLACK, "slab_create()->kmalloc()=>slab_cache->cache_pool == NULL");
 		kfree(slab_cache);
 		return NULL;
 	}
@@ -669,7 +669,7 @@ struct Slab_cache *slab_create(unsigned long size, void * (* constructor)(void *
 	slab_cache->cache_pool->page = alloc_pages(ZONE_NORMAL, 1, 0);
 
 	if (slab_cache->cache_pool->page == NULL) {
-		color_printk(RED, BLACK, "slab_create()->alloc_pages()=>slab_cache->cache_pool->page == NULL\n");
+		color_printk(RED, BLACK, "slab_create()->alloc_pages()=>slab_cache->cache_pool->page == NULL");
 		kfree(slab_cache->cache_pool);
 		kfree(slab_cache);
 		return NULL;
@@ -686,7 +686,7 @@ struct Slab_cache *slab_create(unsigned long size, void * (* constructor)(void *
 	slab_cache->cache_pool->color_map = (unsigned long *)kmalloc(slab_cache->cache_pool->color_length, 0);
 
 	if (slab_cache->cache_pool->color_map == NULL) {
-		color_printk(RED, BLACK, "slab_create()->kmalloc()=>slab_cache->cache_pool->color_map == NULL\n");
+		color_printk(RED, BLACK, "slab_create()->kmalloc()=>slab_cache->cache_pool->color_map == NULL");
 
 		free_pages(slab_cache->cache_pool->page, 1);
 		kfree(slab_cache->cache_pool);
@@ -707,7 +707,7 @@ unsigned long slab_destroy(struct Slab_cache *slab_cache) {
 	struct Slab *slab = slab_cache->cache_pool;
 
 	if (slab_cache->total_using != 0) {
-		color_printk(RED, BLACK, "slab_cache->total_using != 0\n");
+		color_printk(RED, BLACK, "slab_cache->total_using != 0");
 		return 0;
 	}
 
@@ -743,7 +743,7 @@ void *slab_malloc(struct Slab_cache *slab_cache, unsigned long arg) {
 		slab = (struct Slab *)kmalloc(sizeof(struct Slab), 0);
 
 		if (slab == NULL) {
-			color_printk(RED, BLACK, "slab_malloc()->kmalloc()=>tmp_slab == NULL\n");
+			color_printk(RED, BLACK, "slab_malloc()->kmalloc()=>tmp_slab == NULL");
 			return NULL;
 		}
 
@@ -754,7 +754,7 @@ void *slab_malloc(struct Slab_cache *slab_cache, unsigned long arg) {
 		slab->page = alloc_pages(ZONE_NORMAL, 1, 0);
 
 		if (slab->page == NULL) {
-			color_printk(RED, BLACK, "slab_malloc()->alloc_pages()=>tmp_slab->page == NULL\n");
+			color_printk(RED, BLACK, "slab_malloc()->alloc_pages()=>tmp_slab->page == NULL");
 			kfree(slab);
 			return NULL;
 		}
@@ -770,7 +770,7 @@ void *slab_malloc(struct Slab_cache *slab_cache, unsigned long arg) {
 		slab->color_map = (unsigned long *)kmalloc(slab->color_length, 0);
 
 		if (slab->color_map == NULL) {
-			color_printk(RED, BLACK, "slab_malloc()->kmalloc()=>tmp_slab->color_map == NULL\n");
+			color_printk(RED, BLACK, "slab_malloc()->kmalloc()=>tmp_slab->color_map == NULL");
 			free_pages(slab->page, 1);
 			kfree(slab);
 			return NULL;
@@ -789,7 +789,7 @@ void *slab_malloc(struct Slab_cache *slab_cache, unsigned long arg) {
 			} else
 				break;
 			if (slab == slab_cache->cache_pool) {
-				color_printk(BLUE, BLACK, "slab_malloc() ERROR: slab_cache->total_free != 0\n");
+				color_printk(BLUE, BLACK, "slab_malloc() ERROR: slab_cache->total_free != 0");
 				return NULL;
 			}
 		}
@@ -818,7 +818,7 @@ void *slab_malloc(struct Slab_cache *slab_cache, unsigned long arg) {
 			}
 		}
 	}
-	color_printk(RED, BLACK, "slab_malloc() ERROR: can`t alloc\n");
+	color_printk(RED, BLACK, "slab_malloc() ERROR: can`t alloc");
 	if (slab != NULL && slab->using_count == 0) {
 		list_del(&slab->list);
 		kfree(slab->color_map);
@@ -872,7 +872,7 @@ unsigned long slab_free(struct Slab_cache *slab_cache, void *address, unsigned l
 
 	} while (slab != slab_cache->cache_pool);
 
-	color_printk(RED, BLACK, "slab_free() ERROR: address not in slab\n");
+	color_printk(RED, BLACK, "slab_free() ERROR: address not in slab");
 
 	return 0;
 }
@@ -881,7 +881,7 @@ unsigned long slab_free(struct Slab_cache *slab_cache, void *address, unsigned l
 
 */
 
-unsigned long slab_init() {
+unsigned long do_init_slab() {
 	struct Page *page = NULL;
 	unsigned long *virtual = NULL;  // get a free page and set to empty page table and return the virtual address
 	unsigned long i, j;
@@ -927,7 +927,7 @@ unsigned long slab_init() {
 		page_init(page, PG_PTable_Maped | PG_Kernel_Init | PG_Kernel);
 	}
 
-	color_printk(ORANGE, BLACK, "2.mms.bits_map:%#010lx\tzone_struct->page_using_count:%d\tzone_struct->page_free_count:%d\n", *mms.bits_map, mms.zones_struct->page_using_count, mms.zones_struct->page_free_count);
+	color_printk(ORANGE, BLACK, "2.mms.bits_map:%#010lx\tzone_struct->page_using_count:%d\tzone_struct->page_free_count:%d", *mms.bits_map, mms.zones_struct->page_using_count, mms.zones_struct->page_free_count);
 
 	for (i = 0; i < ARRAY_SIZE(kmalloc_cache_size); i++) {
 		virtual = (unsigned long *)ALIGN(mms.end_of_struct + PAGE_2M_SIZE * i, PAGE_2M_SIZE);
@@ -944,9 +944,9 @@ unsigned long slab_init() {
 		page->slab = kmalloc_cache_size[i].cache_pool;
 	}
 
-	color_printk(ORANGE, BLACK, "3.mms.bits_map:%#010lx\tzone_struct->page_using_count:%d\tzone_struct->page_free_count:%d\n", *mms.bits_map, mms.zones_struct->page_using_count, mms.zones_struct->page_free_count);
+	color_printk(ORANGE, BLACK, "3.mms.bits_map:%#010lx\tzone_struct->page_using_count:%d\tzone_struct->page_free_count:%d", *mms.bits_map, mms.zones_struct->page_using_count, mms.zones_struct->page_free_count);
 
-	color_printk(ORANGE, BLACK, "start_code:%#010lx,end_code:%#010lx,end_data:%#010lx,start_brk:%#010lx,end_of_struct:%#010lx\n", mms.start_code, mms.end_code, mms.end_data, mms.start_brk, mms.end_of_struct);
+	color_printk(ORANGE, BLACK, "start_code:%#010lx,end_code:%#010lx,end_data:%#010lx,start_brk:%#010lx,end_of_struct:%#010lx", mms.start_code, mms.end_code, mms.end_data, mms.start_brk, mms.end_of_struct);
 
 	return 1;
 }

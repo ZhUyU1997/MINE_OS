@@ -54,7 +54,7 @@ static void run(char *name)
 	current->flags &= ~PF_KTHREAD;
 	printf("name = %s\n",name);
 	if(IS_ERR_VALUE(do_execve(regs, name, NULL, NULL))){
-		color_printk(RED, BLACK, "do_execve error\n");
+		printf("do_execve error");
 		return 1;
 	}
 

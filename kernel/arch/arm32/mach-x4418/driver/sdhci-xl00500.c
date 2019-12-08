@@ -677,7 +677,7 @@ static bool_t write_bytes(struct sdhci_xl00500_pdata_t *pdat, u32_t *buf, u32_t 
 	{
 		if(++TimeOut > SDMMC_TIMEOUT)
 		{
-			LOG("write_bytes : ERROR - TIme-out to wait DTO.\r\n"); INFINTE_LOOP();
+			LOG("write_bytes : ERROR - TIme-out to wait DTO."); INFINTE_LOOP();
 			break;
 		}
 	}

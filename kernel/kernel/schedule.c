@@ -371,7 +371,7 @@ void schedule()
 
 	cli();
 	current->flags &= ~NEED_SCHEDULE;
-	//color_printk(RED,BLACK,"#schedule:current(pid=%d vrun_time=%d pointer=%X),tsk(pid=%d vrun_time=%d pointer=%X)\n", current->pid, current->vrun_time, current, tsk->pid, tsk->vrun_time, tsk);
+	//color_printk(RED,BLACK,"#schedule:current(pid=%d vrun_time=%d pointer=%X),tsk(pid=%d vrun_time=%d pointer=%X)", current->pid, current->vrun_time, current, tsk->pid, tsk->vrun_time, tsk);
 
 	if((int64_t)(self->vtime - sched->min_vtime) < 0)
 	{

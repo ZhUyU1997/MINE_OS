@@ -156,7 +156,7 @@ extern void __switch_to(struct cpu_context_save *, struct cpu_context_save *);
 	} while (0)
 
 long get_pid();
-
+int kernel_thread(unsigned long(* fn)(unsigned long), unsigned long arg, unsigned long flags);
 void wakeup_process(struct task_t *tsk);
 void exit_files(struct task_t *tsk);
 

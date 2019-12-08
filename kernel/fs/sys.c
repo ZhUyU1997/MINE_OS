@@ -52,7 +52,7 @@ void putname(char *name) {
 }
 
 unsigned long no_system_call(void) {
-	color_printk(RED, BLACK, "no_system_call is calling\n");
+	color_printk(RED, BLACK, "no_system_call is calling");
 	return -ENOSYS;
 }
 
@@ -97,7 +97,7 @@ unsigned long sys_open(const char *filename, u32_t flags, u32_t mode) {
 	int i;
 	int ret = -1;
 
-//	color_printk(GREEN,BLACK,"sys_open\n");
+//	color_printk(GREEN,BLACK,"sys_open");
 	path = getname(filename);
 	if(IS_ERR(path)) 
 		return PTR_ERR(path);
@@ -160,7 +160,7 @@ unsigned long sys_open(const char *filename, u32_t flags, u32_t mode) {
 unsigned long sys_close(int fd) {
 	struct file * filp = NULL;
 
-//	color_printk(GREEN,BLACK,"sys_close:%d\n",fd);
+//	color_printk(GREEN,BLACK,"sys_close:%d",fd);
 	if (fd < 0 || fd >= TASK_FILE_MAX)
 		return -EBADF;
 
@@ -175,7 +175,7 @@ unsigned long sys_read(int fd, void * buf, long count) {
 	struct file * filp = NULL;
 	unsigned long ret = 0;
 
-//	color_printk(GREEN,BLACK,"sys_read:%d\n",fd);
+//	color_printk(GREEN,BLACK,"sys_read:%d",fd);
 	if (fd < 0 || fd >= TASK_FILE_MAX)
 		return -EBADF;
 	if (count < 0)
@@ -190,7 +190,7 @@ unsigned long sys_write(int fd, void * buf, long count) {
 	struct file * filp = NULL;
 	unsigned long ret = 0;
 
-//	color_printk(GREEN,BLACK,"sys_write:%d\n",fd);
+//	color_printk(GREEN,BLACK,"sys_write:%d",fd);
 	if (fd < 0 || fd >= TASK_FILE_MAX)
 		return -EBADF;
 	if (count < 0)
@@ -205,7 +205,7 @@ unsigned long sys_lseek(int fd, long offset, int whence) {
 	struct file * filp = NULL;
 	unsigned long ret = 0;
 
-//	color_printk(GREEN,BLACK,"sys_lseek:%d\n",filds);
+//	color_printk(GREEN,BLACK,"sys_lseek:%d",filds);
 	if (fd < 0 || fd >= TASK_FILE_MAX)
 		return -EBADF;
 	if (whence < 0 || whence > SEEK_END)
@@ -217,18 +217,18 @@ unsigned long sys_lseek(int fd, long offset, int whence) {
 	return ret;
 }
 unsigned long sys_fork(struct pt_regs *regs) {
-	color_printk(GREEN, BLACK, "sys_fork\n");
+	color_printk(GREEN, BLACK, "sys_fork");
 	return do_fork(regs, 0, regs->ARM_sp, 0);
 }
 unsigned long sys_vfork(struct pt_regs *regs) {
-	color_printk(GREEN, BLACK, "sys_vfork\n");
+	color_printk(GREEN, BLACK, "sys_vfork");
 	return do_fork(regs, CLONE_VM | CLONE_FS | CLONE_SIGHAND, regs->ARM_sp, 0);
 }
 unsigned long sys_execve(struct pt_regs *regs) {
 	char * path = NULL;
 	long error = 0;
 
-	color_printk(GREEN, BLACK, "sys_execve\n");
+	color_printk(GREEN, BLACK, "sys_execve");
 	path = getname((char *)regs->ARM_r0);
 	if(IS_ERR(path)) 
 		return PTR_ERR(path);
@@ -239,7 +239,7 @@ unsigned long sys_execve(struct pt_regs *regs) {
 	return error;
 }
 unsigned long sys_exit(int exit_code) {
-	color_printk(GREEN, BLACK, "sys_exit\n");
+	color_printk(GREEN, BLACK, "sys_exit");
 	return do_exit(exit_code);
 }
 unsigned long sys_wait4(unsigned long pid, int *status, int options, void *rusage) {
@@ -247,7 +247,7 @@ unsigned long sys_wait4(unsigned long pid, int *status, int options, void *rusag
 	struct task_t *child = NULL;
 	struct task_t *tsk = NULL;
 
-	color_printk(GREEN, BLACK, "sys_wait4\n");
+	color_printk(GREEN, BLACK, "sys_wait4");
 	
 	struct list_head *pos;
 	list_for_each(pos, &current->child_list) {
@@ -283,8 +283,8 @@ unsigned long sys_wait4(unsigned long pid, int *status, int options, void *rusag
 unsigned long sys_brk(unsigned long brk) {
 	unsigned long new_brk = PAGE_2M_ALIGN(brk);
 
-//	color_printk(GREEN,BLACK,"sys_brk\n");
-//	color_printk(RED,BLACK,"brk:%#018lx,new_brk:%#018lx,current->mm->end_brk:%#018lx\n",brk,new_brk,current->mm->end_brk);
+//	color_printk(GREEN,BLACK,"sys_brk");
+//	color_printk(RED,BLACK,"brk:%#018lx,new_brk:%#018lx,current->mm->end_brk:%#018lx",brk,new_brk,current->mm->end_brk);
 	if (new_brk == 0)
 		return current->mm->start_brk;
 	if (new_brk < current->mm->end_brk)	//release  brk space
@@ -296,17 +296,17 @@ unsigned long sys_brk(unsigned long brk) {
 	return new_brk;
 }
 unsigned long sys_reboot(unsigned long cmd, void * arg) {
-	color_printk(GREEN, BLACK, "sys_reboot\n");
+	color_printk(GREEN, BLACK, "sys_reboot");
 	switch (cmd) {
 		case SYSTEM_REBOOT:
-			color_printk(RED, BLACK, "sys_reboot cmd SYSTEM_REBOOT!\n");
+			color_printk(RED, BLACK, "sys_reboot cmd SYSTEM_REBOOT!");
 			break;
 		case SYSTEM_POWEROFF:
-			color_printk(RED, BLACK, "sys_reboot cmd SYSTEM_POWEROFF\n");
+			color_printk(RED, BLACK, "sys_reboot cmd SYSTEM_POWEROFF");
 			break;
 
 		default:
-			color_printk(RED, BLACK, "sys_reboot cmd ERROR!\n");
+			color_printk(RED, BLACK, "sys_reboot cmd ERROR!");
 			break;
 	}
 	return 0;
@@ -315,7 +315,7 @@ unsigned long sys_chdir(char *filename) {
 	char * path = NULL;
 	struct dentry * dentry = NULL;
 
-	color_printk(GREEN, BLACK, "sys_chdir\n");
+	color_printk(GREEN, BLACK, "sys_chdir");
 
 	path = getname(filename);
 	if(IS_ERR(path)) 
@@ -334,7 +334,7 @@ unsigned long sys_getdents(int fd, void * dirent, long count) {
 	struct file * filp = NULL;
 	unsigned long ret = 0;
 
-	//color_printk(GREEN,BLACK,"sys_getdents:%d\n",fd);
+	//color_printk(GREEN,BLACK,"sys_getdents:%d",fd);
 	if (fd < 0 || fd > TASK_FILE_MAX)
 		return -EBADF;
 	if (count < 0)

@@ -13,7 +13,7 @@
 *
 ***************************************************/
 
-#include <stdio.h>
+#include <core/machine.h>
 #include "backtrace.h"
 
 extern unsigned long kallsyms_addresses[] __attribute__((weak));;
@@ -29,11 +29,11 @@ int lookup_kallsyms(unsigned long address) {
 		if (address > kallsyms_addresses[index] && address <= kallsyms_addresses[index + 1])
 			break;
 	if (index < kallsyms_syms_num) {
-		printf("\e[31;40mbacktrace address:%#08lx (+) %04d\tbacktrace function:%s(%#08lx)\e[0m\n", 
+		LOG("\e[31;40mbacktrace address:%#08lx (+) %04d\tbacktrace function:%s(%#08lx)\e[0m", 
 			   address, address - kallsyms_addresses[index], &string[kallsyms_index[index]], kallsyms_addresses[index]);
 		return 0;
 	} else {
-		printf("\e[31;40mbacktrace address:%#08lx,No symbol found\e[0m\n", address);
+		LOG("\e[31;40mbacktrace address:%#08lx,No symbol found\e[0m", address);
 		return 1;
 	}
 }
@@ -44,7 +44,7 @@ void backtrace(unsigned long regs) {
 
 	for (int i = 0; i < 10; i++) {
 		if (rbp == 0) {
-			printf("\e[31;40mreach the top\e[0m\n");
+			LOG("\e[31;40mreach the top\e[0m");
 			break;
 		}
 
@@ -67,7 +67,7 @@ void panic() {
 
 	for (int i = 0; i < 10; i++) {
 		if (rbp == 0) {
-			printf("\e[31;40mreach the top\e[0m\n");
+			LOG("\e[31;40mreach the top\e[0m");
 			break;
 		}
 

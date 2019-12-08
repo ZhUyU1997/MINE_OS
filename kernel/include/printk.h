@@ -16,7 +16,7 @@
 #ifndef __PRINTK_H__
 #define __PRINTK_H__
 
-#include <stdio.h>
+#include <core/machine.h>
 
 #define ZEROPAD	1		/* pad with zero */
 #define SIGN	2		/* unsigned/signed long */
@@ -50,7 +50,7 @@
 
 #endif
 
-#define color_printk(a,b,fmt,arg...) printf("\033[38;2;" a ";48;2;" b "m" fmt "\033[0m",##arg)
+#define color_printk(a,b,fmt,arg...) LOG("\033[38;2;" a ";48;2;" b "m" fmt "\033[0m",##arg)
 void print_hex(char *data, int len);
 
 #endif
