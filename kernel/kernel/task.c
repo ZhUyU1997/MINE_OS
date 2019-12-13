@@ -163,7 +163,7 @@ unsigned long do_execve(struct pt_regs *regs, char *name, char *argv[], char *en
 
 
 unsigned long init(unsigned long arg) {
-	LOGE("init task is running,arg:%#018lx", arg);
+	LOGE("init task is running,arg:%#p", arg);
 
 	struct pt_regs *regs = (struct pt_regs *)((unsigned long)current + STACK_SIZE - sizeof(struct pt_regs));
 	current->flags &= ~PF_KTHREAD;
@@ -331,8 +331,8 @@ unsigned long copy_thread(unsigned long clone_flags, unsigned long stack_start, 
 
 	tsk->cpu_context.pc = (unsigned long)ret_system_call;
 
-	LOG("current  ret addr(%#08lx), sp(%#08lx)", regs->ARM_pc, regs->ARM_sp);
-	LOG("new      ret addr(%#08lx), sp(%#08lx)", childregs->ARM_pc, childregs->ARM_sp);
+	LOG("current  ret addr(%#p), sp(%#p)", regs->ARM_pc, regs->ARM_sp);
+	LOG("new      ret addr(%#p), sp(%#p)", childregs->ARM_pc, childregs->ARM_sp);
 
 	return 0;
 }
@@ -345,7 +345,7 @@ void exit_thread(struct task_t *tsk) {
 unsigned long do_fork(struct pt_regs *regs, unsigned long clone_flags, unsigned long stack_start, unsigned long stack_size) {
 	int retval = 0;
 	struct task_t *tsk = task_create(NULL, "", STACK_SIZE, 0);
-	LOG("struct task_struct address(%#08lx)", (unsigned long)tsk);
+	LOG("struct task_struct address(%#p)", (unsigned long)tsk);
 
 	if (tsk == NULL) {
 		retval = -EAGAIN;
@@ -405,7 +405,7 @@ void exit_notify(void) {
 
 unsigned long do_exit(unsigned long exit_code) {
 	struct task_t *tsk = current;
-	LOG("exit task is running, arg(%#08lx)", exit_code);
+	LOG("exit task is running, arg(%#p)", exit_code);
 
 do_exit_again:
 

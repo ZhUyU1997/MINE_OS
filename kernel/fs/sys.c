@@ -316,7 +316,7 @@ unsigned long sys_brk(unsigned long brk)
 	unsigned long new_brk = PAGE_2M_ALIGN(brk);
 
 	//	LOGD("sys_brk");
-	//	LOGD("brk:%#018lx,new_brk:%#018lx,current->mm->end_brk:%#018lx",brk,new_brk,current->mm->end_brk);
+	//	LOGD("brk:%#p,new_brk:%#p,current->mm->end_brk:%#p",brk,new_brk,current->mm->end_brk);
 	if (new_brk == 0)
 		return current->mm->start_brk;
 	if (new_brk < current->mm->end_brk) //release  brk space

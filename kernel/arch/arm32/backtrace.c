@@ -29,11 +29,11 @@ int lookup_kallsyms(unsigned long address) {
 		if (address > kallsyms_addresses[index] && address <= kallsyms_addresses[index + 1])
 			break;
 	if (index < kallsyms_syms_num) {
-		LOG("\e[31;40mbacktrace address:%#08lx (+) %04d\tbacktrace function:%s(%#08lx)\e[0m", 
+		LOG("\e[31;40mbacktrace address:%#p (+) %04d\tbacktrace function:%s(%#p)\e[0m", 
 			   address, address - kallsyms_addresses[index], &string[kallsyms_index[index]], kallsyms_addresses[index]);
 		return 0;
 	} else {
-		LOG("\e[31;40mbacktrace address:%#08lx,No symbol found\e[0m", address);
+		LOG("\e[31;40mbacktrace address:%#p,No symbol found\e[0m", address);
 		return 1;
 	}
 }

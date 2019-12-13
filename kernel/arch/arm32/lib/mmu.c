@@ -169,20 +169,20 @@ void mmu_test(){
 	pgd = (pgd_t *)MUM_TLB_BASE_ADDR + pgd_index(0xe2000000);
 	//set_pgd(pgd, 0x32400000, MMU_FULL_ACCESS, MAP_TYPE_CB);
 	//flush_pmd_entry(pgd);
-	//LOG("[0xe2000000] = %#X", *(int *)0xe2000000);
+	//LOG("[0xe2000000] = %#p", *(int *)0xe2000000);
 	set_pgd(pgd, 0x32000000, MMU_FULL_ACCESS, MAP_TYPE_CB);
 	flush_pmd_entry(pgd);
-	LOG("[0xe2000000] = %#X", *(int *)0xe2000000);
+	LOG("[0xe2000000] = %#p", *(int *)0xe2000000);
 
 
 	p = (int *)0x32200000;
-	LOG("[0x32200000] = %#X", *(int *)0x32200000);
+	LOG("[0x32200000] = %#p", *(int *)0x32200000);
 	pgd = (pgd_t *)MUM_TLB_BASE_ADDR + pgd_index(0x32000000);
 	set_pgd(pgd, (u32_t)p, MMU_FULL_ACCESS, MAP_TYPE_CB);
 	
 	flush_tlb();
 	flush_cache();
-	LOG("[0x32000000] = %#X", *(int *)0x32000000);
+	LOG("[0x32000000] = %#p", *(int *)0x32000000);
 
 	while(1);
 }
