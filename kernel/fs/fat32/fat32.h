@@ -21,7 +21,8 @@
 /*
  * Extended boot sector information for FAT12/FAT16
  */
-struct fat_bootsec_ext16_t {
+struct fat_bootsec_ext16_t
+{
 	u8_t drive_number;
 	u8_t reserved;
 	u8_t extended_signature;
@@ -30,12 +31,13 @@ struct fat_bootsec_ext16_t {
 	u8_t fs_type[8];
 	u8_t boot_code[448];
 	u16_t boot_sector_signature;
-} __attribute__ ((packed));
+} __attribute__((packed));
 
 /*
  * Extended boot sector information for FAT32
  */
-struct fat_bootsec_ext32_t {
+struct fat_bootsec_ext32_t
+{
 	u32_t sectors_per_fat;
 	u16_t fat_flags;
 	u16_t version;
@@ -51,9 +53,10 @@ struct fat_bootsec_ext32_t {
 	u8_t fs_type[8];
 	u8_t boot_code[420];
 	u16_t boot_sector_signature;
-} __attribute__ ((packed));
+} __attribute__((packed));
 
-struct fat_bootsec_t {
+struct fat_bootsec_t
+{
 	u8_t jump[3];
 	u8_t oem_name[8];
 	u16_t bytes_per_sector;
@@ -75,8 +78,8 @@ struct fat_bootsec_t {
 	};
 } __attribute__((packed));
 
-
-struct fat32_fs_info {
+struct fat32_fs_info
+{
 	unsigned int FSI_LeadSig;
 	unsigned char FSI_Reserved1[480];
 	unsigned int FSI_StrucSig;
@@ -86,35 +89,37 @@ struct fat32_fs_info {
 	unsigned int FSI_TrailSig;
 } __attribute__((packed));
 
-#define	ATTR_READ_ONLY	(1 << 0)
-#define ATTR_HIDDEN	(1 << 1)
-#define ATTR_SYSTEM	(1 << 2)
-#define ATTR_VOLUME_ID	(1 << 3)
-#define ATTR_DIRECTORY	(1 << 4)
-#define ATTR_ARCHIVE	(1 << 5)
-#define ATTR_LONG_NAME	(ATTR_READ_ONLY | ATTR_HIDDEN | ATTR_SYSTEM | ATTR_VOLUME_ID)
+#define ATTR_READ_ONLY (1 << 0)
+#define ATTR_HIDDEN (1 << 1)
+#define ATTR_SYSTEM (1 << 2)
+#define ATTR_VOLUME_ID (1 << 3)
+#define ATTR_DIRECTORY (1 << 4)
+#define ATTR_ARCHIVE (1 << 5)
+#define ATTR_LONG_NAME (ATTR_READ_ONLY | ATTR_HIDDEN | ATTR_SYSTEM | ATTR_VOLUME_ID)
 
+#define FAT_LONGNAME_ATTRIBUTE (0x0F)
+#define FAT_LONGNAME_LASTSEQ_MASK (0x40)
+#define FAT_LONGNAME_SEQNO(s) ((s) & ~0x40)
+#define FAT_LONGNAME_LASTSEQ(s) ((s)&0x40)
+#define FAT_LONGNAME_MINSEQ (1)
+#define FAT_LONGNAME_MAXSEQ (256 / 13)
 
-#define FAT_LONGNAME_ATTRIBUTE		(0x0F)
-#define FAT_LONGNAME_LASTSEQ_MASK	(0x40)
-#define FAT_LONGNAME_SEQNO(s)		((s) & ~0x40)
-#define FAT_LONGNAME_LASTSEQ(s) 	((s) & 0x40)
-#define FAT_LONGNAME_MINSEQ			(1)
-#define FAT_LONGNAME_MAXSEQ			(256 / 13)
-
-struct fat_date{
-	u16_t day:5;
-	u16_t month:4;
-	u16_t year:7;
+struct fat_date
+{
+	u16_t day : 5;
+	u16_t month : 4;
+	u16_t year : 7;
 } __attribute__((packed));
 
-struct fat_time{
-	u16_t seconds:5;
-	u16_t minutes:6;
-	u16_t hours:5;
+struct fat_time
+{
+	u16_t seconds : 5;
+	u16_t minutes : 6;
+	u16_t hours : 5;
 } __attribute__((packed));
 
-struct fat_dirent_t {
+struct fat_dirent_t
+{
 	u8_t dos_file_name[11];
 	u8_t file_attributes;
 	u8_t DIR_NTRes;
@@ -135,7 +140,8 @@ struct fat_dirent_t {
 #define LOWERCASE_BASE (8)
 #define LOWERCASE_EXT (16)
 
-struct fat_longname_t {
+struct fat_longname_t
+{
 	u8_t seqno;
 	u16_t name_utf16_1[5];
 	u8_t file_attributes;
@@ -146,15 +152,15 @@ struct fat_longname_t {
 	u16_t name_utf16_3[2];
 } __attribute__((packed));
 
-
 /////////////FAT32 for VFS
 
-CLASS_DEF(fat32_sb_info) {
+CLASS_DEF(fat32_sb_info)
+{
 	/* FAT boot sector */
 	struct fat_bootsec_t bsec;
 
 	/* Underlying block device */
-	struct block_t * bdev;
+	struct block_t *bdev;
 
 	u32_t sector_count;
 
@@ -169,22 +175,24 @@ CLASS_DEF(fat32_sb_info) {
 
 	u32_t fsinfo_sector_infat;
 	u32_t bootsector_bk_infat;
-	
-	struct fat32_fs_info * fat_fsinfo;
 
-	void (*init)(fat32_sb_info *self, struct block_t * block, struct fat_bootsec_t *fbs);
+	struct fat32_fs_info *fat_fsinfo;
+
+	void (*init)(fat32_sb_info * self, struct block_t * block, struct fat_bootsec_t * fbs);
 };
 
-struct fat32_pos {
+struct fat32_pos
+{
 	u32_t cluster;
 	u32_t off;
 	u32_t len;
 };
 
-CLASS_DEF(fat32_inode_info) {
+CLASS_DEF(fat32_inode_info)
+{
 	u32_t first_cluster;
 
-	u32_t dent_off;		//dentry struct offset in cluster
+	u32_t dent_off; //dentry struct offset in cluster
 	u32_t dent_len;
 
 	u32_t lfn_off;
@@ -197,29 +205,29 @@ CLASS_DEF(fat32_inode_info) {
 
 	struct fat_date write_date;
 	struct fat_time write_time;
-	
-	struct fat32_sb_info * fsbi;
 
-	void (*init)(fat32_inode_info *self, fat32_sb_info *fsbi, u32_t first);
+	struct fat32_sb_info *fsbi;
+
+	void (*init)(fat32_inode_info * self, fat32_sb_info * fsbi, u32_t first);
 };
 
-long fat32_read_cluster(struct fat32_sb_info * fsbi, u32_t cluster, u8_t *buf);
-long fat32_write_cluster(struct fat32_sb_info * fsbi, u32_t cluster, u8_t *buf);
+long fat32_read_cluster(struct fat32_sb_info *fsbi, u32_t cluster, u8_t *buf);
+long fat32_write_cluster(struct fat32_sb_info *fsbi, u32_t cluster, u8_t *buf);
 
-u32_t fat32_read_clusters(struct inode * inode, u8_t *buf, size_t count, off_t *pos);
-u32_t fat32_write_clusters(struct inode * inode, u8_t *buf, size_t count, off_t *pos);
+u32_t fat32_read_clusters(struct inode *inode, u8_t *buf, size_t count, off_t *pos);
+u32_t fat32_write_clusters(struct inode *inode, u8_t *buf, size_t count, off_t *pos);
 
-u32_t fat32_node_read(struct inode * inode, u8_t *buf, size_t count, off_t *pos);
-u32_t fat32_node_write(struct inode * inode, u8_t *buf, size_t count, off_t *pos);
+u32_t fat32_node_read(struct inode *inode, u8_t *buf, size_t count, off_t *pos);
+u32_t fat32_node_write(struct inode *inode, u8_t *buf, size_t count, off_t *pos);
 
-bool_t fat32_read_next_fat_entry(struct fat32_sb_info * fsbi, u32_t *fat_entry);
-bool_t fat32_write_next_fat_entry(struct fat32_sb_info * fsbi, u32_t fat_entry, u32_t value);
-bool_t fat32_find_available_cluster(struct fat32_sb_info * fsbi, u32_t *fat_entry);
-bool_t fat32_truncate_clusters(struct fat32_sb_info * fsbi, u32_t fat_entry);
+bool_t fat32_read_next_fat_entry(struct fat32_sb_info *fsbi, u32_t *fat_entry);
+bool_t fat32_write_next_fat_entry(struct fat32_sb_info *fsbi, u32_t fat_entry, u32_t value);
+bool_t fat32_find_available_cluster(struct fat32_sb_info *fsbi, u32_t *fat_entry);
+bool_t fat32_truncate_clusters(struct fat32_sb_info *fsbi, u32_t fat_entry);
 
-int fat32_node_find_dirent(struct inode * parent_inode, char *filename, struct fat_dirent_t *fat_dentry, struct fat32_inode_info * info);
-int fat32_node_read_dirent_name(struct inode * inode, char *buf, off_t * pos);
-int fat32_node_write_dirent(struct inode * inode, struct fat_dirent_t *dents, int dent_cnt);
+int fat32_node_find_dirent(struct inode *parent_inode, char *filename, struct fat_dirent_t *fat_dentry, struct fat32_inode_info *info);
+int fat32_node_read_dirent_name(struct inode *inode, char *buf, off_t *pos);
+int fat32_node_write_dirent(struct inode *inode, struct fat_dirent_t *dents, int dent_cnt);
 
 extern struct inode_operations FAT32_inode_ops;
 extern struct file_operations FAT32_file_ops;

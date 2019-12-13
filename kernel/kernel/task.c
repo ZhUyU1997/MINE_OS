@@ -155,7 +155,7 @@ unsigned long do_execve(struct pt_regs *regs, char *name, char *argv[], char *en
 	regs->ARM_cpsr = SVC_MODE | PSR_ENDSTATE | PSR_ISETSTATE;
 	//regs->ARM_r0 = 1;
 
-	color_printk(RED, BLACK, "do_execve task is running");
+	LOGE("do_execve task is running");
 
 	raw_local_irq_restore(flags);
 	return retval;
@@ -163,13 +163,13 @@ unsigned long do_execve(struct pt_regs *regs, char *name, char *argv[], char *en
 
 
 unsigned long init(unsigned long arg) {
-	color_printk(RED, BLACK, "init task is running,arg:%#018lx", arg);
+	LOGE("init task is running,arg:%#018lx", arg);
 
 	struct pt_regs *regs = (struct pt_regs *)((unsigned long)current + STACK_SIZE - sizeof(struct pt_regs));
 	current->flags &= ~PF_KTHREAD;
 
 	if(IS_ERR_VALUE(do_execve(regs, "/init.bin", NULL, NULL))){
-		color_printk(RED, BLACK, "do_execve error");
+		LOGE("do_execve error");
 		return 1;
 	}
 

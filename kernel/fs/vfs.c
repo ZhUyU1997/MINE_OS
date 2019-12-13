@@ -21,29 +21,29 @@
 #include "errno.h"
 #include "memory.h"
 
-
-CLASS(super_block) {};
-CLASS(inode) {};
-CLASS(vfs_mount_t) {};
-CLASS(dentry) {};
-CLASS(file) {};
+CLASS(super_block){};
+CLASS(inode){};
+CLASS(vfs_mount_t){};
+CLASS(dentry){};
+CLASS(file){};
 
 struct dentry root_dentry = {
 	.vfs_mount = NULL,
-	.name = "/"
-};
+	.name = "/"};
 
+struct dentry *path_walk(char *name, unsigned long flags, char *basename)
+{
+	struct dentry *parent = &root_dentry;
+	struct dentry *path = parent;
 
+	if (!name || !*name)
+		return NULL;
 
-struct dentry * path_walk(char * name, unsigned long flags, char *basename) {
-	struct dentry * parent = &root_dentry;
-	struct dentry * path = parent;
+	while (*name == '/')
+		*name++ = '\0';
 
-	if (!name || !*name) return NULL;
-
-	while (*name == '/') *name++ = '\0';
-
-	for (;;) {
+	for (;;)
+	{
 		char *tmpname = name;
 
 		while (*name && (*name != '/'))
@@ -51,16 +51,19 @@ struct dentry * path_walk(char * name, unsigned long flags, char *basename) {
 
 		int len = name - tmpname;
 
-		while (*name == '/') *name++ = '\0';
+		while (*name == '/')
+			*name++ = '\0';
 
-		if(!len)
+		if (!len)
 			break;
 
 		if (len >= VFS_MAX_NAME)
 			return NULL;
 
-		if (!*name) {
-			if (flags & 1) {
+		if (!*name)
+		{
+			if (flags & 1)
+			{
 				strlcpy(basename, tmpname, VFS_MAX_NAME);
 				return parent;
 			}
@@ -68,14 +71,16 @@ struct dentry * path_walk(char * name, unsigned long flags, char *basename) {
 
 		path = d_lookup(parent, tmpname);
 
-		if (path == NULL) {
+		if (path == NULL)
+		{
 			path = d_alloc(parent, tmpname);
 			if (path == NULL)
 				return NULL;
 
 			struct inode *inode = parent->d_inode;
-			if (inode->inode_ops->lookup(inode, path)) {
-				//color_printk(RED, WHITE, "can not find file or dir:%s", path->name);
+			if (inode->inode_ops->lookup(inode, path))
+			{
+				//LOGE("can not find file or dir:%s", path->name);
 				kfree(path);
 				return NULL;
 			}
@@ -88,9 +93,10 @@ struct dentry * path_walk(char * name, unsigned long flags, char *basename) {
 	return path;
 }
 
-int fill_dentry(void *buf, char *name, long namelen, long type, long offset) {
-	struct dirent* dent = (struct dirent*)buf;
-	int reclen = ALIGN(sizeof(struct dirent) + namelen + 1, sizeof(int));////TODO:可能多加一点，万一宽字符
+int fill_dentry(void *buf, char *name, long namelen, long type, long offset)
+{
+	struct dirent *dent = (struct dirent *)buf;
+	int reclen = ALIGN(sizeof(struct dirent) + namelen + 1, sizeof(int)); ////TODO:可能多加一点，万一宽字符
 
 	if ((unsigned long)buf < CONFIG_TASK_SIZE && !verify_area(buf, sizeof(struct dirent) + namelen))
 		return -EFAULT;
@@ -102,55 +108,56 @@ int fill_dentry(void *buf, char *name, long namelen, long type, long offset) {
 	return sizeof(struct dirent) + reclen;
 }
 
-
 static struct list_head __filesystem_list = {
 	.next = &__filesystem_list,
 	.prev = &__filesystem_list,
 };
 static spinlock_t __filesystem_lock = SPIN_LOCK_INIT();
 
-static struct kobj_t * search_class_filesystem_kobj(void)
+static struct kobj_t *search_class_filesystem_kobj(void)
 {
-	struct kobj_t * kclass = kobj_search_directory_with_create(kobj_get_root(), "class");
+	struct kobj_t *kclass = kobj_search_directory_with_create(kobj_get_root(), "class");
 	return kobj_search_directory_with_create(kclass, "filesystem");
 }
 
-struct filesystem_t * search_filesystem(const char * name)
+struct filesystem_t *search_filesystem(const char *name)
 {
-	struct filesystem_t * pos, * n;
+	struct filesystem_t *pos, *n;
 
-	if(!name)
+	if (!name)
 		return NULL;
 
 	list_for_each_entry_safe(pos, n, &__filesystem_list, list)
 	{
-		if(strcmp(pos->name, name) == 0)
+		if (strcmp(pos->name, name) == 0)
 			return pos;
 	}
 	return NULL;
 }
 
-
-bool_t mount_fs(char * path, char *dev, char * name) {
-	struct block_t * bdev = NULL;
-	struct filesystem_t * fs = search_filesystem(name);
+bool_t mount_fs(char *path, char *dev, char *name)
+{
+	struct block_t *bdev = NULL;
+	struct filesystem_t *fs = search_filesystem(name);
 	if (!fs)
 		return FALSE;
 
-	if(dev)
-		while(!(bdev = search_block(dev)));
+	if (dev)
+		while (!(bdev = search_block(dev)))
+			;
 
 	struct super_block *sb = fs->read_superblock(bdev);
-	if(!strcmp(path, "/"))
+	if (!strcmp(path, "/"))
 	{
-		if(root_dentry.vfs_mount)
+		if (root_dentry.vfs_mount)
 			return FALSE;
 		init_list_head(&root_dentry.child_node);
 		init_list_head(&root_dentry.subdirs_list);
 	}
-	
-	struct dentry * dent = path_walk(path, 0, NULL);
-	if(!dent) {
+
+	struct dentry *dent = path_walk(path, 0, NULL);
+	if (!dent)
+	{
 		printf("failed to mount %s on %s\n", name, path);
 		return FALSE;
 	}
@@ -165,14 +172,14 @@ bool_t mount_fs(char * path, char *dev, char * name) {
 	return TRUE;
 }
 
-bool_t register_filesystem(struct filesystem_t * fs)
+bool_t register_filesystem(struct filesystem_t *fs)
 {
 	irq_flags_t flags;
 
-	if(!fs || !fs->name)
+	if (!fs || !fs->name)
 		return FALSE;
 
-	if(search_filesystem(fs->name))
+	if (search_filesystem(fs->name))
 		return FALSE;
 
 	fs->kobj = kobj_alloc_directory(fs->name);
@@ -185,11 +192,11 @@ bool_t register_filesystem(struct filesystem_t * fs)
 	return TRUE;
 }
 
-bool_t unregister_filesystem(struct filesystem_t * fs)
+bool_t unregister_filesystem(struct filesystem_t *fs)
 {
 	irq_flags_t flags;
 
-	if(!fs || !fs->name)
+	if (!fs || !fs->name)
 		return FALSE;
 
 	spin_lock_irqsave(&__filesystem_lock, flags);
@@ -200,5 +207,3 @@ bool_t unregister_filesystem(struct filesystem_t * fs)
 
 	return TRUE;
 }
-
-
