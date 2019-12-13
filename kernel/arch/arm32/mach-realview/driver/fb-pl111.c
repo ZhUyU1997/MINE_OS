@@ -119,17 +119,41 @@ static void fb_destroy(struct framebuffer_t * fb, struct render_t * render)
 	}
 }
 
+static void update(u32_t *dst, u32_t *src, int width, struct dirty_rect_t * rect)
+{
+	int y0 = rect->y, y1 = rect->y + rect->h;
+	int x0 = rect->x, x1 = rect->x + rect->w;
+	for(int y = y0; y < y1; y++)
+	{
+		for(int x = x0; x < x1; x++)
+		{
+			dst[y * width + x] = src[y * width + x];
+		}
+	}
+}
 static void fb_present(struct framebuffer_t * fb, struct render_t * render, struct dirty_rect_t * rect, int nrect)
 {
 	struct fb_pl111_pdata_t * pdat = (struct fb_pl111_pdata_t *)fb->priv;
-
+	static struct dirty_rect_t prev = {0,0,0,0};
 	if(render && render->pixels)
 	{
 		pdat->index = (pdat->index + 1) & 0x1;
-		memcpy(pdat->vram[pdat->index], render->pixels, render->pixlen);
+
+		if(rect == NULL || nrect == 0)
+		{
+			memcpy(pdat->vram[pdat->index], render->pixels, render->pixlen);
+			prev = (struct dirty_rect_t){0,0,render->width,render->height};
+		}
+		else
+		{
+			update(pdat->vram[pdat->index], render->pixels, fb->width, &prev);
+			update(pdat->vram[pdat->index], render->pixels, fb->width, rect);
+			prev = *rect;
+		}
+		
 		dma_cache_sync(pdat->vram[pdat->index], render->pixlen, DMA_TO_DEVICE);
 		write32(pdat->virt + CLCD_UBAS, ((u32_t)pdat->vram[pdat->index]));
-		write32(pdat->virt + CLCD_LBAS, ((u32_t)pdat->vram[pdat->index] + pdat->width * pdat->height * (pdat->bpp / 8)));
+		write32(pdat->virt + CLCD_LBAS, ((u32_t)pdat->vram[pdat->index] + render->pixlen));
 	}
 }
 

@@ -234,5 +234,9 @@
 
 	"console-uart@3": {
 		"uart-bus": "uart-pl011.3"
+	},
+
+	"console-virt@0": {
+		"framebuffer": "fb-pl111.0"
 	}
 }

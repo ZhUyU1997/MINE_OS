@@ -105,7 +105,7 @@ static long sys_readdir(struct file * filp, void * dirent, filldir_t filler)
 	int namelen = 0;
 
 	off = filp->f_pos;
-	kobj = dynamic_cast(sys_inode)(filp->dentry->d_inode);
+	kobj = dynamic_cast(sys_inode)(filp->dentry->d_inode)->obj;
 	if(list_empty(&kobj->children))
 		return -1;
 

@@ -38,8 +38,9 @@ static void show_regs(struct pt_regs * regs)
 	for(i = 12; i >= 0; i--)
 	{
 		LOG("r%-2d: %08lx ", i, regs->uregs[i]);
-		if(i % 2 == 0)
-			LOG("");
+		//TODO
+		//if(i % 2 == 0)
+		//	LOG("");
 	}
 	LOG("");
 }
