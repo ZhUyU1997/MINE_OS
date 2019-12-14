@@ -8,7 +8,7 @@
 #define CONFIG_CODE_START_ADDR		(0x800000)
 #define CONFIG_STACK_START_ADDR		(0xa00000)
 #define CONFIG_BRK_START_ADDR		(0xc00000)
-#define CONFIG_BLOCK_DEV			"card.sdhci-xl00500.2.p0"
+#define CONFIG_BLOCK_DEV			"card.sdhci-xl00500.1.p0"
 #define CONFIG_FB_DEV				"fb-s5p4418.0"
 
 #endif /* __OVERRIDE_CONFIGS_H__ */

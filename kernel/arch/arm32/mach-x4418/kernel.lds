@@ -60,6 +60,20 @@ SECTIONS {
 		PROVIDE(__exitcall_end = .);
 	} > ram
 
+	.class.type ALIGN(8) :
+	{
+		PROVIDE(__class_type_start = .);
+		KEEP(*(.class.type))
+		PROVIDE(__class_type_end = .);
+	} > ram
+
+	.class.table ALIGN(8) :
+	{
+		PROVIDE(__class_table_start = .);
+		KEEP(*(.class.table))
+		PROVIDE(__class_table_end = .);
+	} > ram
+
     .data ALIGN(8) :
 	{
 		PROVIDE(__data_start = .);
